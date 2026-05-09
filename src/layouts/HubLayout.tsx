@@ -18,15 +18,18 @@ import { cn } from '@/lib/utils';
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutGrid },
-  { path: '/workflow', label: 'Workflow', icon: Workflow },
   { path: '/apisuri', label: 'Suri Api', icon: Bot },
-  { path: '/kanbam', label: 'Kanbam', icon: Cable },
   { path: '/calcs', label: 'Suri Calcs', icon: Calculator },
+  { path: '/kanbam', label: 'Kanbam', icon: Cable },
+  { path: '/workflow', label: 'Workflow', icon: Workflow },
+  
+  
+  ,
 ];
 
 // URLs dos logos (substituir pelos links reais)
-const LOGO_LIGHT = "public/totvs.svg"; 
-const LOGO_DARK = "public/totvs-branco.svg";
+const LOGO_LIGHT = "/totvs.svg"; 
+const LOGO_DARK = "/totvs.svg";
 
 export const HubLayout = ({ children }: { children: React.ReactNode }) => {
   const { theme } = useTheme();
@@ -47,7 +50,7 @@ export const HubLayout = ({ children }: { children: React.ReactNode }) => {
               <Sparkles size={16} strokeWidth={2.5} />
             )}
           </div>
-          <span className="suri-sidebar__brand-name">SURI HERO</span>
+          <span className="suri-sidebar__brand-name">SURI TOOLS</span>
         </div>
 
         {/* Nav */}

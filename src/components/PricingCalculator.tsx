@@ -8,6 +8,7 @@ import {
   Lightbulb, Zap, Calculator
 } from "lucide-react";
 import QuoteModal, { type QuoteData } from "./QuoteModal";
+import DownsellModal from "./DownsellModal";
 
 const PRICE_PER_INTERACTION = { essential: 0.53, pro: 0.66 };
 const IMPLANTACAO = 1890;
@@ -28,8 +29,36 @@ export default function PricingCalculator() {
   const [setupDiscount, setSetupDiscount] = useState(100);
   const [selectedPlans, setSelectedPlans] = useState<Set<string>>(new Set());
   const [quoteOpen, setQuoteOpen] = useState(false);
+  const [downsellModalOpen, setDownsellModalOpen] = useState(false);
   const [marketingPrice, setMarketingPrice] = useState(0.90);
   const [utilityPrice, setUtilityPrice] = useState(0.90);
+  const [activeTab, setActiveTab] = useState<"upsell" | "downsell">("upsell");
+
+  // Downsell Calculator States
+  const [downsellPlanValue, setDownsellPlanValue] = useState(399.00);
+  const [contractStart, setContractStart] = useState("2025-09-30");
+  const [downsellDate, setDownsellDate] = useState("2026-05-07");
+  const [overdueInvoices, setOverdueInvoices] = useState(2.00);
+
+  const usedMonths = useMemo(() => {
+    if (!contractStart || !downsellDate) return 0;
+    const [sy, sm, sd] = contractStart.split("-").map(Number);
+    const [ey, em, ed] = downsellDate.split("-").map(Number);
+    if (!sy || !ey) return 0;
+    const start = new Date(sy, sm - 1, sd);
+    const end = new Date(ey, em - 1, ed);
+    let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+    if (end.getDate() < start.getDate()) {
+      months--;
+    }
+    return Math.max(0, months);
+  }, [contractStart, downsellDate]);
+
+  const remainingMonths = Math.max(0, 12 - usedMonths);
+  const remainingBalance = downsellPlanValue * remainingMonths;
+  const penaltyAmount = usedMonths >= 12 ? 0 : remainingBalance * 0.3;
+  const totalDue = penaltyAmount + overdueInvoices;
+
 
   const togglePlan = (plan: string) => {
     setSelectedPlans((prev) => {
@@ -87,13 +116,39 @@ export default function PricingCalculator() {
           <h1 className="text-4xl font-black italic tracking-tighter text-cyan-900 dark:text-cyan-400">
             Suri Calcs
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mt-1">
-            Calculadora de Preços &amp; Contabilização
-          </p>
+          
         </div>
 
-        {/* Main Grid */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+        {/* Tab Selector */}
+        <div className="flex justify-center mb-8">
+          <div className="bg-slate-100 dark:bg-slate-800/50 p-1 rounded-2xl inline-flex gap-1 border border-slate-200 dark:border-slate-700">
+            <button
+              onClick={() => setActiveTab("upsell")}
+              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                activeTab === "upsell"
+                  ? "bg-white dark:bg-slate-900 text-cyan-600 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+              }`}
+            >
+              Upsell / Nova Venda
+            </button>
+            <button
+              onClick={() => setActiveTab("downsell")}
+              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                activeTab === "downsell"
+                  ? "bg-white dark:bg-slate-900 text-cyan-600 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+              }`}
+            >
+              Downsell / Multa
+            </button>
+          </div>
+        </div>
+
+        {activeTab === "upsell" && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Main Grid */}
+            <div className="grid lg:grid-cols-2 gap-8 mb-8">
 
           {/* Interaction Control Card */}
           <Card className="h-full p-8 rounded-[2.5rem] border-none glass-card dark:bg-slate-900/40 relative overflow-hidden">
@@ -205,16 +260,17 @@ export default function PricingCalculator() {
           <Card
             onClick={() => togglePlan("Essential")}
             className={`group h-full p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[22rem]
-              ${selectedPlans.has("Essential") ? "border-cyan-500 shadow-2xl" : "border-transparent glass-card"}
+              bg-white dark:bg-[#083344] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_50px_-12px_rgba(8,51,68,0.4)]
+              ${selectedPlans.has("Essential") ? "border-cyan-500 ring-4 ring-cyan-500/20 dark:ring-cyan-500/50" : "border-transparent"}
               hover:scale-[1.02] active:scale-95 duration-300
             `}
           >
             <div>
               <div className="flex justify-between items-start mb-6">
-                <div className="w-12 h-12 bg-cyan-50 dark:bg-cyan-900/30 rounded-2xl flex items-center justify-center text-cyan-600 dark:text-cyan-400">
+                <div className="w-12 h-12 bg-cyan-50 dark:bg-cyan-500/20 rounded-2xl flex items-center justify-center text-cyan-600 dark:text-cyan-400">
                   <Zap className="w-6 h-6 fill-current" />
                 </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Essential") ? "border-cyan-500 bg-cyan-500" : "border-slate-200 dark:border-slate-700"}`}>
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Essential") ? "border-cyan-500 bg-cyan-500" : "border-slate-200 dark:border-white/20"}`}>
                   {selectedPlans.has("Essential") && <div className="w-2 h-2 rounded-full bg-white" />}
                 </div>
               </div>
@@ -228,7 +284,7 @@ export default function PricingCalculator() {
               </div>
             </div>
 
-            <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+            <div className="pt-6 border-t border-slate-100 dark:border-white/10 flex justify-between items-center">
               <div className="flex items-center gap-2 text-[10px] font-black text-cyan-500 uppercase tracking-widest">
                 <div className="w-4 h-4 rounded-full bg-cyan-500 flex items-center justify-center text-white"><Plus className="w-3 h-3" /></div>
                 Implantação
@@ -241,32 +297,32 @@ export default function PricingCalculator() {
           <Card
             onClick={() => togglePlan("Pro")}
             className={`group h-full p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between duration-500 min-h-[22rem]
-              bg-[#083344] text-white border-transparent shadow-[0_20px_50px_-12px_rgba(8,51,68,0.4)]
-              ${selectedPlans.has("Pro") ? "ring-4 ring-cyan-500/50" : ""}
+              bg-[#083344] dark:bg-white border-transparent shadow-[0_20px_50px_-12px_rgba(8,51,68,0.4)] dark:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.05)]
+              ${selectedPlans.has("Pro") ? "border-cyan-500 ring-4 ring-cyan-500/50 dark:ring-cyan-500/20" : "border-transparent"}
               hover:scale-[1.02] active:scale-95
             `}
           >
             <div className="relative z-10">
               <div className="flex justify-between items-start mb-6">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-cyan-500/20 text-cyan-400">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-cyan-500/20 dark:bg-cyan-50 text-cyan-400 dark:text-cyan-600">
                   <Zap className="w-6 h-6 fill-current" />
                 </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Pro") ? 'border-cyan-400 bg-cyan-400' : 'border-white/20'}`}>
-                  {selectedPlans.has("Pro") && <div className="w-2 h-2 rounded-full bg-white" />}
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Pro") ? 'border-cyan-400 dark:border-cyan-500 bg-cyan-400 dark:bg-cyan-500' : 'border-white/20 dark:border-slate-200'}`}>
+                  {selectedPlans.has("Pro") && <div className="w-2 h-2 rounded-full bg-[#083344] dark:bg-white" />}
                 </div>
               </div>
-              <h2 className="text-2xl font-black text-white mb-1">Pro</h2>
+              <h2 className="text-2xl font-black text-white dark:text-slate-900 mb-1">Pro</h2>
               <p className="text-xs font-medium mb-8 uppercase tracking-widest text-slate-400">Para alta performance</p>
 
               <div className="items-baseline flex gap-1 mb-8">
-                <span className="font-bold text-lg text-cyan-400">R$</span>
-                <span className="text-5xl font-black tracking-tighter text-white">{fmt(calc.pro.final)}</span>
-                <span className="font-bold text-sm opacity-50 text-white">/mês</span>
+                <span className="font-bold text-lg text-cyan-400 dark:text-slate-400">R$</span>
+                <span className="text-5xl font-black tracking-tighter text-white dark:text-slate-900">{fmt(calc.pro.final)}</span>
+                <span className="font-bold text-sm opacity-50 text-white dark:text-slate-500">/mês</span>
               </div>
             </div>
 
-            <div className="pt-6 border-t border-white/10 flex justify-between items-center relative z-10">
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-cyan-400">
+            <div className="pt-6 border-t border-white/10 dark:border-slate-100 flex justify-between items-center relative z-10">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-cyan-400 dark:text-cyan-500">
                 <div className="w-4 h-4 rounded-full flex items-center justify-center text-white bg-cyan-500"><Plus className="w-3 h-3" /></div>
                 Implantação
               </div>
@@ -274,16 +330,110 @@ export default function PricingCalculator() {
             </div>
           </Card>
         </div>
+      </div>
+      )}
 
-        {/* Footer */}
-        <div className="text-center pb-4">
-          <p className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.4em]">
-            Welder by Suri • 2.0.0
-          </p>
+        {activeTab === "downsell" && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Downsell / Penalty Calculator */}
+            <div className="max-w-4xl mx-auto mb-12">
+          <Card className="p-8 rounded-[2.5rem] border-none glass-card dark:bg-slate-900/40 relative overflow-hidden">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 rounded-full bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center">
+                <Calculator className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-800 dark:text-slate-200">Calculadora de Downsell / Multa</h3>
+                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Simule o cancelamento ou downsell antes de 12 meses</p>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Entradas */}
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Valor mensal atual (R$)</Label>
+                  <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
+                    <Input
+                      type="number"
+                      value={downsellPlanValue}
+                      onChange={(e) => setDownsellPlanValue(Number(e.target.value))}
+                      className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Início Contrato</Label>
+                    <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
+                      <Input
+                        type="date"
+                        value={contractStart}
+                        onChange={(e) => setContractStart(e.target.value)}
+                        className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Data Downsell</Label>
+                    <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
+                      <Input
+                        type="date"
+                        value={downsellDate}
+                        onChange={(e) => setDownsellDate(e.target.value)}
+                        className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Valor Faturas Vencidas (R$)</Label>
+                  <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
+                    <Input
+                      type="number"
+                      value={overdueInvoices}
+                      onChange={(e) => setOverdueInvoices(Number(e.target.value))}
+                      className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Resultados */}
+              <div className="bg-cyan-50 dark:bg-cyan-900/10 rounded-3xl p-6 border border-cyan-100 dark:border-cyan-800/50 flex flex-col justify-center">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Meses já utilizados</span>
+                    <span className="text-base font-bold text-slate-800 dark:text-slate-200">{usedMonths}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Meses restantes (até 12)</span>
+                    <span className="text-base font-bold text-slate-800 dark:text-slate-200">{remainingMonths}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Saldo contratual</span>
+                    <span className="text-base font-bold text-slate-800 dark:text-slate-200">R$ {fmt(remainingBalance)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Multa contratual (30%)</span>
+                    <span className="text-base font-bold text-cyan-600 dark:text-cyan-400">
+                      {usedMonths >= 12 ? "SEM MULTA" : `R$ ${fmt(penaltyAmount)}`}
+                    </span>
+                  </div>
+                  <div className="pt-4 border-t border-cyan-200 dark:border-cyan-800/50 flex justify-between items-center">
+                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest">Valor Total Devido</span>
+                    <span className="text-2xl font-black text-cyan-600 dark:text-cyan-400">R$ {fmt(totalDue)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
         </div>
+      </div>
+      )}
 
-        {/* Sticky Action */}
-        {selectedPlans.size > 0 && (
+        {/* Sticky Action (Upsell) */}
+        {activeTab === "upsell" && selectedPlans.size > 0 && (
           <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50">
             <Button
               onClick={() => setQuoteOpen(true)}
@@ -294,9 +444,26 @@ export default function PricingCalculator() {
             </Button>
           </div>
         )}
+
+        {/* Sticky Action (Downsell) */}
+        {activeTab === "downsell" && (
+          <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50">
+            <Button
+              onClick={() => setDownsellModalOpen(true)}
+              className="bg-cyan-600 hover:bg-cyan-700 text-white font-black px-10 h-16 rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(79,70,229,0.5)] gap-3 border-4 border-white/20 backdrop-blur-md group animate-in fade-in slide-in-from-bottom-5 duration-500"
+            >
+              <FileText className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              GERAR EXTRATO DE DOWNSELL
+            </Button>
+          </div>
+        )}
       </div>
 
       <QuoteModal open={quoteOpen} onOpenChange={setQuoteOpen} plans={getQuotePlans()} />
+      <DownsellModal open={downsellModalOpen} onOpenChange={setDownsellModalOpen} data={{
+        downsellPlanValue, contractStart, downsellDate, usedMonths, remainingMonths,
+        remainingBalance, penaltyAmount, overdueInvoices, totalDue
+      }} />
     </div>
   );
 }

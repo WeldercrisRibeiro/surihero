@@ -2,7 +2,23 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Bot, Cable, Calculator, Workflow, ArrowRight } from 'lucide-react';
 
-const apps = [
+	const apps = [
+	{
+    path: '/apisuri',
+    label: 'Suri API',
+    description: 'Console interno de conectores e endpoints.',
+    icon: Cable,
+    color: 'var(--app-connect)',
+    tag: 'API',
+  },
+  {
+    path: '/Calcs',
+    label: 'Suri Calcs',
+    description: 'Calculadora de planos, preços e projeções.',
+    icon: Calculator,
+    color: 'var(--app-calc)',
+    tag: 'Planos, Upsell',
+  },
   {
     path: '/kanbam',
     label: 'Kanban',
@@ -19,30 +35,13 @@ const apps = [
     color: 'var(--app-work)',
     tag: 'IA',
   },
-  {
-    path: '/apisuri',
-    label: 'Suri API',
-    description: 'Console interno de conectores e endpoints.',
-    icon: Cable,
-    color: 'var(--app-connect)',
-    tag: 'API',
-  },
-  {
-    path: '/Calcs',
-    label: 'Suri Calcs',
-    description: 'Calculadora de planos, preços e projeções.',
-    icon: Calculator,
-    color: 'var(--app-calc)',
-    tag: 'Planos, Upsell',
-  },
 ];
 
 export const HubDashboard = () => (
   <div className="hub-page">
     <div className="hub-page__header">
-      <p className="hub-page__eyebrow">SURI HERO</p>
-      <h1 className="hub-page__title">Bem-vindo ao Suri Hero👋</h1>
-      <p>O herói do dia a dia</p>
+      <p className="hub-page__eyebrow">SURI TOOLS</p>
+      <h1 className="hub-page__title">Bem-vindo!</h1>
       <p className="hub-page__subtitle">
         Módulos disponíveis
       </p>

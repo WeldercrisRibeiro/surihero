@@ -499,6 +499,13 @@ body {
   box-shadow: 0 0 0 2px var(--suri-primary);
 }
 
+.kb-column.col-drag-over {
+  outline: 2.5px dashed var(--suri-primary);
+  outline-offset: 3px;
+  transform: scale(1.01);
+  transition: transform 0.15s ease, outline 0.15s ease;
+}
+
 .kb-col-header {
   display: flex;
   align-items: center;
@@ -507,7 +514,10 @@ body {
   border-bottom: 1px solid var(--suri-border);
   flex-shrink: 0;
   background: var(--suri-surface);
+  cursor: grab;
+  user-select: none;
 }
+.kb-col-header:active { cursor: grabbing; }
 
 .kb-col-title {
   display: flex;
@@ -926,7 +936,7 @@ body {
 .suri-sidebar__logo {
   width: 36px; height: 36px; min-width: 36px;
   border-radius: 10px;
-  background: linear-gradient(135deg, hsl(var(--primary)), #8b5cf6);
+  background: #00e5ff;
   display: flex; align-items: center; justify-content: center;
   color: #fff;
   box-shadow: 0 2px 12px hsl(var(--primary) / 0.35);

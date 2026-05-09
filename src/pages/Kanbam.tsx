@@ -8,6 +8,7 @@ import {
   Tag,
   Calendar,
   GripVertical,
+  GripHorizontal,
   X,
   ChevronDown,
 } from 'lucide-react';
@@ -344,17 +345,19 @@ const ColModal = ({ onClose, onAdd, initialData }: ColModalProps) => {
 
 export const KanbanBoard = () => {
   const [columns, setColumns] = useState<KanbanColumn[]>(() => {
-    const saved = localStorage.getItem('suri-kanban');
+    const saved = localStorage.getItem('suri-kanban-v2');
     if (saved) return JSON.parse(saved);
     return [
-      { id: '1', title: 'A FAZER', color: '#9ca3af', cards: [] },
-      { id: '2', title: 'FAZENDO', color: '#3b82f6', cards: [] },
-      { id: '3', title: 'CONCLUÍDO', color: '#22c55e', cards: [] },
+      { id: '1', title: 'BACKLOG', color: '#9ca3af', cards: [] },
+      { id: '2', title: 'A FAZER', color: '#9ca3af', cards: [] },
+      { id: '3', title: 'FAZENDO', color: '#3b82f6', cards: [] },
+      { id: '4', title: 'CONCLUÍDO', color: '#22c55e', cards: [] },
+      { id: '5', title: 'PENDENTE', color: '#9ca3af', cards: [] },
     ];
   });
 
   useEffect(() => {
-    localStorage.setItem('suri-kanban', JSON.stringify(columns));
+    localStorage.setItem('suri-kanban-v2', JSON.stringify(columns));
   }, [columns]);
 
   const [search, setSearch] = useState('');
@@ -377,10 +380,14 @@ export const KanbanBoard = () => {
     localStorage.setItem('suri-kanban-view', viewMode);
   }, [viewMode]);
 
-  // Drag state
+  // Drag state (cards)
   const draggingCard = useRef<{ cardId: string; fromColId: string } | null>(null);
   const [dragOverColId, setDragOverColId] = useState<string | null>(null);
   const [dragOverCardId, setDragOverCardId] = useState<string | null>(null);
+
+  // Drag state (columns)
+  const draggingCol = useRef<string | null>(null);
+  const [dragOverColForReorder, setDragOverColForReorder] = useState<string | null>(null);
 
   // ── Actions ──
 
@@ -502,6 +509,50 @@ export const KanbanBoard = () => {
     draggingCard.current = null;
   };
 
+  // ── Column Drag & Drop ──
+
+  const handleColDragStart = (e: React.DragEvent, colId: string) => {
+    // Only allow column drag if not dragging a card
+    if (draggingCard.current) return;
+    draggingCol.current = colId;
+    e.dataTransfer.effectAllowed = 'move';
+    e.stopPropagation();
+  };
+
+  const handleColDragOver = (e: React.DragEvent, colId: string) => {
+    e.preventDefault();
+    if (draggingCol.current && draggingCol.current !== colId) {
+      setDragOverColForReorder(colId);
+    }
+  };
+
+  const handleColDrop = (e: React.DragEvent, toColId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!draggingCol.current || draggingCol.current === toColId) {
+      draggingCol.current = null;
+      setDragOverColForReorder(null);
+      return;
+    }
+    const fromColId = draggingCol.current;
+    setColumns((prev) => {
+      const fromIdx = prev.findIndex((c) => c.id === fromColId);
+      const toIdx = prev.findIndex((c) => c.id === toColId);
+      if (fromIdx === -1 || toIdx === -1) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(fromIdx, 1);
+      next.splice(toIdx, 0, moved);
+      return next;
+    });
+    draggingCol.current = null;
+    setDragOverColForReorder(null);
+  };
+
+  const handleColDragEnd = () => {
+    draggingCol.current = null;
+    setDragOverColForReorder(null);
+  };
+
   // ── Filtered Data ──
 
   const filteredColumns = columns.map((col) => ({
@@ -583,13 +634,37 @@ export const KanbanBoard = () => {
         {filteredColumns.map((col) => (
           <div
             key={col.id}
-            className={`kb-column ${dragOverColId === col.id ? 'drag-over' : ''}`}
-            onDragOver={(e) => handleDragOverCol(e, col.id)}
-            onDrop={(e) => handleDrop(e, col.id)}
+            className={cn(
+              "kb-column",
+              dragOverColId === col.id && !draggingCol.current ? 'drag-over' : '',
+              dragOverColForReorder === col.id ? 'col-drag-over' : ''
+            )}
+            onDragOver={(e) => {
+              if (draggingCol.current) {
+                handleColDragOver(e, col.id);
+              } else {
+                handleDragOverCol(e, col.id);
+              }
+            }}
+            onDrop={(e) => {
+              if (draggingCol.current) {
+                handleColDrop(e, col.id);
+              } else {
+                handleDrop(e, col.id);
+              }
+            }}
+            onDragEnd={handleColDragEnd}
           >
             {/* Column header */}
-            <div className="kb-col-header">
+            <div
+              className="kb-col-header"
+              draggable
+              onDragStart={(e) => handleColDragStart(e, col.id)}
+              style={{ cursor: 'grab' }}
+              title="Arraste para reordenar a coluna"
+            >
               <div className="kb-col-title">
+                <GripHorizontal size={13} className="opacity-30 mr-1 flex-shrink-0" />
                 <span className="kb-col-dot" style={{ background: col.color }} />
                 <span className="kb-col-name">{col.title}</span>
                 <span className="kb-col-count">{col.cards.length}</span>
