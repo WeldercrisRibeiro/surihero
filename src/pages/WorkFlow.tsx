@@ -48,7 +48,7 @@ const defaultNodes: Node[] = [
     position: { x: 50, y: 50 },
     data: { label: "Inicio" },
     style: {
-      background: "hsl(174 62% 47%)",
+      background: "hsl(186 100% 50%)",
       color: "hsl(222 30% 5%)",
       border: "none",
       borderRadius: "12px",
@@ -73,9 +73,9 @@ const defaultNodes: Node[] = [
     position: { x: 50, y: 310 },
     data: { label: "Fim" },
     style: {
-      background: "hsl(174 62% 47% / 0.15)",
-      color: "hsl(174 62% 55%)",
-      border: "1px solid hsl(174 62% 47% / 0.3)",
+      background: "hsl(186 100% 50% / 0.15)",
+      color: "hsl(186 100% 55%)",
+      border: "1px solid hsl(186 100% 50% / 0.3)",
       borderRadius: "12px",
       padding: "12px 20px",
     },
@@ -88,10 +88,10 @@ const defaultEdges: Edge[] = [
     source: "1",
     target: "2",
     animated: true,
-    style: { stroke: "hsl(174 62% 47%)" },
+    style: { stroke: "hsl(186 100% 50%)" },
     markerEnd: {
       type: MarkerType.ArrowClosed,
-      color: "hsl(174 62% 47%)",
+      color: "hsl(186 100% 50%)",
     },
   },
   {
@@ -99,10 +99,10 @@ const defaultEdges: Edge[] = [
     source: "2",
     target: "3",
     animated: true,
-    style: { stroke: "hsl(174 62% 47%)" },
+    style: { stroke: "hsl(186 100% 50%)" },
     markerEnd: {
       type: MarkerType.ArrowClosed,
-      color: "hsl(174 62% 47%)",
+      color: "hsl(186 100% 50%)",
     },
   },
 ];
@@ -136,7 +136,7 @@ function FlowsContent() {
   
   const buttonBase = "group flex items-center justify-center gap-3 rounded-2xl text-sm font-semibold transition-all duration-200 active:scale-[0.98]";
   const buttonSecondary = `${buttonBase} px-5 py-2.5 bg-secondary/40 text-secondary-foreground hover:bg-secondary/60 hover:shadow-sm border border-border/40`;
-  const buttonPrimary = `${buttonBase} px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-500 text-white hover:opacity-90 shadow-md shadow-indigo-500/20 border border-white/10`;
+  const buttonPrimary = `${buttonBase} px-6 py-2.5 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-900 hover:opacity-90 shadow-md shadow-cyan-500/20 border border-white/10`;
   const buttonDanger = `${buttonBase} px-5 py-2.5 bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/20`;
   const buttonGhost = `${buttonBase} px-4 py-2 text-foreground/80 hover:bg-accent hover:text-foreground`;
 
@@ -424,7 +424,7 @@ function FlowsContent() {
         >
           {/* Title block */}
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <Workflow className="w-4 h-4 text-indigo-500 shrink-0" />
+            <Workflow className="w-4 h-4 text-cyan-500 shrink-0" />
             {isEditingTitle ? (
               <input
                 type="text"

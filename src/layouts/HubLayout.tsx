@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useTheme } from '@/hooks/use-theme';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -23,9 +24,16 @@ const navItems = [
   { path: '/calcs', label: 'Suri Calcs', icon: Calculator, color: 'var(--app-calc)' },
 ];
 
+// URLs dos logos (substituir pelos links reais)
+const LOGO_LIGHT = "public/totvs.svg"; 
+const LOGO_DARK = "public/totvs-branco.svg";
+
 export const HubLayout = ({ children }: { children: React.ReactNode }) => {
+  const { theme } = useTheme();
   const [collapsed, setCollapsed] = React.useState(false);
   const location = useLocation();
+
+  const currentLogo = theme === 'light' ? LOGO_LIGHT : LOGO_DARK;
 
   return (
     <div className="app-container">
@@ -33,8 +41,12 @@ export const HubLayout = ({ children }: { children: React.ReactNode }) => {
       <aside className={cn('suri-sidebar', collapsed && 'suri-sidebar--collapsed')}>
         {/* Logo */}
         <div className="suri-sidebar__brand">
-          <div className="suri-sidebar__logo">
-            <Sparkles size={16} strokeWidth={2.5} />
+          <div className="suri-sidebar__logo overflow-hidden">
+            {currentLogo ? (
+              <img src={currentLogo} alt="Logo" className="w-full h-full object-cover" />
+            ) : (
+              <Sparkles size={16} strokeWidth={2.5} />
+            )}
           </div>
           <span className="suri-sidebar__brand-name">SURI HERO</span>
         </div>

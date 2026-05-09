@@ -18,8 +18,8 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 224 71% 4%;
 
-    --primary: 243 75% 59%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 186 100% 50%;
+    --primary-foreground: 224 71% 4%;
 
     --secondary: 224 71% 4%;
     --secondary-foreground: 210 40% 98%;
@@ -35,7 +35,7 @@ All colors MUST be HSL.
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 243 75% 59%;
+    --ring: 186 100% 50%;
 
     --radius: 1.5rem;
 
@@ -56,7 +56,7 @@ All colors MUST be HSL.
     --popover: 224 71% 4%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 243 75% 59%;
+    --primary: 186 100% 50%;
     --primary-foreground: 224 71% 4%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -73,7 +73,7 @@ All colors MUST be HSL.
 
     --border: 217.2 32.6% 25%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --ring: 186 100% 50%;
   }
 }
 
@@ -84,13 +84,13 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    background-image: radial-gradient(#6366f1 0.5px, transparent 0.5px);
+    background-image: radial-gradient(hsl(186 100% 50% / 0.1) 0.5px, transparent 0.5px);
     background-size: 24px 24px;
     background-attachment: fixed;
   }
 
   .dark body {
-    background-image: radial-gradient(#312e81 0.5px, transparent 0.5px);
+    background-image: radial-gradient(hsl(186 100% 50% / 0.1) 0.5px, transparent 0.5px);
   }
 
   .glass-card {
@@ -118,7 +118,7 @@ All colors MUST be HSL.
   --suri-primary: hsl(var(--primary));
   --suri-primary-hover: hsl(var(--ring));
   
-  --app-vext: #7c3aed;
+  --app-vext: #00e5ff;
   --app-work: #2563eb;
   --app-template: #9333ea;
   --app-connect: #059669;

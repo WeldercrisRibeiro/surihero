@@ -82,9 +82,9 @@ export default function PricingCalculator() {
         {/* Header */}
         <div className="flex flex-col items-center mb-10 relative">
           <div className="w-14 h-14 bg-white dark:bg-slate-900 rounded-2xl shadow-xl flex items-center justify-center mb-4 border border-slate-100 dark:border-slate-800">
-            <Calculator className="w-7 h-7 text-indigo-600" />
+            <Calculator className="w-7 h-7 text-cyan-600" />
           </div>
-          <h1 className="text-4xl font-black italic tracking-tighter text-indigo-900 dark:text-indigo-400">
+          <h1 className="text-4xl font-black italic tracking-tighter text-cyan-900 dark:text-cyan-400">
             Suri Calcs
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mt-1">
@@ -98,8 +98,8 @@ export default function PricingCalculator() {
           {/* Interaction Control Card */}
           <Card className="h-full p-8 rounded-[2.5rem] border-none glass-card dark:bg-slate-900/40 relative overflow-hidden">
             <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
-                <Zap className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              <div className="w-10 h-10 rounded-full bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center">
+                <Zap className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
               </div>
               <div>
                 <h3 className="font-bold text-slate-800 dark:text-slate-200">Interações / Mês</h3>
@@ -110,7 +110,7 @@ export default function PricingCalculator() {
             <div className="flex items-center justify-between gap-4 mb-4">
               <button
                 onClick={() => setInteractions(p => Math.max(1000, p - 500))}
-                className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all border border-indigo-100/50 dark:border-indigo-500/20"
+                className="w-14 h-14 rounded-2xl bg-cyan-50 dark:bg-cyan-900/20 flex items-center justify-center text-cyan-600 dark:text-cyan-400 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 transition-all border border-cyan-100/50 dark:border-cyan-500/20"
               >
                 <Minus className="w-6 h-6" />
               </button>
@@ -124,7 +124,7 @@ export default function PricingCalculator() {
 
               <button
                 onClick={() => setInteractions(p => p + 500)}
-                className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all border border-indigo-100/50 dark:border-indigo-500/20"
+                className="w-14 h-14 rounded-2xl bg-cyan-50 dark:bg-cyan-900/20 flex items-center justify-center text-cyan-600 dark:text-cyan-400 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 transition-all border border-cyan-100/50 dark:border-cyan-500/20"
               >
                 <Plus className="w-6 h-6" />
               </button>
@@ -136,8 +136,8 @@ export default function PricingCalculator() {
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
-                    <Lightbulb className="w-4 h-4 text-indigo-500" />
+                  <div className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center">
+                    <Lightbulb className="w-4 h-4 text-cyan-500" />
                   </div>
                   <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Mensal (%)</Label>
                 </div>
@@ -145,7 +145,7 @@ export default function PricingCalculator() {
                   <Input
                     type="number" min={0} max={30} value={discountPercent || ""} placeholder="0"
                     onChange={(e) => setDiscountPercent(Math.min(30, Math.max(0, Number(e.target.value))))}
-                    className="h-10 border-none bg-indigo-50/30 dark:bg-slate-900/40 font-black text-slate-700 dark:text-white rounded-xl text-center" />
+                    className="h-10 border-none bg-cyan-50/30 dark:bg-slate-900/40 font-black text-slate-700 dark:text-white rounded-xl text-center" />
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 text-xs font-black">%</div>
                 </div>
               </div>
@@ -205,16 +205,16 @@ export default function PricingCalculator() {
           <Card
             onClick={() => togglePlan("Essential")}
             className={`group h-full p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[22rem]
-              ${selectedPlans.has("Essential") ? "border-indigo-500 shadow-2xl" : "border-transparent glass-card"}
+              ${selectedPlans.has("Essential") ? "border-cyan-500 shadow-2xl" : "border-transparent glass-card"}
               hover:scale-[1.02] active:scale-95 duration-300
             `}
           >
             <div>
               <div className="flex justify-between items-start mb-6">
-                <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                <div className="w-12 h-12 bg-cyan-50 dark:bg-cyan-900/30 rounded-2xl flex items-center justify-center text-cyan-600 dark:text-cyan-400">
                   <Zap className="w-6 h-6 fill-current" />
                 </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Essential") ? "border-indigo-500 bg-indigo-500" : "border-slate-200 dark:border-slate-700"}`}>
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Essential") ? "border-cyan-500 bg-cyan-500" : "border-slate-200 dark:border-slate-700"}`}>
                   {selectedPlans.has("Essential") && <div className="w-2 h-2 rounded-full bg-white" />}
                 </div>
               </div>
@@ -242,16 +242,16 @@ export default function PricingCalculator() {
             onClick={() => togglePlan("Pro")}
             className={`group h-full p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between duration-500 min-h-[22rem]
               bg-[#1e1b4b] text-white border-transparent shadow-[0_20px_50px_-12px_rgba(30,27,75,0.4)]
-              ${selectedPlans.has("Pro") ? "ring-4 ring-indigo-500/50" : ""}
+              ${selectedPlans.has("Pro") ? "ring-4 ring-cyan-500/50" : ""}
               hover:scale-[1.02] active:scale-95
             `}
           >
             <div className="relative z-10">
               <div className="flex justify-between items-start mb-6">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-indigo-500/20 text-indigo-400">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-cyan-500/20 text-cyan-400">
                   <Zap className="w-6 h-6 fill-current" />
                 </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Pro") ? 'border-indigo-400 bg-indigo-400' : 'border-white/20'}`}>
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Pro") ? 'border-cyan-400 bg-cyan-400' : 'border-white/20'}`}>
                   {selectedPlans.has("Pro") && <div className="w-2 h-2 rounded-full bg-white" />}
                 </div>
               </div>
@@ -259,18 +259,18 @@ export default function PricingCalculator() {
               <p className="text-xs font-medium mb-8 uppercase tracking-widest text-slate-400">Para alta performance</p>
 
               <div className="items-baseline flex gap-1 mb-8">
-                <span className="font-bold text-lg text-indigo-400">R$</span>
+                <span className="font-bold text-lg text-cyan-400">R$</span>
                 <span className="text-5xl font-black tracking-tighter text-white">{fmt(calc.pro.final)}</span>
                 <span className="font-bold text-sm opacity-50 text-white">/mês</span>
               </div>
             </div>
 
             <div className="pt-6 border-t border-white/10 flex justify-between items-center relative z-10">
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-400">
-                <div className="w-4 h-4 rounded-full flex items-center justify-center text-white bg-indigo-500"><Plus className="w-3 h-3" /></div>
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-cyan-400">
+                <div className="w-4 h-4 rounded-full flex items-center justify-center text-white bg-cyan-500"><Plus className="w-3 h-3" /></div>
                 Implantação
               </div>
-              <span className="font-black italic text-indigo-400">R$ {fmt(calc.implantacao.final)}</span>
+              <span className="font-black italic text-cyan-400">R$ {fmt(calc.implantacao.final)}</span>
             </div>
           </Card>
         </div>
@@ -287,7 +287,7 @@ export default function PricingCalculator() {
           <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50">
             <Button
               onClick={() => setQuoteOpen(true)}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-10 h-16 rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(79,70,229,0.5)] gap-3 border-4 border-white/20 backdrop-blur-md group animate-in fade-in slide-in-from-bottom-5 duration-500"
+              className="bg-cyan-600 hover:bg-cyan-700 text-white font-black px-10 h-16 rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(79,70,229,0.5)] gap-3 border-4 border-white/20 backdrop-blur-md group animate-in fade-in slide-in-from-bottom-5 duration-500"
             >
               <FileText className="w-5 h-5 group-hover:scale-110 transition-transform" />
               GERAR ORÇAMENTO ({selectedPlans.size})

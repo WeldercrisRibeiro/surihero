@@ -242,7 +242,7 @@ export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProp
                   <Label className="text-xs font-bold text-slate-600 flex items-center gap-2 ml-1">
                     <UserCheck className="w-4 h-4 opacity-40" /> Negociador
                   </Label>
-                  <Input placeholder="Seu nome" value={client.negociador} onChange={e => setClient(c => ({...c, negociador: e.target.value}))} className="h-12 rounded-2xl border-slate-100 bg-indigo-50/30" />
+                  <Input placeholder="Seu nome" value={client.negociador} onChange={e => setClient(c => ({...c, negociador: e.target.value}))} className="h-12 rounded-2xl border-slate-100 bg-cyan-50/30" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-bold text-slate-600 flex items-center gap-2 ml-1">
@@ -346,7 +346,7 @@ export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProp
         {/* Action Bar */}
         <div className="p-10 pt-0 flex gap-4">
           <Button variant="ghost" className="h-14 rounded-2xl font-bold text-slate-500 hover:bg-slate-50 px-8" onClick={() => onOpenChange(false)}>Fechar</Button>
-          <Button className="flex-1 h-14 rounded-2xl font-black bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all gap-2" onClick={() => handlePrint(false)}>
+          <Button className="flex-1 h-14 rounded-2xl font-black bg-cyan-600 hover:bg-cyan-700 shadow-xl shadow-cyan-200 transition-all gap-2" onClick={() => handlePrint(false)}>
             <ExternalLink className="w-5 h-5" /> VISUALIZAR RESULTADO
           </Button>
         </div>
