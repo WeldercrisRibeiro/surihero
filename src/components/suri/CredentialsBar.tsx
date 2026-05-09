@@ -61,13 +61,13 @@ export function CredentialsBar() {
           <div className="h-4 w-px bg-border mx-1" />
           <div className="flex items-center gap-2">
             {connected ? (
-              <CheckCircle2 size={14} className="text-green-500" />
+              <CheckCircle2 size={14} className="text-cyan-500" />
             ) : (
               <XCircle size={14} className="text-muted-foreground/40" />
             )}
             <span className={cn(
               "text-[10px] font-bold uppercase tracking-[0.2em]",
-              connected ? "text-green-600/80" : "text-muted-foreground/40"
+              connected ? "text-cyan-600/80" : "text-muted-foreground/40"
             )}>
               {connected ? "Gateway Online" : "Desconectado"}
             </span>
@@ -96,7 +96,7 @@ export function CredentialsBar() {
             <div className="flex items-center justify-between border-b border-border pb-2 mb-2">
               <h3 className="text-xs font-bold uppercase tracking-widest">Gateway Suri</h3>
               {connected && (
-                <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-none text-[8px] h-4">
+                <Badge variant="secondary" className="bg-cyan-500/10 text-cyan-600 border-none text-[8px] h-4">
                   ATIVO
                 </Badge>
               )}

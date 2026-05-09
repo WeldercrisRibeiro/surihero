@@ -24,7 +24,7 @@ export default function SuriApi() {
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
 
   return (
-    <div className="flex h-full w-full flex-col text-slate-900 dark:text-slate-100 overflow-hidden font-sans antialiased" style={{ flex: 1, minHeight: 0 }}>
+    <div className="flex h-full w-full flex-col text-slate-900 dark:text-slate-100 overflow-hidden antialiased" style={{ flex: 1, minHeight: 0 }}>
       {/* HEADER ULTRA-CLEAN */}
       <header className="z-50 w-full border-b shrink-0" style={{ background: 'var(--suri-surface)', borderColor: 'var(--suri-border)' }}>
         <div className="flex h-14 items-center gap-6 px-6">
