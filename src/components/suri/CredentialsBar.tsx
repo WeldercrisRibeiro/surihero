@@ -9,23 +9,13 @@ import { Moon, Sun, Settings, Trash2, Globe, Shield, CheckCircle2, XCircle } fro
 export function CredentialsBar() {
   const [baseUrl, setBaseUrl] = useState("");
   const [token, setToken] = useState("");
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [connected, setConnected] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-
   useEffect(() => {
     const c = loadCredentials();
     setBaseUrl(c.baseUrl);
     setToken(c.token);
     setConnected(Boolean(c.baseUrl && c.token));
-
-    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.classList.toggle("dark", savedTheme === "dark");
-    } else {
-      document.documentElement.classList.add("dark");
-    }
   }, []);
 
   const handleSave = () => {
@@ -59,12 +49,6 @@ export function CredentialsBar() {
     toast.info("Credenciais removidas");
   };
 
-  const toggleTheme = () => {
-    const newTheme = theme === "dark" ? "light" : "dark";
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-    document.documentElement.classList.toggle("dark", newTheme === "dark");
-  };
 
   return (
     <div className="relative z-50">
@@ -102,11 +86,6 @@ export function CredentialsBar() {
             Configurar
           </Button>
           
-          <div className="h-4 w-px bg-border mx-1" />
-          
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-8 w-8 rounded-md hover:bg-muted">
-            {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
-          </Button>
         </div>
       </div>
 

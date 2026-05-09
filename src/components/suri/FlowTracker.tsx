@@ -18,6 +18,8 @@ export function FlowTracker() {
   const [raw, setRaw] = useState<unknown>(null);
   const [showRaw, setShowRaw] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [flowName, setFlowName] = useState<string | null>(null);
+  const [fetchingFlow, setFetchingFlow] = useState(false);
 
   async function track() {
     if (!userId.trim()) {
@@ -32,34 +34,82 @@ export function FlowTracker() {
 
     setLoading(true);
     setSearched(false);
-    try {
-      const url = `${baseUrl.replace(/\/+$/, "")}/contacts/${encodeURIComponent(userId.trim())}/messages`;
-      const res = await fetch(url, {
-        headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
-      });
-      const text = await res.text();
-      let payload: unknown = text;
-      try { payload = JSON.parse(text); } catch { /* keep text */ }
+    setFlowName(null);
+    setRaw(null);
 
-      if (!res.ok) {
-        if (res.status === 401 || res.status === 403) toast.error("Token inválido ou sem permissão");
-        else if (res.status === 404) toast.error("Contato não encontrado");
-        else toast.error(`Erro ${res.status}`);
-        setRaw(payload);
+    try {
+      const messagesUrl = `${baseUrl.replace(/\/+$/, "")}/contacts/${encodeURIComponent(userId.trim())}/messages`;
+      const flowsUrl = `${baseUrl.replace(/\/+$/, "")}/flows`;
+
+      // Busca mensagens e fluxos em paralelo para maior agilidade
+      const [messagesRes, flowsRes] = await Promise.all([
+        fetch(messagesUrl, { headers: { Accept: "application/json", Authorization: `Bearer ${token}` } }),
+        fetch(flowsUrl, { headers: { Accept: "application/json", Authorization: `Bearer ${token}` } }).catch(() => null)
+      ]);
+
+      const messagesText = await messagesRes.text();
+      let messagesPayload: unknown = messagesText;
+      try { messagesPayload = JSON.parse(messagesText); } catch { /* ignore */ }
+
+      if (!messagesRes.ok) {
+        if (messagesRes.status === 401 || messagesRes.status === 403) toast.error("Token inválido ou sem permissão");
+        else if (messagesRes.status === 404) toast.error("Contato não encontrado");
+        else toast.error(`Erro ${messagesRes.status}`);
+        setRaw(messagesPayload);
         setPostback(null);
         setTotal(0);
         setSearched(true);
         return;
       }
 
-      const result = extractQuickReplyPostback(payload);
-      setRaw(payload);
+      const result = extractQuickReplyPostback(messagesPayload);
+      setRaw(messagesPayload);
       setPostback(result.postback);
       setTotal(result.totalMessages);
       setSearched(true);
 
-      if (result.postback) toast.success("Fluxo localizado");
-      else toast.message("Nenhum quickReplyPostbacks nas mensagens");
+      if (result.postback) {
+        toast.success("Mensagem com fluxo localizada");
+        
+        if (flowsRes && flowsRes.ok) {
+          const flowData = await flowsRes.json();
+          // Aceita tanto array direto quanto objeto com chave 'data'
+          const flows = Array.isArray(flowData) ? flowData : (flowData?.data && Array.isArray(flowData.data) ? flowData.data : []);
+          
+          if (flows.length > 0) {
+            // Extração de IDs: busca por padrões cbXXXXX em todas as partes
+            const parts = result.postback.split(/[~;|\s]+/);
+            const extractedIds = parts
+              .map(p => p.match(/cb\d+/)?.[0])
+              .filter((id): id is string => !!id);
+            
+            const searchCandidates = Array.from(new Set([
+              result.postback,
+              ...extractedIds,
+              ...parts
+            ]));
+
+            const match = flows.find((f: any) => 
+              searchCandidates.some(c => 
+                String(f.id) === c || 
+                String(f.chatbotId) === c ||
+                String(f.id).includes(c) ||
+                c.includes(String(f.id))
+              )
+            );
+
+            if (match) {
+              setFlowName(match.name);
+            } else {
+              setFlowName(`(Nome não localizado para ${extractedIds[0] || result.postback})`);
+            }
+          } else {
+            setFlowName("(Lista de fluxos vazia)");
+          }
+        }
+      } else {
+        toast.message("Nenhum quickReplyPostback nas mensagens");
+      }
     } catch (err) {
       toast.error("Falha de rede", { description: err instanceof Error ? err.message : String(err) });
     } finally {
@@ -69,30 +119,37 @@ export function FlowTracker() {
 
   return (
     <div className="space-y-10">
-      <div className="space-y-2">
-        <h2 className="text-3xl font-extrabold tracking-tight text-foreground font-heading uppercase">Rastreador de Fluxo</h2>
-        <p className="text-sm text-muted-foreground/60 font-medium leading-relaxed max-w-xl">
-          Analise o histórico de mensagens para identificar o <code className="font-mono text-primary/70 bg-primary/5 px-1.5 py-0.5 rounded">quickReplyPostback</code> atual do contato.
+      <div className="space-y-2 mb-8">
+        <h2 className="text-[32px] font-black tracking-tight text-slate-900 dark:text-white uppercase">
+          RASTREADOR DE FLUXO
+        </h2>
+        <p className="text-sm text-slate-400 dark:text-slate-400 font-medium leading-relaxed max-w-xl">
+          Analise o histórico de mensagens para identificar o <code className="font-mono text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 px-1.5 py-0.5 rounded text-xs">quickReplyPostback</code> atual do contato.
         </p>
       </div>
 
-      <div className="flex flex-col gap-6 md:flex-row md:items-end bg-accent/20 p-8 rounded-2xl border border-border/40">
-        <div className="flex-1 space-y-2.5">
-          <Label htmlFor="userId" className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60 font-mono block px-1">
-            User ID (Suri/WhatsApp)
-          </Label>
+      <div className="relative flex flex-col justify-center bg-slate-50/50 dark:bg-slate-900/40 p-4 rounded-[1.5rem] border border-slate-200 dark:border-slate-800/50 shadow-sm dark:shadow-none transition-all focus-within:border-emerald-500/50 dark:focus-within:border-emerald-500/50 focus-within:ring-4 focus-within:ring-emerald-500/10">
+        <Label htmlFor="userId" className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 font-mono mb-1 px-4">
+          USER ID (SURI/WHATSAPP)
+        </Label>
+        <div className="flex items-center">
           <Input
             id="userId"
             placeholder="Ex: wp704805416039002:5585997697864"
-            className="bg-background/40 border-border/40 h-11 rounded-xl font-mono text-xs focus-visible:ring-primary/20 transition-all"
+            className="flex-1 bg-transparent border-0 h-10 font-mono text-sm text-slate-700 dark:text-slate-200 pl-4 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-slate-400 dark:placeholder:text-slate-500"
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && track()}
           />
+          <Button 
+            onClick={track} 
+            disabled={loading} 
+            size="lg" 
+            className="h-10 px-8 ml-4 rounded-full font-bold bg-[#00df82] hover:bg-[#00c572] dark:bg-[#00df82] dark:hover:bg-[#00c572] text-white shadow-lg shadow-[#00df82]/20 dark:shadow-none transition-all hover:scale-[1.02] active:scale-[0.98] uppercase tracking-wider text-[11px]"
+          >
+            {loading ? "PROCESSANDO..." : "RASTREAR FLUXO"}
+          </Button>
         </div>
-        <Button onClick={track} disabled={loading} size="lg" className="h-11 px-10 rounded-xl font-bold shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] font-heading uppercase">
-          {loading ? "PROCESSANDO..." : "RASTREAR FLUXO"}
-        </Button>
       </div>
 
       {searched && (
@@ -109,9 +166,22 @@ export function FlowTracker() {
               </div>
 
               <div className="space-y-4 relative z-10">
-                <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.3em] font-mono">Current Postback Path</p>
-                <div className="bg-background/40 p-6 rounded-2xl border border-primary/20 font-mono text-lg font-bold text-primary break-all shadow-sm">
-                  {postback}
+                <div className="bg-background/40 p-6 rounded-2xl border border-primary/20 font-mono flex flex-col gap-2 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">ID DO FLUXO</span>
+                    {fetchingFlow && <span className="text-[9px] animate-pulse text-primary/60">BUSCANDO NOME...</span>}
+                  </div>
+                  <div className="text-lg font-bold text-primary break-all">
+                    {postback}
+                  </div>
+                  {flowName && (
+                    <div className="mt-4 pt-4 border-t border-primary/10">
+                      <span className="text-[10px] font-bold text-emerald-500/60 dark:text-emerald-400/60 uppercase tracking-widest block mb-1">NOME IDENTIFICADO</span>
+                      <div className="text-xl font-black text-slate-800 dark:text-white tracking-tight">
+                        {flowName}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex items-center gap-2 pt-4">

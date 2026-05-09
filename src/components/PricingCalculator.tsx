@@ -4,12 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
-  Minus, Plus, Info, FileText, 
-  Lightbulb, Zap, MessageCircle, Send, Calculator
+  Minus, Plus, FileText,
+  Lightbulb, Zap, Calculator
 } from "lucide-react";
 import QuoteModal, { type QuoteData } from "./QuoteModal";
-import { useTheme } from "@/hooks/use-theme";
-import PricingInfo from "./PricingInfo";
 
 const PRICE_PER_INTERACTION = { essential: 0.53, pro: 0.66 };
 const IMPLANTACAO = 1890;
@@ -22,7 +20,6 @@ function fmtN(v: number) {
 }
 
 export default function PricingCalculator() {
-  const { theme } = useTheme();
   const [interactions, setInteractions] = useState(1000);
   const [essPrice, setEssPrice] = useState(PRICE_PER_INTERACTION.essential);
   const [proPrice, setProPrice] = useState(PRICE_PER_INTERACTION.pro);
@@ -49,7 +46,8 @@ export default function PricingCalculator() {
         plan: "Essential", interactions, interactionPrice: essPrice,
         basePrice: calc.essential.base, finalPrice: calc.essential.final,
         discount: calc.essential.discount, hasDiscount: discountPercent > 0,
-        implantacao: calc.implantacao.final, marketingPrice, utilityPrice
+        implantacao: calc.implantacao.final, marketingPrice, utilityPrice,
+        suriShopCommission: ""
       });
     }
     if (selectedPlans.has("Pro")) {
@@ -57,7 +55,8 @@ export default function PricingCalculator() {
         plan: "Pro", interactions, interactionPrice: proPrice,
         basePrice: calc.pro.base, finalPrice: calc.pro.final,
         discount: calc.pro.discount, hasDiscount: discountPercent > 0,
-        implantacao: calc.implantacao.final, marketingPrice, utilityPrice
+        implantacao: calc.implantacao.final, marketingPrice, utilityPrice,
+        suriShopCommission: ""
       });
     }
     return plans;
@@ -75,30 +74,29 @@ export default function PricingCalculator() {
       implantacao: { base: setupPrice, final: setupFinal, discount: setupPrice - setupFinal }
     };
   }, [interactions, essPrice, proPrice, discountPercent, setupPrice, setupDiscount]);
+
   return (
-    <div className="min-h-screen py-12 px-4 transition-colors duration-500">
+    <div className="flex-1 overflow-y-auto py-12 px-4 transition-colors duration-500">
       <div className="max-w-6xl mx-auto">
 
-        {/* Header - Hub Style */}
-        <div className="module-header flex items-center gap-4 mb-10">
-          <div className="w-14 h-14 bg-white dark:bg-slate-900 rounded-2xl shadow-sm flex items-center justify-center border border-slate-100 dark:border-slate-800">
-            <Calculator className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
+        {/* Header */}
+        <div className="flex flex-col items-center mb-10 relative">
+          <div className="w-14 h-14 bg-white dark:bg-slate-900 rounded-2xl shadow-xl flex items-center justify-center mb-4 border border-slate-100 dark:border-slate-800">
+            <Calculator className="w-7 h-7 text-indigo-600" />
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
-              Suri Calcs
-            </h1>
-            <p className="text-slate-500 dark:text-slate-400">
-              Calculadora de Preços & Contabilização
-            </p>
-          </div>
+          <h1 className="text-4xl font-black italic tracking-tighter text-indigo-900 dark:text-indigo-400">
+            Suri Calcs
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mt-1">
+            Calculadora de Preços &amp; Contabilização
+          </p>
         </div>
 
         {/* Main Grid */}
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
 
           {/* Interaction Control Card */}
-          <Card className="p-8 rounded-[2.5rem] border-none glass-card dark:bg-slate-900/40 relative overflow-hidden">
+          <Card className="h-full p-8 rounded-[2.5rem] border-none glass-card dark:bg-slate-900/40 relative overflow-hidden">
             <div className="flex items-center gap-3 mb-8">
               <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
                 <Zap className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
@@ -171,7 +169,7 @@ export default function PricingCalculator() {
           </Card>
 
           {/* Pricing Adjust Table Card */}
-          <Card className="p-8 rounded-[2.5rem] border-none glass-card dark:bg-slate-900/40">
+          <Card className="h-full p-8 rounded-[2.5rem] border-none glass-card dark:bg-slate-900/40">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                 <span className="text-slate-600 dark:text-slate-400 font-black">$</span>
@@ -184,11 +182,11 @@ export default function PricingCalculator() {
               {[
                 { label: "Essential (R$)", value: essPrice, setter: setEssPrice },
                 { label: "Pro (R$)", value: proPrice, setter: setProPrice },
-                { label: "Implantação (R$)", value: setupPrice, setter: setSetupPrice, color: "bg-emerald-50/50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400", inputColor: "text-emerald-600 dark:text-emerald-400" },
+                { label: "Implantação (R$)", value: setupPrice, setter: setSetupPrice, color: "bg-emerald-50 dark:bg-emerald-900/20", inputColor: "text-emerald-600 dark:text-emerald-400" },
                 { label: "Mensagens de Marketing (R$)", value: marketingPrice, setter: setMarketingPrice },
                 { label: "Mensagens de Utilidades (R$)", value: utilityPrice, setter: setUtilityPrice }
               ].map((f, i) => (
-                <div key={i} className={`flex items-center justify-between p-3.5 rounded-2xl ${f.color || "bg-slate-50/50 dark:bg-slate-800/40"} border border-transparent transition-all hover:border-slate-200 dark:hover:border-slate-700`}>
+                <div key={i} className={`flex items-center justify-between p-4 rounded-2xl ${f.color || "bg-slate-50/70 dark:bg-slate-800/40"} border border-transparent transition-all hover:border-slate-200 dark:hover:border-slate-700`}>
                   <Label className="text-xs font-bold text-slate-600 dark:text-slate-400">{f.label}</Label>
                   <Input
                     type="number" step="0.01" value={f.value}
@@ -200,13 +198,13 @@ export default function PricingCalculator() {
           </Card>
         </div>
 
-        {/* Lower Row: Plans & How it works */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-12 max-w-4xl mx-auto">
+        {/* Lower Row: Plan Cards */}
+        <div className="grid lg:grid-cols-2 gap-8 mb-12 max-w-4xl mx-auto items-stretch">
 
           {/* Essential Plan Card */}
           <Card
             onClick={() => togglePlan("Essential")}
-            className={`group p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between
+            className={`group h-full p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[22rem]
               ${selectedPlans.has("Essential") ? "border-indigo-500 shadow-2xl" : "border-transparent glass-card"}
               hover:scale-[1.02] active:scale-95 duration-300
             `}
@@ -242,45 +240,44 @@ export default function PricingCalculator() {
           {/* Pro Plan Card */}
           <Card
             onClick={() => togglePlan("Pro")}
-            className={`group p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between duration-500
-              bg-slate-900 text-white border-transparent shadow-[0_20px_50px_-12px_rgba(15,23,42,0.4)]
-              dark:bg-white dark:text-slate-950 dark:border-white dark:shadow-[0_0_50px_-12px_rgba(255,255,255,0.4)]
-              ${selectedPlans.has("Pro") ? "ring-4 ring-indigo-500/50 dark:ring-slate-950/20" : ""}
+            className={`group h-full p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between duration-500 min-h-[22rem]
+              bg-[#1e1b4b] text-white border-transparent shadow-[0_20px_50px_-12px_rgba(30,27,75,0.4)]
+              ${selectedPlans.has("Pro") ? "ring-4 ring-indigo-500/50" : ""}
               hover:scale-[1.02] active:scale-95
             `}
           >
-            <div>
+            <div className="relative z-10">
               <div className="flex justify-between items-start mb-6">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-indigo-500/20 text-indigo-400 dark:bg-slate-100 dark:text-indigo-600">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-indigo-500/20 text-indigo-400">
                   <Zap className="w-6 h-6 fill-current" />
                 </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Pro") ? 'border-indigo-400 bg-indigo-400 dark:border-indigo-600 dark:bg-indigo-600' : 'border-white/20 dark:border-slate-200'}`}>
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Pro") ? 'border-indigo-400 bg-indigo-400' : 'border-white/20'}`}>
                   {selectedPlans.has("Pro") && <div className="w-2 h-2 rounded-full bg-white" />}
                 </div>
               </div>
-              <h2 className="text-2xl font-black mb-1">Pro</h2>
-              <p className="text-xs font-medium mb-8 uppercase tracking-widest text-slate-400 dark:text-slate-500">Para alta performance</p>
+              <h2 className="text-2xl font-black text-white mb-1">Pro</h2>
+              <p className="text-xs font-medium mb-8 uppercase tracking-widest text-slate-400">Para alta performance</p>
 
               <div className="items-baseline flex gap-1 mb-8">
-                <span className="font-bold text-lg text-indigo-400 dark:text-indigo-600">R$</span>
-                <span className="text-5xl font-black tracking-tighter">{fmt(calc.pro.final)}</span>
-                <span className="font-bold text-sm opacity-50">/mês</span>
+                <span className="font-bold text-lg text-indigo-400">R$</span>
+                <span className="text-5xl font-black tracking-tighter text-white">{fmt(calc.pro.final)}</span>
+                <span className="font-bold text-sm opacity-50 text-white">/mês</span>
               </div>
             </div>
 
-            <div className="pt-6 border-t flex justify-between items-center border-white/10 dark:border-slate-100">
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-400 dark:text-indigo-600">
-                <div className="w-4 h-4 rounded-full flex items-center justify-center text-white bg-indigo-400 dark:bg-indigo-600"><Plus className="w-3 h-3" /></div>
+            <div className="pt-6 border-t border-white/10 flex justify-between items-center relative z-10">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-400">
+                <div className="w-4 h-4 rounded-full flex items-center justify-center text-white bg-indigo-500"><Plus className="w-3 h-3" /></div>
                 Implantação
               </div>
-              <span className="font-black italic text-indigo-400 dark:text-indigo-600">R$ {fmt(calc.implantacao.final)}</span>
+              <span className="font-black italic text-indigo-400">R$ {fmt(calc.implantacao.final)}</span>
             </div>
           </Card>
         </div>
 
         {/* Footer */}
-        <div className="text-center">
-          <p className="text-[10px] font-black text-slate-300 dark:text-slate-700 uppercase tracking-[0.4em]">
+        <div className="text-center pb-4">
+          <p className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.4em]">
             Welder by Suri • 2.0.0
           </p>
         </div>

@@ -1,0 +1,77 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Bot, Cable, Calculator, Workflow, ArrowRight } from 'lucide-react';
+
+const apps = [
+  {
+    path: '/kanbam',
+    label: 'Kanban',
+    description: 'Produtividade, agenda e quadro de tarefas Kanban.',
+    icon: Workflow,
+    color: 'var(--app-vext)',
+    tag: 'Kanban',
+  },
+  {
+    path: '/workflow',
+    label: 'WorkFlow',
+    description: 'fluxos de trabalho',
+    icon: Workflow,
+    color: 'var(--app-work)',
+    tag: 'IA',
+  },
+  {
+    path: '/apisuri',
+    label: 'Suri API',
+    description: 'Console interno de conectores e endpoints.',
+    icon: Cable,
+    color: 'var(--app-connect)',
+    tag: 'API',
+  },
+  {
+    path: '/Calcs',
+    label: 'Suri Calcs',
+    description: 'Calculadora de planos, preços e projeções.',
+    icon: Calculator,
+    color: 'var(--app-calc)',
+    tag: 'Planos, Upsell',
+  },
+];
+
+export const HubDashboard = () => (
+  <div className="hub-page">
+    <div className="hub-page__header">
+      <p className="hub-page__eyebrow">SURI HERO</p>
+      <h1 className="hub-page__title">Bem-vindo ao Suri Hero👋</h1>
+      <p>O herói do dia a dia</p>
+      <p className="hub-page__subtitle">
+        Módulos disponíveis
+      </p>
+    </div>
+
+    <div className="hub-grid">
+      {apps.map((app) => (
+        <Link
+          key={app.path}
+          to={app.path}
+          className="hub-app-card"
+          style={{ '--card-accent': app.color } as React.CSSProperties}
+        >
+          <div className="hub-app-card__top">
+            <div className="hub-app-card__icon">
+              <app.icon size={22} strokeWidth={1.8} />
+            </div>
+            <span className="hub-app-card__tag">{app.tag}</span>
+          </div>
+          <div className="hub-app-card__body">
+            <h3 className="hub-app-card__name">{app.label}</h3>
+            <p className="hub-app-card__desc">{app.description}</p>
+          </div>
+          <div className="hub-app-card__footer">
+            <span className="hub-app-card__cta">Abrir módulo</span>
+            <ArrowRight size={14} />
+          </div>
+        </Link>
+      ))}
+    </div>
+  </div>
+);
