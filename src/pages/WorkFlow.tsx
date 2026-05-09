@@ -13,6 +13,7 @@ import {
   type Node,
   type Edge,
   MarkerType,
+  Position,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import {
@@ -29,8 +30,12 @@ import {
   Upload,
   ChevronRight,
   Workflow,
+  Camera,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useTheme } from "@/hooks/use-theme";
+import { cn } from "@/lib/utils";
+import { toPng } from "html-to-image";
 
 interface SavedFlow {
   id: string;
@@ -45,40 +50,27 @@ interface SavedFlow {
 const defaultNodes: Node[] = [
   {
     id: "1",
-    position: { x: 50, y: 50 },
+    position: { x: 100, y: 96 },
     data: { label: "Inicio" },
-    style: {
-      background: "hsl(186 100% 50%)",
-      color: "hsl(222 30% 5%)",
-      border: "none",
-      borderRadius: "12px",
-      fontWeight: 600,
-      padding: "12px 20px",
-    },
+    type: 'input',
+    sourcePosition: Position.Right,
+    className: 'mind-map-node mind-map-node-main',
   },
   {
     id: "2",
-    position: { x: 50, y: 180 },
-    data: { label: "Etapa 1" },
-    style: {
-      background: "hsl(222 25% 16%)",
-      color: "hsl(210 20% 92%)",
-      border: "1px solid hsl(222 20% 25%)",
-      borderRadius: "12px",
-      padding: "12px 20px",
-    },
+    position: { x: 450, y: 100 },
+    data: { label: "Fluxo" },
+    sourcePosition: Position.Right,
+    targetPosition: Position.Left,
+    className: 'mind-map-node mind-map-node-active',
   },
   {
     id: "3",
-    position: { x: 50, y: 310 },
+    position: { x: 800, y: 100 },
     data: { label: "Fim" },
-    style: {
-      background: "hsl(186 100% 50% / 0.15)",
-      color: "hsl(186 100% 55%)",
-      border: "1px solid hsl(186 100% 50% / 0.3)",
-      borderRadius: "12px",
-      padding: "12px 20px",
-    },
+    type: 'output',
+    targetPosition: Position.Left,
+    className: 'mind-map-node',
   },
 ];
 
@@ -87,23 +79,17 @@ const defaultEdges: Edge[] = [
     id: "e1-2",
     source: "1",
     target: "2",
-    animated: true,
-    style: { stroke: "hsl(186 100% 50%)" },
-    markerEnd: {
-      type: MarkerType.ArrowClosed,
-      color: "hsl(186 100% 50%)",
-    },
+    type: 'smoothstep',
+    style: { stroke: "#00e5ff", strokeWidth: 3 },
+    pathOptions: { borderRadius: 20 },
   },
   {
     id: "e2-3",
     source: "2",
     target: "3",
-    animated: true,
-    style: { stroke: "hsl(186 100% 50%)" },
-    markerEnd: {
-      type: MarkerType.ArrowClosed,
-      color: "hsl(186 100% 50%)",
-    },
+    type: 'smoothstep',
+    style: { stroke: "#00e5ff", strokeWidth: 3 },
+    pathOptions: { borderRadius: 20 },
   },
 ];
 
@@ -116,6 +102,8 @@ export default function WorkFlow() {
 }
 
 function FlowsContent() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [nodes, setNodes, onNodesChange] = useNodesState(defaultNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(defaultEdges);
   const [nodeCount, setNodeCount] = useState(defaultNodes.length);
@@ -127,6 +115,8 @@ function FlowsContent() {
   const [showSavedPanel, setShowSavedPanel] = useState(true);
   const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
   const [nodeLabelDraft, setNodeLabelDraft] = useState("");
+  const [editingEdgeId, setEditingEdgeId] = useState<string | null>(null);
+  const [edgeStyleDraft, setEdgeStyleDraft] = useState({ color: "#00e5ff", dashed: false });
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [flowTitleDraft, setFlowTitleDraft] = useState("Novo Fluxo");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -136,7 +126,7 @@ function FlowsContent() {
   
   const buttonBase = "group flex items-center justify-center gap-3 rounded-2xl text-sm font-semibold transition-all duration-200 active:scale-[0.98]";
   const buttonSecondary = `${buttonBase} px-5 py-2.5 bg-secondary/40 text-secondary-foreground hover:bg-secondary/60 hover:shadow-sm border border-border/40`;
-  const buttonPrimary = `${buttonBase} px-6 py-2.5 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-900 hover:opacity-90 shadow-md shadow-cyan-500/20 border border-white/10`;
+  const buttonPrimary = `${buttonBase} px-6 py-2.5 bg-cyan-500 text-white hover:bg-cyan-600 shadow-md shadow-cyan-500/20 border border-transparent`;
   const buttonDanger = `${buttonBase} px-5 py-2.5 bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/20`;
   const buttonGhost = `${buttonBase} px-4 py-2 text-foreground/80 hover:bg-accent hover:text-foreground`;
 
@@ -168,12 +158,9 @@ function FlowsContent() {
         addEdge(
           {
             ...connection,
-            animated: true,
-            style: { stroke: "hsl(174 62% 47%)" },
-            markerEnd: {
-              type: MarkerType.ArrowClosed,
-              color: "hsl(174 62% 47%)",
-            },
+            type: 'smoothstep',
+            style: { stroke: "#00e5ff", strokeWidth: 3 },
+            pathOptions: { borderRadius: 20 },
           },
           eds
         )
@@ -236,14 +223,10 @@ function FlowsContent() {
       {
         id,
         position: { x: Math.random() * 400 + 50, y: Math.random() * 400 + 50 },
-        data: { label: `Novo No ${id}` },
-        style: {
-          background: "hsl(222 25% 16%)",
-          color: "hsl(210 20% 92%)",
-          border: "1px solid hsl(222 20% 25%)",
-          borderRadius: "12px",
-          padding: "12px 20px",
-        },
+        data: { label: `Novo Fluxo ${id}` },
+        sourcePosition: Position.Right,
+        targetPosition: Position.Left,
+        className: 'mind-map-node',
       },
     ]);
   };
@@ -338,6 +321,33 @@ function FlowsContent() {
     setEditingNodeId(null);
   };
 
+  const onEdgeClick = useCallback((_event: React.MouseEvent, edge: Edge) => {
+    setEditingEdgeId(edge.id);
+    const stroke = (edge.style?.stroke as string) || "#00e5ff";
+    const dashed = !!edge.style?.strokeDasharray;
+    setEdgeStyleDraft({ color: stroke, dashed });
+  }, []);
+
+  const saveEdgeStyle = () => {
+    if (!editingEdgeId) return;
+    setEdges((eds) =>
+      eds.map((e) =>
+        e.id === editingEdgeId
+          ? {
+              ...e,
+              style: {
+                ...e.style,
+                stroke: edgeStyleDraft.color,
+                strokeDasharray: edgeStyleDraft.dashed ? "5,5" : undefined,
+              },
+            }
+          : e
+      )
+    );
+    setEditingEdgeId(null);
+    setHasUnsavedChanges(true);
+  };
+
   const onNodesDelete = useCallback(
     (deleted: Node[]) => {
       setEdges((eds) =>
@@ -355,45 +365,34 @@ function FlowsContent() {
     }
   };
 
-  const exportFlow = () => {
-    const flowData = { title: flowTitleDraft, nodes, edges };
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(flowData, null, 2));
-    const a = document.createElement("a");
-    a.setAttribute("href", dataStr);
-    a.setAttribute("download", `${flowTitleDraft.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.json`);
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    toast.success("Fluxo exportado!");
-  };
+  const saveAsPhoto = () => {
+    const flowElement = document.querySelector(".react-flow") as HTMLElement;
+    if (!flowElement) return;
 
-  const importFlow = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const content = e.target?.result as string;
-        const parsed = JSON.parse(content);
-        if (!parsed.nodes || !parsed.edges || !Array.isArray(parsed.nodes) || !Array.isArray(parsed.edges)) {
-          throw new Error("Formato invalido.");
-        }
-        const proceedImport = () => {
-          setNodes(parsed.nodes);
-          setEdges(parsed.edges);
-          setNodeCount(parsed.nodes.length);
-          setFlowTitleDraft(parsed.title || "Fluxo Importado");
-          setEditingFlow(null);
-          setHasUnsavedChanges(true);
-          toast.success("Fluxo carregado!");
-        };
-        requestAction(proceedImport);
-      } catch {
-        toast.error("Erro ao ler arquivo JSON.");
+    // Ocultar controles temporariamente para a foto
+    const controls = document.querySelector(".react-flow__controls") as HTMLElement;
+    if (controls) controls.style.display = "none";
+
+    toPng(flowElement, {
+      backgroundColor: isDark ? "#0f0f0f" : "#f8f9fa",
+      style: {
+        width: String(flowElement.offsetWidth),
+        height: String(flowElement.offsetHeight),
       }
-    };
-    reader.readAsText(file);
-    event.target.value = "";
+    })
+      .then((dataUrl) => {
+        const link = document.createElement("a");
+        link.download = `${flowTitleDraft}.png`;
+        link.href = dataUrl;
+        link.click();
+        toast.success("Foto salva com sucesso!");
+        if (controls) controls.style.display = "flex";
+      })
+      .catch((err) => {
+        console.error(err);
+        toast.error("Erro ao salvar foto");
+        if (controls) controls.style.display = "flex";
+      });
   };
 
   const formatDate = (d: string) => {
@@ -456,17 +455,11 @@ function FlowsContent() {
             )}
           </div>
 
-          {/* Action buttons */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-4 rounded-xl border border-border/40 bg-background/40 backdrop-blur-md px-3 py-2 shadow-sm">
-              <input type="file" id="import-flow" accept=".json" className="hidden" onChange={importFlow} />
-              <button onClick={() => document.getElementById("import-flow")?.click()} className={buttonGhost} title="Importar fluxo">
-                <Upload className="w-4 h-4 transition-transform duration-200 group-hover:-translate-y-0.5" />
-                <span className="text-xs font-medium">Importar</span>
-              </button>
-              <button onClick={exportFlow} className={buttonGhost} title="Exportar fluxo">
-                <Download className="w-4 h-4 transition-transform duration-200 group-hover:translate-y-0.5" />
-                <span className="text-xs font-medium">Exportar</span>
+              <button onClick={saveAsPhoto} className={buttonGhost} title="Salvar como Foto">
+                <Camera className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
+                <span className="text-xs font-medium">Salvar como Foto</span>
               </button>
             </div>
 
@@ -481,7 +474,7 @@ function FlowsContent() {
               )}
               <button onClick={addNode} className={buttonSecondary}>
                 <Plus className="w-4 h-4" />
-                No
+                Novo Fluxo
               </button>
               {editingFlow && (
                 <button onClick={() => requestAction(resetCanvas)} className={buttonSecondary}>
@@ -509,35 +502,87 @@ function FlowsContent() {
             onEdgesChange={handleEdgesChange}
             onConnect={handleConnect}
             onNodeDoubleClick={handleNodeDoubleClick}
+            onEdgeClick={onEdgeClick}
             onNodesDelete={onNodesDelete}
             onReconnect={onReconnect}
             onReconnectStart={onReconnectStart}
             onReconnectEnd={onReconnectEnd}
             deleteKeyCode={["Backspace", "Delete"]}
             fitView
-            className="!bg-background"
+            snapToGrid
+            snapGrid={[20, 20]}
+            colorMode={isDark ? "dark" : "light"}
+            style={{ background: isDark ? "#0f0f0f" : "#f8f9fa" }}
           >
-            <Background color="hsl(222 20% 18%)" gap={20} size={1} />
-            <Controls className="!bg-card !border-border !rounded-lg !shadow-lg [&>button]:!bg-card [&>button]:!border-border [&>button]:!text-foreground [&>button:hover]:!bg-secondary" />
+            <Background color={isDark ? "#333" : "#cbd5e1"} gap={20} size={1} />
+            <Controls className={cn(
+              "!rounded-lg !shadow-2xl",
+              isDark 
+                ? "!bg-[#1a1a1a] !border-[#333] [&>button]:!bg-[#1a1a1a] [&>button]:!border-[#333] [&>button]:!text-white [&>button:hover]:!bg-[#222]" 
+                : "!bg-white !border-slate-200 [&>button]:!bg-white [&>button]:!border-slate-200 [&>button]:!text-slate-700 [&>button:hover]:!bg-slate-50"
+            )} />
           </ReactFlow>
 
           {editingNodeId && (
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center z-20" onClick={() => setEditingNodeId(null)}>
-              <div className="glass-card p-5 w-72" onClick={(e) => e.stopPropagation()}>
-                <p className="text-sm font-medium text-foreground mb-3">Renomear no</p>
+            <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-20" onClick={() => setEditingNodeId(null)}>
+              <div className="glass-card p-6 w-80 shadow-2xl rounded-3xl border border-border/50 animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Renomear no</p>
                 <input
                   value={nodeLabelDraft}
                   onChange={(e) => setNodeLabelDraft(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-secondary text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full px-4 py-3 rounded-2xl bg-secondary/50 border border-border/40 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === "Enter") saveNodeLabel();
                     if (e.key === "Escape") setEditingNodeId(null);
                   }}
                 />
-                <div className="flex gap-2 mt-4 justify-end">
-                  <button onClick={() => setEditingNodeId(null)} className={buttonSecondary}>Cancelar</button>
-                  <button onClick={saveNodeLabel} className={buttonPrimary}><Check className="w-3.5 h-3.5" /> Salvar</button>
+                <div className="flex gap-2 mt-6 justify-end">
+                  <button onClick={() => setEditingNodeId(null)} className="px-4 py-2 rounded-xl text-xs font-bold text-muted-foreground hover:bg-secondary transition-colors">Cancelar</button>
+                  <button onClick={saveNodeLabel} className="px-5 py-2 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:opacity-90 shadow-lg shadow-primary/20 transition-all flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5" /> Salvar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {editingEdgeId && (
+            <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-20" onClick={() => setEditingEdgeId(null)}>
+              <div className="glass-card p-6 w-80 shadow-2xl rounded-3xl border border-border/50 animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Estilo da Linha</p>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-muted-foreground mb-2 block">Cor da Linha</label>
+                    <div className="grid grid-cols-5 gap-2">
+                      {["#00e5ff", "#a855f7", "#eab308", "#ef4444", "#22c55e"].map((c) => (
+                        <button
+                          key={c}
+                          onClick={() => setEdgeStyleDraft(prev => ({ ...prev, color: c }))}
+                          className={`h-8 w-full rounded-lg transition-all ${edgeStyleDraft.color === c ? "ring-2 ring-offset-2 ring-primary scale-90" : "hover:scale-105"}`}
+                          style={{ background: c }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 rounded-2xl bg-secondary/50 border border-border/30">
+                    <span className="text-xs font-bold text-foreground">Linha Pontilhada</span>
+                    <button
+                      onClick={() => setEdgeStyleDraft(prev => ({ ...prev, dashed: !prev.dashed }))}
+                      className={`w-10 h-5 rounded-full transition-colors relative ${edgeStyleDraft.dashed ? "bg-primary" : "bg-muted"}`}
+                    >
+                      <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${edgeStyleDraft.dashed ? "left-6" : "left-1"}`} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 mt-6 justify-end">
+                  <button onClick={() => setEditingEdgeId(null)} className="px-4 py-2 rounded-xl text-xs font-bold text-muted-foreground hover:bg-secondary transition-colors">Cancelar</button>
+                  <button onClick={saveEdgeStyle} className="px-5 py-2 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:opacity-90 shadow-lg shadow-primary/20 transition-all flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5" /> Aplicar
+                  </button>
                 </div>
               </div>
             </div>

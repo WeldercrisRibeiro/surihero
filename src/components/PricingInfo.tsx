@@ -6,7 +6,7 @@ interface PricingInfoProps {
 
 export default function PricingInfo({ variant = "dashboard" }: PricingInfoProps) {
   const ACCENT = "hsl(243 75% 59%)";
-
+  const CYAN = "#0891b2";
   const content = {
     title: "Informativos",
     items: [
@@ -17,22 +17,22 @@ export default function PricingInfo({ variant = "dashboard" }: PricingInfoProps)
         highlight: true
       },
       {
-        icon: <MessageCircle style={{ width: 20, height: 20, color: ACCENT }} />,
+        icon: <MessageCircle style={{ width: 20, height: 20, color: CYAN }} />,
         label: "CONTATO RECEPTIVO",
         description: "Contatos que se comunicam com a empresa por WhatsApp, Facebook, Instagram ou Webchat. O contato é contabilizado uma única vez por mês como 1 interação, independente de quantas conversas iniciar."
       },
       {
-        icon: <Send style={{ width: 20, height: 20, color: ACCENT }} />,
+        icon: <Send style={{ width: 20, height: 20, color: CYAN }} />,
         label: "MENSAGEM ATIVA",
         description: "Mensagens enviadas pela empresa pelo WhatsApp usando templates de Marketing, Utilidade ou Autenticação. Cada envio é contabilizado como uma interação."
       },
       {
-        icon: <Zap style={{ width: 20, height: 20, color: ACCENT }} />,
+        icon: <Zap style={{ width: 20, height: 20, color: CYAN }} />,
         label: "INTERAÇÕES EXCEDENTES",
         description: "São as interações que ultrapassam o volume contratado no seu plano mensal. Elas garantem que seu atendimento nunca pare, sendo faturadas individualmente com base no valor unitário do seu plano atual."
       },
       {
-        icon: <ShoppingBag style={{ width: 20, height: 20, color: ACCENT }} />,
+        icon: <ShoppingBag style={{ width: 20, height: 20, color: CYAN }} />,
         label: "SURI SHOP ASSISTANT",
         description: "O Suri Shop Assistant é uma IA generativa focada em vendas e atendimento. Ele guia o cliente por toda a jornada de compra — da busca de produtos (por texto, áudio ou imagem) até o pagamento — utilizando o catálogo da loja. Além disso, automatiza respostas a dúvidas frequentes com base em sites ou documentos e sugere respostas em tempo real para otimizar o trabalho dos atendentes."
       },
@@ -55,7 +55,7 @@ export default function PricingInfo({ variant = "dashboard" }: PricingInfoProps)
             width: 32, height: 32, borderRadius: 10, backgroundColor: "#f0f0ff",
             display: "flex", alignItems: "center", justifyContent: "center"
           }}>
-            <Info style={{ width: 14, height: 14, color: ACCENT }} />
+            <Info style={{ width: 14, height: 14, color: CYAN }} />
           </div>
           <h3 style={{ fontSize: 16, fontWeight: 800, color: "#1e293b" }}>{content.title}</h3>
         </div>
@@ -68,7 +68,7 @@ export default function PricingInfo({ variant = "dashboard" }: PricingInfoProps)
                 <div style={{ 
                   width: 36, height: 36, borderRadius: "50%", 
                   backgroundColor: isHighlight ? "#fef3c7" : "#f0f0ff",
-                  color: isHighlight ? "#d97706" : ACCENT,
+                  color: isHighlight ? "#d97706" : CYAN,
                   display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
                 }}>
                   {item.icon}

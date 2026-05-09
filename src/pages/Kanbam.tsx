@@ -11,6 +11,7 @@ import {
   X,
   ChevronDown,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 // ──────────────────────────── Types ────────────────────────────
 
@@ -367,6 +368,15 @@ export const KanbanBoard = () => {
 
   const [defaultNewColId, setDefaultNewColId] = useState('');
 
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    const saved = localStorage.getItem('suri-kanban-view');
+    return (saved as 'grid' | 'list') || 'grid';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('suri-kanban-view', viewMode);
+  }, [viewMode]);
+
   // Drag state
   const draggingCard = useRef<{ cardId: string; fromColId: string } | null>(null);
   const [dragOverColId, setDragOverColId] = useState<string | null>(null);
@@ -544,8 +554,20 @@ export const KanbanBoard = () => {
             />
           </div>
           <div className="kb-view-toggle">
-            <button className="kb-view-btn active" title="Grid"><LayoutGrid size={16} /></button>
-            <button className="kb-view-btn" title="Lista"><List size={16} /></button>
+            <button 
+              className={cn("kb-view-btn", viewMode === 'grid' && "active")} 
+              onClick={() => setViewMode('grid')}
+              title="Grid"
+            >
+              <LayoutGrid size={16} />
+            </button>
+            <button 
+              className={cn("kb-view-btn", viewMode === 'list' && "active")} 
+              onClick={() => setViewMode('list')}
+              title="Lista"
+            >
+              <List size={16} />
+            </button>
           </div>
           <button className="kb-btn-outline" onClick={() => setColModal({ isOpen: true })}>
             <Plus size={15} /> Coluna
@@ -557,7 +579,7 @@ export const KanbanBoard = () => {
       </div>
 
       {/* ── Board ── */}
-      <div className="kb-board">
+      <div className={cn("kb-board", viewMode === 'list' && "kb-board--list")}>
         {filteredColumns.map((col) => (
           <div
             key={col.id}

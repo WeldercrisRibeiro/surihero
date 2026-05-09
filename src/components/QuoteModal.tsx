@@ -39,8 +39,8 @@ interface QuoteModalProps {
   plans: QuoteData[];
 }
 
-const ACCENT = "#4f46e5";
-const PURPLE = "#6366f1";
+const ACCENT = "#00e5ff";
+const CYAN = "#06b6d4";
 const GRAY = "#64748b";
 
 const STORES = [
@@ -85,14 +85,14 @@ function StoreIntegrations() {
 
 function PlanCard({ d }: { d: QuoteData }) {
   const items = [
-    { icon: <MessageCircle style={{ width: 16, height: 16, color: PURPLE }} />, label: "Interações", value: fmtN(d.interactions) },
-    { icon: <Clock style={{ width: 16, height: 16, color: PURPLE }} />, label: "Preço/Interação", value: `R$ ${fmt(d.interactionPrice)}` },
-    { icon: <Wallet style={{ width: 16, height: 16, color: PURPLE }} />, label: "Valor base", value: `R$ ${fmt(d.basePrice)}` },
-    { icon: <ArrowUpRight style={{ width: 16, height: 16, color: PURPLE }} />, label: "Implantação", value: `R$ ${fmt(d.implantacao)}` },
-    { icon: <Megaphone style={{ width: 16, height: 16, color: PURPLE }} />, label: "Mensagens de Marketing (Excedentes)", value: `R$ ${fmt(d.marketingPrice)}` },
-    { icon: <Settings style={{ width: 16, height: 16, color: PURPLE }} />, label: "Mensagens de Utilidade (Excedentes)", value: `R$ ${fmt(d.utilityPrice)}` },
+    { icon: <MessageCircle style={{ width: 16, height: 16, color: CYAN }} />, label: "Interações", value: fmtN(d.interactions) },
+    { icon: <Clock style={{ width: 16, height: 16, color: CYAN }} />, label: "Preço/Interação", value: `R$ ${fmt(d.interactionPrice)}` },
+    { icon: <Wallet style={{ width: 16, height: 16, color: CYAN }} />, label: "Valor base", value: `R$ ${fmt(d.basePrice)}` },
+    { icon: <ArrowUpRight style={{ width: 16, height: 16, color: CYAN }} />, label: "Implantação", value: `R$ ${fmt(d.implantacao)}` },
+    { icon: <Megaphone style={{ width: 16, height: 16, color: CYAN }} />, label: "Mensagens de Marketing (Excedentes)", value: `R$ ${fmt(d.marketingPrice)}` },
+    { icon: <Settings style={{ width: 16, height: 16, color: CYAN }} />, label: "Mensagens de Utilidade (Excedentes)", value: `R$ ${fmt(d.utilityPrice)}` },
     { 
-      icon: <ShoppingBag style={{ width: 16, height: 16, color: PURPLE }} />, 
+      icon: <ShoppingBag style={{ width: 16, height: 16, color: CYAN }} />, 
       label: "Suri Shop Assistant", 
       value: d.plan.toUpperCase() === "PRO" ? "Incluso com IA" : "Incluso sem IA" 
     },
@@ -109,7 +109,7 @@ function PlanCard({ d }: { d: QuoteData }) {
     }}>
       {/* Header */}
       <div style={{ 
-        background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)", 
+        background: "linear-gradient(135deg, #00e5ff 0%, #0891b2 100%)", 
         padding: "16px 24px", 
         display: "flex", 
         alignItems: "center", 
@@ -148,7 +148,7 @@ function PlanCard({ d }: { d: QuoteData }) {
           border: "1px solid #f1f5f9"
         }}>
            <p style={{ fontSize: 10, fontWeight: 800, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Mensal</p>
-           <p style={{ fontSize: 36, fontWeight: 900, color: "#4f46e5" }}>R$ {fmt(d.finalPrice)}</p>
+           <p style={{ fontSize: 36, fontWeight: 900, color: "#0891b2" }}>R$ {fmt(d.finalPrice)}</p>
         </div>
       </div>
     </div>
@@ -192,7 +192,7 @@ export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProp
           .no-print { display: none !important; }
         }
         .print-button {
-          background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+          background: linear-gradient(135deg, #00e5ff 0%, #0891b2 100%);
           color: white;
           padding: 16px 48px;
           border-radius: 20px;
@@ -202,7 +202,7 @@ export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProp
           font-size: 15px;
           cursor: pointer;
           transition: all 0.3s;
-          box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4);
+          box-shadow: 0 10px 20px -5px rgba(6, 182, 212, 0.4);
           display: block;
           margin: 40px auto 0;
         }
@@ -279,11 +279,11 @@ export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProp
                 {/* Document Header */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
                    <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                      <div style={{ width: 44, height: 44, backgroundColor: "#f0f0ff", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <Layout style={{ width: 22, height: 22, color: "#4f46e5" }} />
+                      <div style={{ width: 44, height: 44, backgroundColor: "#ecfeff", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <Layout style={{ width: 22, height: 22, color: "#0891b2" }} />
                       </div>
                       <div>
-                        <h1 style={{ fontSize: 20, fontWeight: 900, color: "#4f46e5", letterSpacing: "-0.04em" }}>Orçamento Suri</h1>
+                        <h1 style={{ fontSize: 20, fontWeight: 900, color: "#0891b2", letterSpacing: "-0.04em" }}>Orçamento Suri</h1>
                         <p style={{ fontSize: 12, color: "#94a3b8", fontWeight: 700 }}>
                           Responsável: {client.responsavel || "—"} • {client.empresa || "—"}
                         </p>
@@ -304,7 +304,7 @@ export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProp
 
                 {/* Section 1: Detailed Proposal (Full Width Highlight) */}
                 <div style={{ marginBottom: 20 }}>
-                  <p style={{ fontSize: 10, fontWeight: 900, color: "#4f46e5", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Detalhes da Proposta</p>
+                  <p style={{ fontSize: 10, fontWeight: 900, color: "#0891b2", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Detalhes da Proposta</p>
                   {plans.map((p) => (
                     <PlanCard key={p.plan} d={p} />
                   ))}
@@ -321,7 +321,7 @@ export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProp
                             <PricingInfo variant="print" />
                          </div>
                          <div style={{ flex: 1 }}>
-                            <p style={{ fontSize: 10, fontWeight: 900, color: "#4f46e5", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8, marginTop: 16 }}>Integração Disponível</p>
+                            <p style={{ fontSize: 10, fontWeight: 900, color: "#0891b2", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8, marginTop: 16 }}>Integração Disponível</p>
                             <StoreIntegrations />
                             <div style={{ marginTop: 16, padding: 12, backgroundColor: "#f8fafc", borderRadius: 20, border: "1px dashed #e2e8f0" }}>
                               <p style={{ fontSize: 9, color: "#64748b", lineHeight: 1.4 }}>

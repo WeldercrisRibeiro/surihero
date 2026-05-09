@@ -17,11 +17,11 @@ import { useTheme } from '@/hooks/use-theme';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { path: '/', label: 'Dashboard', icon: LayoutGrid, color: 'var(--suri-primary)' },
-  { path: '/workflow', label: 'Workflow', icon: Workflow, color: 'var(--app-vext)' },
-  { path: '/apisuri', label: 'Suri Api', icon: Bot, color: 'var(--app-work)' },
-  { path: '/kanbam', label: 'Kanbam', icon: Cable, color: 'var(--app-connect)' },
-  { path: '/calcs', label: 'Suri Calcs', icon: Calculator, color: 'var(--app-calc)' },
+  { path: '/', label: 'Dashboard', icon: LayoutGrid },
+  { path: '/workflow', label: 'Workflow', icon: Workflow },
+  { path: '/apisuri', label: 'Suri Api', icon: Bot },
+  { path: '/kanbam', label: 'Kanbam', icon: Cable },
+  { path: '/calcs', label: 'Suri Calcs', icon: Calculator },
 ];
 
 // URLs dos logos (substituir pelos links reais)
@@ -39,11 +39,10 @@ export const HubLayout = ({ children }: { children: React.ReactNode }) => {
     <div className="app-container">
       {/* ─── SIDEBAR ─────────────────────────────────────────── */}
       <aside className={cn('suri-sidebar', collapsed && 'suri-sidebar--collapsed')}>
-        {/* Logo */}
         <div className="suri-sidebar__brand">
           <div className="suri-sidebar__logo overflow-hidden">
             {currentLogo ? (
-              <img src={currentLogo} alt="Logo" className="w-full h-full object-cover" />
+              <img src={currentLogo} alt="Logo" className="w-full h-full object-contain p-[0.35rem]" />
             ) : (
               <Sparkles size={16} strokeWidth={2.5} />
             )}
@@ -60,7 +59,6 @@ export const HubLayout = ({ children }: { children: React.ReactNode }) => {
                 key={item.path}
                 to={item.path}
                 className={cn('suri-nav-item', active && 'suri-nav-item--active')}
-                style={{ '--item-color': item.color } as React.CSSProperties}
               >
                 <span className="suri-nav-item__icon">
                   <item.icon size={18} strokeWidth={active ? 2.5 : 2} />
@@ -101,7 +99,7 @@ export const HubLayout = ({ children }: { children: React.ReactNode }) => {
             <ThemeToggle />
             <div className="suri-topbar__user">
               <div className="suri-topbar__user-avatar">A</div>
-              <span className="suri-topbar__user-name">Admin</span>
+              {/* <span className="suri-topbar__user-name">Admin</span> */}
             </div>
           </div>
         </header>

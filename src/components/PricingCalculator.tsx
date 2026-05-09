@@ -76,7 +76,7 @@ export default function PricingCalculator() {
   }, [interactions, essPrice, proPrice, discountPercent, setupPrice, setupDiscount]);
 
   return (
-    <div className="flex-1 overflow-y-auto py-12 px-4 transition-colors duration-500">
+    <div className="flex-1 overflow-y-auto pt-4 pb-12 px-4 transition-colors duration-500">
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}
@@ -152,8 +152,8 @@ export default function PricingCalculator() {
 
               <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
-                    <Zap className="w-4 h-4 text-emerald-500" />
+                  <div className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center">
+                    <Zap className="w-4 h-4 text-cyan-500" />
                   </div>
                   <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Implantação (%)</Label>
                 </div>
@@ -161,8 +161,8 @@ export default function PricingCalculator() {
                   <Input
                     type="number" min={0} max={100} value={setupDiscount || ""} placeholder="0"
                     onChange={(e) => setSetupDiscount(Math.min(100, Math.max(0, Number(e.target.value))))}
-                    className="h-10 border-none bg-emerald-50/30 dark:bg-slate-900/40 font-black text-emerald-600 dark:text-emerald-400 rounded-xl text-center" />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-300 text-xs font-black">%</div>
+                    className="h-10 border-none bg-cyan-50/30 dark:bg-slate-900/40 font-black text-cyan-600 dark:text-cyan-400 rounded-xl text-center" />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-cyan-300 text-xs font-black">%</div>
                 </div>
               </div>
             </div>
@@ -182,7 +182,7 @@ export default function PricingCalculator() {
               {[
                 { label: "Essential (R$)", value: essPrice, setter: setEssPrice },
                 { label: "Pro (R$)", value: proPrice, setter: setProPrice },
-                { label: "Implantação (R$)", value: setupPrice, setter: setSetupPrice, color: "bg-emerald-50 dark:bg-emerald-900/20", inputColor: "text-emerald-600 dark:text-emerald-400" },
+                { label: "Implantação (R$)", value: setupPrice, setter: setSetupPrice, color: "bg-cyan-50 dark:bg-cyan-900/20", inputColor: "text-cyan-600 dark:text-cyan-400" },
                 { label: "Mensagens de Marketing (R$)", value: marketingPrice, setter: setMarketingPrice },
                 { label: "Mensagens de Utilidades (R$)", value: utilityPrice, setter: setUtilityPrice }
               ].map((f, i) => (
@@ -229,11 +229,11 @@ export default function PricingCalculator() {
             </div>
 
             <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
-              <div className="flex items-center gap-2 text-[10px] font-black text-emerald-500 uppercase tracking-widest">
-                <div className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center text-white"><Plus className="w-3 h-3" /></div>
+              <div className="flex items-center gap-2 text-[10px] font-black text-cyan-500 uppercase tracking-widest">
+                <div className="w-4 h-4 rounded-full bg-cyan-500 flex items-center justify-center text-white"><Plus className="w-3 h-3" /></div>
                 Implantação
               </div>
-              <span className="text-emerald-500 font-black italic">R$ {fmt(calc.implantacao.final)}</span>
+              <span className="text-cyan-500 font-black italic">R$ {fmt(calc.implantacao.final)}</span>
             </div>
           </Card>
 
@@ -241,7 +241,7 @@ export default function PricingCalculator() {
           <Card
             onClick={() => togglePlan("Pro")}
             className={`group h-full p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between duration-500 min-h-[22rem]
-              bg-[#1e1b4b] text-white border-transparent shadow-[0_20px_50px_-12px_rgba(30,27,75,0.4)]
+              bg-[#083344] text-white border-transparent shadow-[0_20px_50px_-12px_rgba(8,51,68,0.4)]
               ${selectedPlans.has("Pro") ? "ring-4 ring-cyan-500/50" : ""}
               hover:scale-[1.02] active:scale-95
             `}

@@ -21,8 +21,8 @@ All colors MUST be HSL.
     --primary: 186 100% 50%;
     --primary-foreground: 224 71% 4%;
 
-    --secondary: 224 71% 4%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 224 71% 4%;
 
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
@@ -950,20 +950,24 @@ body {
   transition: background 0.18s ease, color 0.18s ease;
   position: relative; white-space: nowrap; overflow: hidden;
 }
-.suri-nav-item:hover { background: var(--suri-surface-hover); color: var(--suri-text); }
+.suri-nav-item:hover { 
+  background: var(--suri-surface-hover); 
+  color: hsl(var(--primary)); 
+}
 .suri-nav-item--active {
   background: hsl(var(--primary) / 0.09);
   color: hsl(var(--primary)); font-weight: 600;
 }
 .dark .suri-nav-item--active { background: hsl(var(--primary) / 0.15); }
-.suri-nav-item__icon { display: flex; align-items: center; justify-content: center; min-width: 20px; }
-.suri-nav-item--active .suri-nav-item__icon { color: var(--item-color, hsl(var(--primary))); }
+.suri-nav-item__icon { display: flex; align-items: center; justify-content: center; min-width: 20px; transition: color 0.18s ease; }
+.suri-nav-item:hover .suri-nav-item__icon,
+.suri-nav-item--active .suri-nav-item__icon { color: hsl(var(--primary)); }
 .suri-nav-item__label { flex: 1; opacity: 1; transition: opacity 0.2s ease; }
 .suri-sidebar--collapsed .suri-nav-item__label { opacity: 0; width: 0; pointer-events: none; }
 .suri-nav-item__pill {
   position: absolute; right: 10px;
   width: 6px; height: 6px; border-radius: 50%;
-  background: var(--item-color, hsl(var(--primary))); opacity: 0.8;
+  background: hsl(var(--primary)); opacity: 0.8;
 }
 .suri-sidebar--collapsed .suri-nav-item__pill { display: none; }
 
@@ -1093,3 +1097,112 @@ body {
   transition: color 0.18s ease;
 }
 .hub-app-card:hover .hub-app-card__footer { color: var(--card-accent, hsl(var(--primary))); }
+
+/* React Flow Mind Map Styles */
+.mind-map-node {
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 20px !important;
+  padding: 0 24px !important;
+  height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  min-width: 140px !important;
+  text-align: center !important;
+  font-family: 'Outfit', sans-serif !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.2s ease !important;
+}
+
+.dark .mind-map-node {
+  background: #1a1a1a !important;
+  border-color: #333 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+.mind-map-node-main {
+  background: hsl(var(--secondary) / 0.1) !important;
+  border-radius: 24px !important;
+  height: 56px !important;
+  min-width: 240px !important;
+  font-weight: 700 !important;
+  border-width: 2px !important;
+}
+
+.dark .mind-map-node-main {
+  background: #222 !important;
+  border-color: #333 !important;
+}
+
+.mind-map-node-active {
+  border-color: #00e5ff !important;
+  box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.2) !important;
+}
+
+/* Kanban List View */
+.kb-board--list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 32px !important;
+  overflow-x: hidden !important;
+  padding-bottom: 60px;
+}
+
+.kb-board--list .kb-column {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  border-right: none !important;
+  border-bottom: 1px solid var(--suri-border);
+  padding-bottom: 24px;
+}
+
+.kb-board--list .kb-cards-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.kb-board--list .kb-card {
+  max-width: none !important;
+  margin-bottom: 0 !important;
+}
+
+.kb-board--list .kb-card-inner {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 20px !important;
+  padding: 12px 20px !important;
+}
+
+.kb-board--list .kb-card-top {
+  margin-bottom: 0 !important;
+  order: 2;
+  width: 120px;
+}
+
+.kb-board--list .kb-card-title {
+  margin-bottom: 0 !important;
+  order: 1;
+  flex: 1;
+  font-size: 0.95rem;
+}
+
+.kb-board--list .kb-card-desc {
+  display: none !important; /* Hide description in list view for brevity */
+}
+
+.kb-board--list .kb-card-date {
+  order: 3;
+  margin-top: 0 !important;
+  width: 100px;
+}
+
+.kb-board--list .kb-tags {
+  order: 4;
+  margin-top: 0 !important;
+}
