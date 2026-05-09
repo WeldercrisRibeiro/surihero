@@ -406,7 +406,7 @@ function FlowsContent() {
 
   return (
     <div
-      className="flex w-full text-foreground"
+      className="flex w-full text-foreground relative"
       style={{
         flex: 1,
         minHeight: 0,

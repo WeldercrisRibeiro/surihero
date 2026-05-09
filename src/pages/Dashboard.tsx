@@ -1,9 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Bot, Cable, Calculator, Workflow, ArrowRight } from 'lucide-react';
+import { useTheme } from '@/hooks/use-theme';
 
-	const apps = [
-	{
+// URLs dos logos
+const LOGO_LIGHT = "/totvs-cyan.svg"; 
+const LOGO_DARK = "/totvs.svg";
+
+const apps = [
+  {
     path: '/apisuri',
     label: 'Suri API',
     description: 'Console interno de conectores e endpoints.',
@@ -30,22 +35,28 @@ import { Bot, Cable, Calculator, Workflow, ArrowRight } from 'lucide-react';
   {
     path: '/workflow',
     label: 'WorkFlow',
-    description: 'fluxos de trabalho',
+    description: 'Fluxos de trabalho.',
     icon: Workflow,
     color: 'var(--app-work)',
     tag: 'IA',
   },
 ];
 
-export const HubDashboard = () => (
-  <div className="hub-page">
-    <div className="hub-page__header">
-      <p className="hub-page__eyebrow">SURI TOOLS</p>
-      <h1 className="hub-page__title">Bem-vindo!</h1>
-      <p className="hub-page__subtitle">
-        Módulos disponíveis
-      </p>
-    </div>
+export const HubDashboard = () => {
+  const { theme } = useTheme();
+  const currentLogo = theme === 'light' ? LOGO_LIGHT : LOGO_DARK;
+
+  return (
+    <div className="hub-page">
+      <div className="hub-page__header">
+        {/* Linha superior: logo + label + toggle espaçado */}
+        <div className="hub-page__brand-row">
+          <img src={currentLogo} alt="Logo" className="hub-page__logo" />
+          <p className="hub-page__eyebrow">SURI TOOLS</p>
+        </div>
+        <h1 className="hub-page__title">Bem-vindo!</h1>
+        <p className="hub-page__subtitle">Módulos disponíveis</p>
+      </div>
 
     <div className="hub-grid">
       {apps.map((app) => (
@@ -73,4 +84,5 @@ export const HubDashboard = () => (
       ))}
     </div>
   </div>
-);
+  );
+};
