@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { CredentialsBar } from "@/components/suri/CredentialsBar";
 import { EndpointRunner } from "@/components/suri/EndpointRunner";
 import { FlowTracker } from "@/components/suri/FlowTracker";
@@ -23,11 +24,16 @@ export default function SuriApi() {
 
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
 
+  const [portalNode, setPortalNode] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setPortalNode(document.getElementById('topbar-portal-target'));
+  }, []);
+
   return (
     <div className="flex h-full w-full flex-col text-slate-900 dark:text-slate-100 overflow-hidden antialiased" style={{ flex: 1, minHeight: 0 }}>
-      {/* HEADER ULTRA-CLEAN */}
-      <header className="z-50 w-full border-b shrink-0" style={{ background: 'var(--suri-surface)', borderColor: 'var(--suri-border)' }}>
-        <div className="flex h-14 items-center gap-6 px-6">
+      {/* HEADER ULTRA-CLEAN MOVED TO TOPBAR PORTAL */}
+      {portalNode && createPortal(
+        <div className="flex w-full items-center justify-between">
           {/* LOGO DESIGNER */}
           <div className="kb-header-left">
             <div className="group flex items-center gap-4">
@@ -124,8 +130,9 @@ export default function SuriApi() {
           <div className="shrink-0 flex items-center ml-6">
             <CredentialsBar />
           </div>
-        </div>
-      </header>
+        </div>,
+        portalNode
+      )}
 
       {/* MAIN CONTENT COM ANIMAÇÕES DE ENTRADA */}
       <main className="flex-1 overflow-hidden relative" style={{ minHeight: 0 }}>

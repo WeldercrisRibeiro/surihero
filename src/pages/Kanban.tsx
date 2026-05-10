@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Plus,
   Search,
@@ -389,6 +390,11 @@ export const KanbanBoard = () => {
   const draggingCol = useRef<string | null>(null);
   const [dragOverColForReorder, setDragOverColForReorder] = useState<string | null>(null);
 
+  const [portalNode, setPortalNode] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setPortalNode(document.getElementById('topbar-portal-target'));
+  }, []);
+
   // ── Actions ──
 
   const saveCard = (colId: string, card: KanbanCard) => {
@@ -589,45 +595,48 @@ export const KanbanBoard = () => {
 
   return (
     <div className="kb-root animate-fade-in">
-      {/* ── Header ── */}
-      <div className="kb-header">
-        <div className="kb-header-left">
-          <h1 className="kb-title">Kanban Board</h1>
-          <p className="kb-subtitle">Gerencie suas tarefas e melhorias</p>
-        </div>
-        <div className="kb-header-right">
-          <div className="kb-search-box">
-            <Search size={15} />
-            <input
-              placeholder="Pesquisar..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+      {/* Header MOVED TO PORTAL */}
+      {portalNode && createPortal(
+        <div className="flex w-full items-center justify-between">
+          <div className="kb-header-left">
+            <h1 className="text-lg font-bold text-foreground m-0">Kanban Board</h1>
           </div>
-          <div className="kb-view-toggle">
-            <button 
-              className={cn("kb-view-btn", viewMode === 'grid' && "active")} 
-              onClick={() => setViewMode('grid')}
-              title="Grid"
-            >
-              <LayoutGrid size={16} />
+          <div className="flex items-center gap-3">
+            <div className="kb-search-box h-9">
+              <Search size={14} />
+              <input
+                className="text-xs"
+                placeholder="Pesquisar..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="kb-view-toggle h-9">
+              <button 
+                className={cn("kb-view-btn h-full px-3", viewMode === 'grid' && "active")} 
+                onClick={() => setViewMode('grid')}
+                title="Grid"
+              >
+                <LayoutGrid size={15} />
+              </button>
+              <button 
+                className={cn("kb-view-btn h-full px-3", viewMode === 'list' && "active")} 
+                onClick={() => setViewMode('list')}
+                title="Lista"
+              >
+                <List size={15} />
+              </button>
+            </div>
+            <button className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-bold uppercase tracking-wider transition-all border border-slate-200 dark:border-slate-700" onClick={() => setColModal({ isOpen: true })}>
+              <Plus size={14} /> Coluna
             </button>
-            <button 
-              className={cn("kb-view-btn", viewMode === 'list' && "active")} 
-              onClick={() => setViewMode('list')}
-              title="Lista"
-            >
-              <List size={16} />
+            <button className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-cyan-500 text-white hover:bg-cyan-600 text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm" onClick={() => openNewTask()}>
+              <Plus size={14} /> Nova Tarefa
             </button>
           </div>
-          <button className="kb-btn-outline" onClick={() => setColModal({ isOpen: true })}>
-            <Plus size={15} /> Coluna
-          </button>
-          <button className="kb-btn-primary" onClick={() => openNewTask()}>
-            <Plus size={15} /> Nova Tarefa
-          </button>
-        </div>
-      </div>
+        </div>,
+        portalNode
+      )}
 
       {/* ── Board ── */}
       <div className={cn("kb-board", viewMode === 'list' && "kb-board--list")}>

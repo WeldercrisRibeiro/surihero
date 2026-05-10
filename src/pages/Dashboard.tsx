@@ -17,7 +17,7 @@ const apps = [
     tag: 'API',
   },
   {
-    path: '/Calcs',
+    path: '/calcs',
     label: 'Suri Calcs',
     description: 'Calculadora de planos, preços e projeções.',
     icon: Calculator,
@@ -25,7 +25,7 @@ const apps = [
     tag: 'Planos, Upsell',
   },
   {
-    path: '/kanbam',
+    path: '/kanban',
     label: 'Kanban',
     description: 'Produtividade, agenda e quadro de tarefas Kanban.',
     icon: Workflow,

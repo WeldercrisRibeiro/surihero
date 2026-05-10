@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,6 +40,11 @@ export default function PricingCalculator() {
   const [contractStart, setContractStart] = useState("2025-09-30");
   const [downsellDate, setDownsellDate] = useState("2026-05-07");
   const [overdueInvoices, setOverdueInvoices] = useState(2.00);
+
+  const [portalNode, setPortalNode] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setPortalNode(document.getElementById('topbar-portal-target'));
+  }, []);
 
   const usedMonths = useMemo(() => {
     if (!contractStart || !downsellDate) return 0;
@@ -108,42 +114,43 @@ export default function PricingCalculator() {
     <div className="flex-1 overflow-y-auto pt-4 pb-12 px-4 transition-colors duration-500">
       <div className="max-w-6xl mx-auto">
 
-        {/* Header */}
-        <div className="flex flex-col items-center mb-10 relative">
-          <div className="w-14 h-14 bg-white dark:bg-slate-900 rounded-2xl shadow-xl flex items-center justify-center mb-4 border border-slate-100 dark:border-slate-800">
-            <Calculator className="w-7 h-7 text-cyan-600" />
-          </div>
-          <h1 className="text-4xl font-black italic tracking-tighter text-cyan-900 dark:text-cyan-400">
-            Suri Calcs
-          </h1>
-          
-        </div>
+        {/* HEADER MOVED TO PORTAL */}
+        {portalNode && createPortal(
+          <div className="flex w-full items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-white dark:bg-slate-900 rounded-lg shadow-sm flex items-center justify-center border border-slate-100 dark:border-slate-800">
+                <Calculator className="w-4 h-4 text-cyan-600" />
+              </div>
+              <h1 className="text-lg font-black italic tracking-tighter text-cyan-900 dark:text-cyan-400">
+                Suri Calcs
+              </h1>
+            </div>
 
-        {/* Tab Selector */}
-        <div className="flex justify-center mb-8">
-          <div className="bg-slate-100 dark:bg-slate-800/50 p-1 rounded-2xl inline-flex gap-1 border border-slate-200 dark:border-slate-700">
-            <button
-              onClick={() => setActiveTab("upsell")}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                activeTab === "upsell"
-                  ? "bg-white dark:bg-slate-900 text-cyan-600 shadow-sm"
-                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-              }`}
-            >
-              Upsell / Nova Venda
-            </button>
-            <button
-              onClick={() => setActiveTab("downsell")}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                activeTab === "downsell"
-                  ? "bg-white dark:bg-slate-900 text-cyan-600 shadow-sm"
-                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-              }`}
-            >
-              Downsell / Multa
-            </button>
-          </div>
-        </div>
+            <div className="bg-slate-100 dark:bg-slate-800/50 p-1 rounded-full flex gap-1 border border-slate-200 dark:border-slate-700">
+              <button
+                onClick={() => setActiveTab("upsell")}
+                className={`px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all ${
+                  activeTab === "upsell"
+                    ? "bg-white dark:bg-slate-900 text-cyan-600 shadow-sm"
+                    : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                }`}
+              >
+                Upsell / Nova Venda
+              </button>
+              <button
+                onClick={() => setActiveTab("downsell")}
+                className={`px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all ${
+                  activeTab === "downsell"
+                    ? "bg-white dark:bg-slate-900 text-cyan-600 shadow-sm"
+                    : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                }`}
+              >
+                Downsell / Multa
+              </button>
+            </div>
+          </div>,
+          portalNode
+        )}
 
         {activeTab === "upsell" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">

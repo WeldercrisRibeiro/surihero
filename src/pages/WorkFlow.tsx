@@ -1,4 +1,5 @@
-import { useCallback, useState, useRef } from "react";
+import { useCallback, useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   ReactFlow,
   Background,
@@ -123,6 +124,11 @@ function FlowsContent() {
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const edgeReconnectSuccessful = useRef(true);
+
+  const [portalNode, setPortalNode] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setPortalNode(document.getElementById('topbar-portal-target'));
+  }, []);
   
   const buttonBase = "group flex items-center justify-center gap-3 rounded-2xl text-sm font-semibold transition-all duration-200 active:scale-[0.98]";
   const buttonSecondary = `${buttonBase} px-5 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-500 shadow-sm`;
@@ -416,13 +422,11 @@ function FlowsContent() {
     >
       {/* LEFT: canvas area */}
       <div className="flex-1 flex flex-col" style={{ minHeight: 0 }}>
-        {/* Header */}
-        <div
-          className="flex items-center gap-4 px-6 border-b border-border bg-card/40 backdrop-blur-md z-10"
-          style={{ minHeight: 64, paddingTop: 12, paddingBottom: 12 }}
-        >
+      {/* Header MOVED TO PORTAL */}
+      {portalNode && createPortal(
+        <div className="flex w-full items-center justify-between">
           {/* Title block */}
-          <div className="flex items-center gap-2 min-w-0 flex-1">
+          <div className="flex items-center gap-2 min-w-0">
             <Workflow className="w-4 h-4 text-cyan-500 shrink-0" />
             {isEditingTitle ? (
               <input
@@ -437,12 +441,12 @@ function FlowsContent() {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleTitleBlur();
                 }}
-                className="font-semibold text-base text-foreground bg-secondary px-2 py-0.5 rounded outline-none ring-2 ring-primary ring-offset-2 ring-offset-background w-full max-w-xs"
+                className="font-semibold text-sm text-foreground bg-secondary px-2 py-0.5 rounded outline-none ring-2 ring-primary ring-offset-2 ring-offset-background w-48"
               />
             ) : (
               <h1
                 onDoubleClick={() => setIsEditingTitle(true)}
-                className="font-semibold text-base text-foreground cursor-text hover:text-primary transition-colors select-none truncate m-0"
+                className="font-bold text-sm text-foreground cursor-text hover:text-primary transition-colors select-none truncate m-0"
                 title="Clique duas vezes para editar"
               >
                 {flowTitleDraft}
@@ -455,43 +459,43 @@ function FlowsContent() {
             )}
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-4 rounded-xl border border-border/40 bg-background/40 backdrop-blur-md px-3 py-2 shadow-sm">
-              <button onClick={saveAsPhoto} className={buttonGhost} title="Salvar como Foto">
-                <Camera className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
-                <span className="text-xs font-medium">Salvar como Foto</span>
-              </button>
-            </div>
+          <div className="flex items-center gap-2">
+            <button onClick={saveAsPhoto} className={buttonGhost} title="Salvar como Foto">
+              <Camera className="w-3.5 h-3.5" />
+              <span className="text-[11px] font-bold uppercase tracking-wider">Foto</span>
+            </button>
 
-            <div className="w-px h-6 bg-border/40 mx-1" />
+            <div className="w-px h-4 bg-border/40 mx-1" />
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {hasSelection && (
-                <button onClick={deleteSelected} className={buttonDanger}>
-                  <Trash2 className="w-4 h-4" />
+                <button onClick={deleteSelected} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 text-[11px] font-bold uppercase tracking-wider transition-all">
+                  <Trash2 className="w-3.5 h-3.5" />
                   Excluir
                 </button>
               )}
-              <button onClick={addNode} className={buttonSecondary}>
-                <Plus className="w-4 h-4" />
-                Novo Fluxo
+              <button onClick={addNode} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-bold uppercase tracking-wider transition-all border border-slate-200 dark:border-slate-700">
+                <Plus className="w-3.5 h-3.5" />
+                Novo
               </button>
               {editingFlow && (
-                <button onClick={() => requestAction(resetCanvas)} className={buttonSecondary}>
-                  <X className="w-4 h-4" />
+                <button onClick={() => requestAction(resetCanvas)} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-bold uppercase tracking-wider transition-all border border-slate-200 dark:border-slate-700">
+                  <X className="w-3.5 h-3.5" />
                   Cancelar
                 </button>
               )}
             </div>
 
-            <div className="w-px h-6 bg-border/40 mx-1" />
+            <div className="w-px h-4 bg-border/40 mx-1" />
 
-            <button onClick={openSaveDialog} className={buttonPrimary}>
-              <Save className="w-4 h-4" />
+            <button onClick={openSaveDialog} className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-cyan-500 text-white hover:bg-cyan-600 text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm">
+              <Save className="w-3.5 h-3.5" />
               {editingFlow ? "Atualizar" : "Salvar"}
             </button>
           </div>
-        </div>
+        </div>,
+        portalNode
+      )}
 
         {/* Canvas */}
         <div className="flex-1 relative">

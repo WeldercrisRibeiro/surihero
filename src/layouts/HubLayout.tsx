@@ -15,6 +15,10 @@ export const HubLayout = ({ children }: { children: React.ReactNode }) => {
             <ChevronLeft size={15} strokeWidth={2.5} />
             <span>Dashboard</span>
           </Link>
+          
+          {/* Portal target for module headers */}
+          <div id="topbar-portal-target" className="flex-1 flex items-center justify-between h-full px-6" />
+
           <ThemeToggle />
         </header>
       ) : (

@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ClipboardList } from 'lucide-react';
 import React from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -8,9 +7,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { HubLayout } from "./layouts/HubLayout";
 import { HubDashboard } from "./pages/Dashboard";
-import { PlaceholderModule } from "./components/PlaceholderModule";
 
-import Kanban from "./pages/Kanbam";
+import Kanban from "./pages/Kanban";
 import WorkFlow from "./pages/WorkFlow";
 import SuriApi from "./pages/ApiSuri";
 import SuriCalc from "./pages/Calcs";
@@ -29,7 +27,7 @@ function App() {
               <HubLayout>
                 <Routes>
                   <Route path="/" element={<HubDashboard />} />
-                  <Route path="/kanbam" element={<Kanban />} />
+                  <Route path="/kanban" element={<Kanban />} />
                   <Route path="/workflow" element={<WorkFlow />} />
                   <Route path="/apisuri" element={<SuriApi />} />
                   <Route path="/calcs" element={<SuriCalc />} />
