@@ -33,44 +33,39 @@ export default function SuriApi() {
     <div className="flex h-full w-full flex-col text-slate-900 dark:text-slate-100 overflow-hidden antialiased" style={{ flex: 1, minHeight: 0 }}>
       {/* HEADER ULTRA-CLEAN MOVED TO TOPBAR PORTAL */}
       {portalNode && createPortal(
-        <div className="flex w-full items-center justify-between">
-          {/* LOGO DESIGNER */}
-          <div className="kb-header-left">
-            <div className="group flex items-center gap-4">
-              <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500 text-white font-black text-sm shadow-sm transform group-hover:scale-105 transition-all">
-                S
-              </div>
-              <div>
-                <h1 className="text-xl font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
-                  Api SURI
-                  <span className="text-[10px] font-bold text-slate-400 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded-full uppercase tracking-widest">v2.1</span>
-                </h1>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">Developer Console</p>
-              </div>
+        <div className="flex w-full items-center justify-between gap-2 min-w-0">
+          {/* TITLE — sem o "S" solto, apenas texto */}
+          <div className="flex items-center gap-2 min-w-0 shrink-0">
+            <div className="hidden sm:block">
+              <h1 className="text-base font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-2 leading-none">
+                Api SURI
+                <span className="text-[9px] font-bold text-slate-400 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-full uppercase tracking-widest">v2.1</span>
+              </h1>
+              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em]">Developer Console</p>
             </div>
           </div>
 
-          {/* CUSTOM COMMAND SELECTOR (UI ELITE) */}
-          <div className="flex-1 flex items-center justify-end">
+          {/* COMMAND SELECTOR — compacto no mobile */}
+          <div className="flex-1 flex items-center justify-end gap-2 min-w-0">
             <div className="relative">
               <button 
                 onClick={() => setIsSelectorOpen(!isSelectorOpen)}
-                className="flex items-center gap-3 bg-white dark:bg-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/50 px-5 py-2 rounded-full transition-all cursor-pointer group shadow-sm active:scale-95"
+                className="flex items-center gap-2 bg-white dark:bg-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/50 px-3 sm:px-5 py-2 rounded-full transition-all cursor-pointer group shadow-sm active:scale-95"
               >
-                <div className="p-1.5 bg-cyan-50 dark:bg-cyan-500/10 rounded-full transition-colors">
-                  <Settings size={14} className="text-cyan-500 dark:text-cyan-400" />
+                <div className="p-1 sm:p-1.5 bg-cyan-50 dark:bg-cyan-500/10 rounded-full transition-colors">
+                  <Settings size={13} className="text-cyan-500 dark:text-cyan-400" />
                 </div>
-                <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-700 dark:text-slate-300">
-                  {selection.kind === "flow-tracker" ? "Rastreador de Fluxo" : selection.endpoint.label}
+                <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-700 dark:text-slate-300 max-w-[100px] sm:max-w-none truncate">
+                  {selection.kind === "flow-tracker" ? "Rastr. Fluxo" : selection.endpoint.label}
                 </span>
-                <ChevronDown size={12} className={cn("text-slate-500 transition-transform duration-300", isSelectorOpen && "rotate-180")} />
+                <ChevronDown size={11} className={cn("text-slate-500 transition-transform duration-300 shrink-0", isSelectorOpen && "rotate-180")} />
               </button>
 
-              {/* DROPDOWN CUSTOMIZADO */}
+              {/* DROPDOWN */}
               {isSelectorOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setIsSelectorOpen(false)} />
-                  <div className="absolute top-12 left-0 z-50 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl p-2 animate-in fade-in zoom-in-95 duration-200">
+                  <div className="absolute top-12 right-0 sm:left-0 z-50 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl p-2 animate-in fade-in zoom-in-95 duration-200">
                     <div className="px-3 py-2 mb-1">
                       <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Ações Disponíveis</span>
                     </div>
@@ -92,7 +87,7 @@ export default function SuriApi() {
                       <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Endpoints da API</span>
                     </div>
                     
-                    <div className="max-h-80 overflow-y-auto scrollbar-thin px-1 pb-1">
+                    <div className="max-h-64 overflow-y-auto px-1 pb-1">
                       {ENDPOINTS.map((e) => {
                         const active = selection.kind === "endpoint" && selection.endpoint.id === e.id;
                         return (
@@ -104,7 +99,7 @@ export default function SuriApi() {
                               active ? "bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400" : "hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
                             )}
                           >
-                            <Cable size={14} className={cn("transition-colors", active ? "text-cyan-500" : "text-slate-400 group-hover/item:text-slate-600")} />
+                            <Cable size={14} className={cn("transition-colors shrink-0", active ? "text-cyan-500" : "text-slate-400 group-hover/item:text-slate-600")} />
                             <span className="text-[11px] font-bold uppercase tracking-wider">{e.label}</span>
                           </button>
                         );
@@ -115,20 +110,21 @@ export default function SuriApi() {
               )}
             </div>
             
-            <div className="ml-6 flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-800">
+            {/* Status badges — ocultos no mobile */}
+            <div className="hidden md:flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-800">
                <Badge variant="outline" className="text-[9px] font-mono border-cyan-200 dark:border-slate-700 bg-cyan-50 dark:bg-slate-800/50 text-cyan-600 dark:text-slate-400 h-6 px-4 rounded-full lowercase tracking-tight">
                  gateway.suri.bot
                </Badge>
                <div className="flex items-center gap-2 bg-cyan-500/10 border border-cyan-500/20 px-3 py-1 rounded-full">
                  <div className="h-1.5 w-1.5 rounded-full bg-cyan-500 animate-pulse" />
-                 <span className="text-[9px] font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-widest">Gateway Online</span>
+                 <span className="text-[9px] font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-widest">Online</span>
                </div>
             </div>
-          </div>
 
-          {/* SYSTEM ACTIONS & STATUS */}
-          <div className="shrink-0 flex items-center ml-6">
-            <CredentialsBar />
+            {/* CredentialsBar — oculta no mobile */}
+            <div className="hidden sm:flex items-center ml-2">
+              <CredentialsBar />
+            </div>
           </div>
         </div>,
         portalNode
@@ -136,10 +132,10 @@ export default function SuriApi() {
 
       {/* MAIN CONTENT COM ANIMAÇÕES DE ENTRADA */}
       <main className="flex-1 overflow-hidden relative" style={{ minHeight: 0 }}>
-        <div className="absolute inset-0 flex flex-col p-6 max-w-[1500px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out z-10">
+        <div className="absolute inset-0 flex flex-col p-3 sm:p-6 max-w-[1500px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out z-10">
           {selection.kind === "flow-tracker" ? (
-            <div className="flex-1 rounded-[2.5rem] bg-white dark:bg-slate-900/40 dark:backdrop-blur-sm overflow-hidden flex flex-col transition-all duration-300 shadow-sm dark:shadow-none border border-slate-200 dark:border-slate-800/50">
-              <div className="px-8 py-8 flex items-center justify-between shrink-0">
+            <div className="flex-1 rounded-2xl sm:rounded-[2.5rem] bg-white dark:bg-slate-900/40 dark:backdrop-blur-sm overflow-hidden flex flex-col transition-all duration-300 shadow-sm dark:shadow-none border border-slate-200 dark:border-slate-800/50">
+              <div className="px-4 py-4 sm:px-8 sm:py-8 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3">
                   <Activity size={16} className="text-cyan-500" />
                   <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-800 dark:text-slate-300">Monitor de Tráfego em tempo real</h2>
@@ -149,25 +145,26 @@ export default function SuriApi() {
                    <span className="text-[9px] font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-widest">Live</span>
                 </div>
               </div>
-              <div className="p-10 overflow-y-auto flex-1 scrollbar-thin">
+              <div className="p-4 sm:p-10 overflow-y-auto flex-1">
                 <FlowTracker />
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col overflow-hidden gap-4">
-              <div className="flex items-center justify-between px-2 shrink-0">
+            <div className="flex-1 flex flex-col overflow-hidden gap-3 sm:gap-4">
+              <div className="flex items-center justify-between px-1 sm:px-2 shrink-0">
                 <div className="flex items-center gap-2">
                   <div className="p-1.5 bg-cyan-50 dark:bg-slate-800/50 rounded-lg">
                     <ChevronRight size={14} className="text-cyan-500 dark:text-slate-400" />
                   </div>
                   <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
-                    Console de Operações / <span className="text-slate-800 dark:text-slate-300 tracking-normal">{selection.endpoint.label}</span>
+                    <span className="hidden sm:inline">Console / </span>
+                    <span className="text-slate-800 dark:text-slate-300 tracking-normal">{selection.endpoint.label}</span>
                   </h2>
                 </div>
-                <div className="text-[9px] font-mono text-slate-400 dark:text-slate-500">ID: {selection.endpoint.id}</div>
+                <div className="hidden sm:block text-[9px] font-mono text-slate-400 dark:text-slate-500">ID: {selection.endpoint.id}</div>
               </div>
               
-              <div className="flex-1 overflow-y-auto rounded-[2.5rem] border border-slate-200 dark:border-slate-800/50 bg-white dark:bg-slate-900/40 dark:backdrop-blur-sm flex flex-col scrollbar-thin shadow-sm dark:shadow-none">
+              <div className="flex-1 overflow-y-auto rounded-2xl sm:rounded-[2.5rem] border border-slate-200 dark:border-slate-800/50 bg-white dark:bg-slate-900/40 dark:backdrop-blur-sm flex flex-col shadow-sm dark:shadow-none">
                 <EndpointRunner key={selection.endpoint.id} endpoint={selection.endpoint} />
               </div>
             </div>
@@ -176,18 +173,18 @@ export default function SuriApi() {
       </main>
 
       {/* FOOTER REFINADO */}
-      <footer className="shrink-0 h-10 px-8 border-t flex items-center justify-between" style={{ background: 'var(--suri-surface)', borderColor: 'var(--suri-border)' }}>
-        <div className="flex items-center gap-4">
-          <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-[0.2em]">
-            Suri Connect Enterprise
+      <footer className="shrink-0 h-9 px-4 sm:px-8 border-t flex items-center justify-between" style={{ background: 'var(--suri-surface)', borderColor: 'var(--suri-border)' }}>
+        <div className="flex items-center gap-2 sm:gap-4">
+          <p className="text-[8px] sm:text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-[0.15em]">
+            <span className="hidden sm:inline">Suri Connect </span>Enterprise
           </p>
-          <div className="h-3 w-px bg-slate-200 dark:bg-slate-700" />
-          <span className="text-[9px] text-slate-400 dark:text-slate-500 font-mono">2026.05 • STABLE_RELEASE</span>
+          <div className="hidden sm:block h-3 w-px bg-slate-200 dark:bg-slate-700" />
+          <span className="hidden sm:inline text-[9px] text-slate-400 dark:text-slate-500 font-mono">2026.05 • STABLE_RELEASE</span>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-[9px] text-cyan-500 dark:text-slate-400 font-bold uppercase tracking-[0.1em]">Protocolo: HTTP/1.1</span>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <span className="text-[8px] sm:text-[9px] text-cyan-500 dark:text-slate-400 font-bold uppercase tracking-[0.1em]">Protocolo: HTTP/1.1</span>
           <div className="h-1.5 w-1.5 rounded-full bg-cyan-500 dark:bg-cyan-500/50" />
-          <span className="text-[9px] text-slate-400 dark:text-slate-500 font-mono">Latência: 12ms</span>
+          <span className="text-[8px] sm:text-[9px] text-slate-400 dark:text-slate-500 font-mono">Latência: 12ms</span>
         </div>
       </footer>
     </div>

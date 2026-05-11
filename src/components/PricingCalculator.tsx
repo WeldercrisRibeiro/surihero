@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
   Minus, Plus, FileText,
-  Lightbulb, Zap, Calculator
+  Lightbulb, Zap, Calculator, Megaphone
 } from "lucide-react";
 import QuoteModal, { type QuoteData } from "./QuoteModal";
 import DownsellModal from "./DownsellModal";
@@ -28,6 +28,7 @@ export default function PricingCalculator() {
   const [discountPercent, setDiscountPercent] = useState(0);
   const [setupPrice, setSetupPrice] = useState(IMPLANTACAO);
   const [setupDiscount, setSetupDiscount] = useState(100);
+  const [excessDiscountPercent, setExcessDiscountPercent] = useState(0);
   const [selectedPlans, setSelectedPlans] = useState<Set<string>>(new Set());
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [downsellModalOpen, setDownsellModalOpen] = useState(false);
@@ -81,7 +82,9 @@ export default function PricingCalculator() {
         plan: "Essential", interactions, interactionPrice: essPrice,
         basePrice: calc.essential.base, finalPrice: calc.essential.final,
         discount: calc.essential.discount, hasDiscount: discountPercent > 0,
+        discountPercent,
         implantacao: calc.implantacao.final, marketingPrice, utilityPrice,
+        excessDiscountPercent,
         suriShopCommission: ""
       });
     }
@@ -90,7 +93,9 @@ export default function PricingCalculator() {
         plan: "Pro", interactions, interactionPrice: proPrice,
         basePrice: calc.pro.base, finalPrice: calc.pro.final,
         discount: calc.pro.discount, hasDiscount: discountPercent > 0,
+        discountPercent,
         implantacao: calc.implantacao.final, marketingPrice, utilityPrice,
+        excessDiscountPercent,
         suriShopCommission: ""
       });
     }
@@ -116,36 +121,40 @@ export default function PricingCalculator() {
 
         {/* HEADER MOVED TO PORTAL */}
         {portalNode && createPortal(
-          <div className="flex w-full items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-white dark:bg-slate-900 rounded-lg shadow-sm flex items-center justify-center border border-slate-100 dark:border-slate-800">
-                <Calculator className="w-4 h-4 text-cyan-600" />
+          <div className="flex w-full items-center justify-between gap-2 min-w-0">
+            {/* Título — oculto em mobile, visível em sm+ */}
+            <div className="hidden sm:flex items-center gap-2 shrink-0">
+              <div className="w-7 h-7 bg-white dark:bg-slate-900 rounded-lg shadow-sm flex items-center justify-center border border-slate-100 dark:border-slate-800">
+                <Calculator className="w-3.5 h-3.5 text-cyan-600" />
               </div>
-              <h1 className="text-lg font-black italic tracking-tighter text-cyan-900 dark:text-cyan-400">
+              <h1 className="text-sm font-black italic tracking-tighter text-cyan-900 dark:text-cyan-400 whitespace-nowrap">
                 Suri Calcs
               </h1>
             </div>
 
-            <div className="bg-slate-100 dark:bg-slate-800/50 p-1 rounded-full flex gap-1 border border-slate-200 dark:border-slate-700">
+            {/* Tabs — labels curtos em mobile, completos em sm+ */}
+            <div className="bg-slate-100 dark:bg-slate-800/50 p-0.5 rounded-full flex gap-0.5 border border-slate-200 dark:border-slate-700 ml-auto">
               <button
                 onClick={() => setActiveTab("upsell")}
-                className={`px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all ${
+                className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
                   activeTab === "upsell"
                     ? "bg-white dark:bg-slate-900 text-cyan-600 shadow-sm"
                     : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                 }`}
               >
-                Upsell / Nova Venda
+                <span className="sm:hidden">Upsell</span>
+                <span className="hidden sm:inline">Upsell / Nova Venda</span>
               </button>
               <button
                 onClick={() => setActiveTab("downsell")}
-                className={`px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all ${
+                className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
                   activeTab === "downsell"
                     ? "bg-white dark:bg-slate-900 text-cyan-600 shadow-sm"
                     : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                 }`}
               >
-                Downsell / Multa
+                <span className="sm:hidden">Downsell</span>
+                <span className="hidden sm:inline">Downsell / Multa</span>
               </button>
             </div>
           </div>,
@@ -195,7 +204,7 @@ export default function PricingCalculator() {
               Mínimo: 1.000 • Incrementos de 500
             </p>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center">
@@ -227,6 +236,22 @@ export default function PricingCalculator() {
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 text-cyan-300 text-xs font-black">%</div>
                 </div>
               </div>
+
+              <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-7 h-7 rounded-lg bg-green-50 dark:bg-green-900/30 flex items-center justify-center">
+                    <Megaphone className="w-4 h-4 text-green-500" />
+                  </div>
+                  <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Excedentes (%)</Label>
+                </div>
+                <div className="relative">
+                  <Input
+                    type="number" min={0} max={100} value={excessDiscountPercent || ""} placeholder="0"
+                    onChange={(e) => setExcessDiscountPercent(Math.min(100, Math.max(0, Number(e.target.value))))}
+                    className="h-10 border-none bg-green-50/30 dark:bg-green-900/20 font-black text-green-600 dark:text-green-400 rounded-xl text-center" />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-green-300 text-xs font-black">%</div>
+                </div>
+              </div>
             </div>
           </Card>
 
@@ -245,15 +270,22 @@ export default function PricingCalculator() {
                 { label: "Essential (R$)", value: essPrice, setter: setEssPrice },
                 { label: "Pro (R$)", value: proPrice, setter: setProPrice },
                 { label: "Implantação (R$)", value: setupPrice, setter: setSetupPrice, color: "bg-cyan-50 dark:bg-cyan-900/20", inputColor: "text-cyan-600 dark:text-cyan-400" },
-                { label: "Mensagens de Marketing (R$)", value: marketingPrice, setter: setMarketingPrice },
-                { label: "Mensagens de Utilidades (R$)", value: utilityPrice, setter: setUtilityPrice }
+                { label: "Mensagens de Marketing (R$)", value: marketingPrice, setter: setMarketingPrice, isExcess: true },
+                { label: "Mensagens de Utilidades (R$)", value: utilityPrice, setter: setUtilityPrice, isExcess: true }
               ].map((f, i) => (
                 <div key={i} className={`flex items-center justify-between p-4 rounded-2xl ${f.color || "bg-slate-50/70 dark:bg-slate-800/40"} border border-transparent transition-all hover:border-slate-200 dark:hover:border-slate-700`}>
                   <Label className="text-xs font-bold text-slate-600 dark:text-slate-400">{f.label}</Label>
-                  <Input
-                    type="number" step="0.01" value={f.value}
-                    onChange={e => f.setter(Number(e.target.value))}
-                    className={`h-8 w-24 text-right font-black text-sm border-none bg-transparent shadow-none focus-visible:ring-0 ${f.inputColor || "text-slate-900 dark:text-slate-200"}`} />
+                  <div className="flex items-center gap-2">
+                    {f.isExcess && excessDiscountPercent > 0 && (
+                      <span className="text-xs font-bold text-green-500 mr-2 bg-green-100 dark:bg-green-900/40 px-2 py-1 rounded-md">
+                        R$ {fmt(f.value * (1 - excessDiscountPercent / 100))}
+                      </span>
+                    )}
+                    <Input
+                      type="number" step="0.01" value={f.value}
+                      onChange={e => f.setter(Number(e.target.value))}
+                      className={`h-8 w-24 text-right font-black text-sm border-none bg-transparent shadow-none focus-visible:ring-0 ${f.inputColor || "text-slate-900 dark:text-slate-200"} ${f.isExcess && excessDiscountPercent > 0 ? "opacity-50 line-through" : ""}`} />
+                  </div>
                 </div>
               ))}
             </div>

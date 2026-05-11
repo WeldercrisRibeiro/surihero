@@ -597,13 +597,16 @@ export const KanbanBoard = () => {
     <div className="kb-root animate-fade-in">
       {/* Header MOVED TO PORTAL */}
       {portalNode && createPortal(
-        <div className="flex w-full items-center justify-between">
-          <div className="kb-header-left">
-            <h1 className="text-lg font-bold text-foreground m-0">Kanban Board</h1>
+        <div className="flex w-full items-center justify-between gap-2 min-w-0">
+          {/* Título — oculto no mobile, visível em sm+ */}
+          <div className="hidden sm:flex items-center gap-2 shrink-0">
+            <h1 className="text-sm font-bold text-foreground m-0 whitespace-nowrap">Kanban Board</h1>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="kb-search-box h-9">
-              <Search size={14} />
+
+          <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
+            {/* Campo de busca: expande em sm+, ícone clicável em mobile */}
+            <div className="kb-search-box h-8 hidden sm:flex">
+              <Search size={13} />
               <input
                 className="text-xs"
                 placeholder="Pesquisar..."
@@ -611,27 +614,54 @@ export const KanbanBoard = () => {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <div className="kb-view-toggle h-9">
-              <button 
-                className={cn("kb-view-btn h-full px-3", viewMode === 'grid' && "active")} 
+            {/* Busca mobile: só ícone */}
+            <button
+              className="sm:hidden kb-icon-btn h-8 w-8 flex items-center justify-center"
+              title="Pesquisar"
+              onClick={() => {
+                const q = prompt('Pesquisar tarefa:');
+                if (q !== null) setSearch(q);
+              }}
+            >
+              <Search size={14} />
+            </button>
+
+            {/* Toggle Grid/Lista — oculto em mobile, visível em sm+ */}
+            <div className="kb-view-toggle h-8 hidden sm:flex">
+              <button
+                className={cn("kb-view-btn h-full px-2.5", viewMode === 'grid' && "active")}
                 onClick={() => setViewMode('grid')}
                 title="Grid"
               >
-                <LayoutGrid size={15} />
+                <LayoutGrid size={14} />
               </button>
-              <button 
-                className={cn("kb-view-btn h-full px-3", viewMode === 'list' && "active")} 
+              <button
+                className={cn("kb-view-btn h-full px-2.5", viewMode === 'list' && "active")}
                 onClick={() => setViewMode('list')}
                 title="Lista"
               >
-                <List size={15} />
+                <List size={14} />
               </button>
             </div>
-            <button className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-bold uppercase tracking-wider transition-all border border-slate-200 dark:border-slate-700" onClick={() => setColModal({ isOpen: true })}>
-              <Plus size={14} /> Coluna
+
+            {/* Botão Nova Coluna — ícone em mobile, texto em sm+ */}
+            <button
+              className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-bold uppercase tracking-wider transition-all border border-slate-200 dark:border-slate-700 h-8"
+              onClick={() => setColModal({ isOpen: true })}
+              title="Nova Coluna"
+            >
+              <Plus size={13} />
+              <span className="hidden sm:inline">Coluna</span>
             </button>
-            <button className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-cyan-500 text-white hover:bg-cyan-600 text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm" onClick={() => openNewTask()}>
-              <Plus size={14} /> Nova Tarefa
+
+            {/* Botão Nova Tarefa — ícone em mobile, texto em sm+ */}
+            <button
+              className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl bg-cyan-500 text-white hover:bg-cyan-600 text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm h-8"
+              onClick={() => openNewTask()}
+              title="Nova Tarefa"
+            >
+              <Plus size={13} />
+              <span className="hidden sm:inline">Tarefa</span>
             </button>
           </div>
         </div>,

@@ -135,6 +135,11 @@ body {
   color: var(--suri-text);
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
+  /* Safe area insets for notched/island devices */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 html {
@@ -1360,4 +1365,248 @@ html {
 .kb-board--list .kb-tags {
   order: 4;
   margin-top: 0 !important;
+}
+
+/* ════════════════════════════════════════════════════════
+   RESPONSIVE — MOBILE FIRST
+   Breakpoints: 640px (sm) · 768px (md) · 1024px (lg)
+════════════════════════════════════════════════════════ */
+
+/* ── Topbar ─────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .suri-topbar {
+    height: 52px;
+    padding: 0 14px;
+    gap: 8px;
+  }
+  .suri-topbar__search {
+    display: none; /* Esconder busca em telas muito pequenas */
+  }
+  .suri-topbar-solid {
+    height: 46px;
+    padding: 0 14px;
+  }
+  .back-btn-solid {
+    font-size: 0.75rem;
+    padding: 5px 10px 5px 8px;
+  }
+  /* Topbar portal content compacto */
+  #topbar-portal-target {
+    padding: 0 8px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .suri-topbar__search {
+    width: 100%;
+    max-width: 220px;
+  }
+}
+
+/* ── Dashboard / Hub ────────────────────────────────── */
+@media (max-width: 640px) {
+  .hub-page {
+    padding: 16px 14px 80px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .hub-page__header {
+    margin-bottom: 14px;
+  }
+  .hub-page__title {
+    font-size: 1.35rem;
+  }
+  .hub-page__subtitle {
+    font-size: 0.82rem;
+  }
+  .hub-page__brand-row {
+    margin-bottom: 8px;
+  }
+  .hub-page__logo {
+    height: 22px;
+  }
+  /* Grid: 1 coluna em mobile */
+  .hub-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px;
+  }
+  .hub-app-card {
+    padding: 16px;
+    border-radius: 16px;
+  }
+  .hub-app-card__icon {
+    width: 38px;
+    height: 38px;
+  }
+  .hub-app-card__name {
+    font-size: 0.95rem;
+  }
+  .hub-app-card__desc {
+    font-size: 0.78rem;
+  }
+  /* Theme toggle no dashboard */
+  .theme-toggle-dash {
+    top: 14px;
+    right: 14px;
+  }
+  .theme-toggle-dash button {
+    width: 34px !important;
+    height: 34px !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 900px) {
+  .hub-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .hub-page {
+    padding: 20px 20px 40px;
+    overflow-y: auto;
+  }
+}
+
+/* ── Kanban Board ───────────────────────────────────── */
+@media (max-width: 768px) {
+  .kb-root {
+    overflow: hidden;
+  }
+  .kb-header {
+    padding: 12px 14px 10px;
+    gap: 8px;
+  }
+  .kb-title {
+    font-size: 1.2rem;
+  }
+  .kb-subtitle {
+    font-size: 0.78rem;
+  }
+  .kb-header-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .kb-search-box input {
+    width: 120px;
+  }
+  /* Board scroll horizontal com snap */
+  .kb-board {
+    padding: 0 12px 16px;
+    gap: 12px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .kb-column {
+    min-width: 270px;
+    max-width: 280px;
+    scroll-snap-align: start;
+    max-height: calc(100dvh - 160px);
+  }
+  .kb-btn-primary,
+  .kb-btn-outline {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .kb-board {
+    padding: 0 10px 14px;
+  }
+  .kb-column {
+    min-width: calc(100vw - 48px);
+    max-width: calc(100vw - 48px);
+  }
+  .kb-modal {
+    width: 96%;
+    border-radius: 16px;
+  }
+  .kb-modal-body {
+    padding: 16px;
+  }
+  .kb-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .kb-header-right {
+    width: 100%;
+  }
+}
+
+/* ── App Container principal ────────────────────────── */
+@media (max-width: 640px) {
+  .app-container-simple {
+    height: 100dvh; /* dynamic viewport height — safe for mobile browsers */
+  }
+  .main-content-simple {
+    overflow: hidden;
+  }
+  .page-wrapper {
+    overflow: hidden;
+  }
+}
+
+/* ── API Module ─────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Reduz padding de painéis internos de módulos */
+  .module-header {
+    margin-bottom: 14px;
+  }
+  .module-header h1 {
+    font-size: 1.4rem;
+  }
+}
+
+/* ── WorkFlow / React Flow ──────────────────────────── */
+@media (max-width: 640px) {
+  /* O ReactFlow precisa de 100% mas em mobile podemos ajudar */
+  .react-flow__controls {
+    bottom: 16px !important;
+    left: 12px !important;
+    transform: scale(0.85) !important;
+    transform-origin: bottom left !important;
+  }
+  .react-flow__minimap {
+    display: none !important; /* Remove minimapa em telas pequenas */
+  }
+}
+
+/* ── Scrollbars mobile thin ─────────────────────────── */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--suri-border);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+/* ── Touch-friendly tap targets ─────────────────────── */
+@media (pointer: coarse) {
+  .kb-icon-btn {
+    padding: 8px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+  .kb-view-btn {
+    padding: 9px 12px;
+  }
+  .back-btn-solid {
+    min-height: 36px;
+  }
+  .hub-app-card {
+    /* Evitar hover permanente (ghost hover) em touch */
+    -webkit-tap-highlight-color: transparent;
+  }
+  .hub-app-card:hover {
+    transform: none;
+  }
+  .hub-app-card:active {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  }
 }

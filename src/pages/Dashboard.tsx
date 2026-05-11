@@ -11,7 +11,7 @@ const apps = [
   {
     path: '/apisuri',
     label: 'Suri API',
-    description: 'Console interno de conectores e endpoints.',
+    description: 'Testes via API',
     icon: Cable,
     color: 'var(--app-connect)',
     tag: 'API',
@@ -19,15 +19,15 @@ const apps = [
   {
     path: '/calcs',
     label: 'Suri Calcs',
-    description: 'Calculadora de planos, preços e projeções.',
+    description: 'Calculadora Suri para UpSell e DownSell',
     icon: Calculator,
     color: 'var(--app-calc)',
-    tag: 'Planos, Upsell',
+    tag: 'Upsell, Downsell',
   },
   {
     path: '/kanban',
     label: 'Kanban',
-    description: 'Produtividade, agenda e quadro de tarefas Kanban.',
+    description: 'Quadro de tarefas Kanban.',
     icon: Workflow,
     color: 'var(--app-vext)',
     tag: 'Kanban',
@@ -35,7 +35,7 @@ const apps = [
   {
     path: '/workflow',
     label: 'WorkFlow',
-    description: 'Fluxos de trabalho.',
+    description: 'Fluxos visuais para processos',
     icon: Workflow,
     color: 'var(--app-work)',
     tag: 'IA',

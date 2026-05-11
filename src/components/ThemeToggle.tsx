@@ -10,7 +10,7 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      className="rounded-xl w-10 h-10 border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm transition-all hover:scale-110 active:scale-95"
+      className="shrink-0 rounded-xl w-10 h-10 border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm transition-all hover:scale-110 active:scale-95"
       title="Alternar tema"
     >
       {theme === "light" ? (

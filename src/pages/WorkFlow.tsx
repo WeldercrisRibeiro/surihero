@@ -59,7 +59,7 @@ const defaultNodes: Node[] = [
   },
   {
     id: "2",
-    position: { x: 450, y: 100 },
+    position: { x: 500, y: 100 },
     data: { label: "Fluxo" },
     sourcePosition: Position.Right,
     targetPosition: Position.Left,
@@ -113,7 +113,7 @@ function FlowsContent() {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saveTitle, setSaveTitle] = useState("");
   const [saveDescription, setSaveDescription] = useState("");
-  const [showSavedPanel, setShowSavedPanel] = useState(true);
+  const [showSavedPanel, setShowSavedPanel] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 640);
   const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
   const [nodeLabelDraft, setNodeLabelDraft] = useState("");
   const [editingEdgeId, setEditingEdgeId] = useState<string | null>(null);
@@ -424,73 +424,65 @@ function FlowsContent() {
       <div className="flex-1 flex flex-col" style={{ minHeight: 0 }}>
       {/* Header MOVED TO PORTAL */}
       {portalNode && createPortal(
-        <div className="flex w-full items-center justify-between">
-          {/* Title block */}
-          <div className="flex items-center gap-2 min-w-0">
-            <Workflow className="w-4 h-4 text-cyan-500 shrink-0" />
+        <div className="flex w-full items-center justify-between gap-1.5 min-w-0">
+          {/* Título editável */}
+          <div className="flex items-center gap-1.5 min-w-0 shrink-0">
+            <Workflow className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
             {isEditingTitle ? (
               <input
                 type="text"
                 autoFocus
                 value={flowTitleDraft}
-                onChange={(e) => {
-                  setFlowTitleDraft(e.target.value);
-                  setHasUnsavedChanges(true);
-                }}
+                onChange={(e) => { setFlowTitleDraft(e.target.value); setHasUnsavedChanges(true); }}
                 onBlur={handleTitleBlur}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleTitleBlur();
-                }}
-                className="font-semibold text-sm text-foreground bg-secondary px-2 py-0.5 rounded outline-none ring-2 ring-primary ring-offset-2 ring-offset-background w-48"
+                onKeyDown={(e) => { if (e.key === "Enter") handleTitleBlur(); }}
+                className="font-semibold text-xs text-foreground bg-secondary px-2 py-0.5 rounded outline-none ring-2 ring-primary ring-offset-2 ring-offset-background w-32 sm:w-48"
               />
             ) : (
               <h1
                 onDoubleClick={() => setIsEditingTitle(true)}
-                className="font-bold text-sm text-foreground cursor-text hover:text-primary transition-colors select-none truncate m-0"
+                className="font-bold text-xs sm:text-sm text-foreground cursor-text hover:text-primary transition-colors select-none truncate m-0 max-w-[80px] sm:max-w-[180px]"
                 title="Clique duas vezes para editar"
               >
                 {flowTitleDraft}
-                {hasUnsavedChanges && (
-                  <span className="ml-1.5 text-xs text-muted-foreground font-normal">
-                    *
-                  </span>
-                )}
+                {hasUnsavedChanges && <span className="ml-1 text-xs text-muted-foreground font-normal">*</span>}
               </h1>
             )}
           </div>
 
-          <div className="flex items-center gap-2">
-            <button onClick={saveAsPhoto} className={buttonGhost} title="Salvar como Foto">
+          <div className="flex items-center gap-1 sm:gap-1.5 ml-auto">
+            {/* Foto */}
+            <button onClick={saveAsPhoto} className="flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-xl text-[11px] font-bold text-foreground/80 hover:bg-accent hover:text-foreground transition-all h-8" title="Salvar como Foto">
               <Camera className="w-3.5 h-3.5" />
-              <span className="text-[11px] font-bold uppercase tracking-wider">Foto</span>
+              <span className="hidden sm:inline uppercase tracking-wider">Foto</span>
             </button>
 
-            <div className="w-px h-4 bg-border/40 mx-1" />
+            <div className="w-px h-4 bg-border/40 hidden sm:block" />
 
-            <div className="flex items-center gap-2">
-              {hasSelection && (
-                <button onClick={deleteSelected} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 text-[11px] font-bold uppercase tracking-wider transition-all">
-                  <Trash2 className="w-3.5 h-3.5" />
-                  Excluir
-                </button>
-              )}
-              <button onClick={addNode} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-bold uppercase tracking-wider transition-all border border-slate-200 dark:border-slate-700">
-                <Plus className="w-3.5 h-3.5" />
-                Novo
+            {hasSelection && (
+              <button onClick={deleteSelected} className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 text-[11px] font-bold uppercase tracking-wider transition-all h-8" title="Excluir">
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Excluir</span>
               </button>
-              {editingFlow && (
-                <button onClick={() => requestAction(resetCanvas)} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-bold uppercase tracking-wider transition-all border border-slate-200 dark:border-slate-700">
-                  <X className="w-3.5 h-3.5" />
-                  Cancelar
-                </button>
-              )}
-            </div>
+            )}
 
-            <div className="w-px h-4 bg-border/40 mx-1" />
+            <button onClick={addNode} className="flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-bold uppercase tracking-wider transition-all border border-slate-200 dark:border-slate-700 h-8" title="Novo nó">
+              <Plus className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Novo</span>
+            </button>
 
-            <button onClick={openSaveDialog} className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-cyan-500 text-white hover:bg-cyan-600 text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm">
+            {editingFlow && (
+              <button onClick={() => requestAction(resetCanvas)} className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-bold uppercase tracking-wider transition-all border border-slate-200 dark:border-slate-700 h-8" title="Cancelar">
+                <X className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Cancelar</span>
+              </button>
+            )}
+
+            <div className="w-px h-4 bg-border/40 hidden sm:block" />
+
+            <button onClick={openSaveDialog} className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 rounded-xl bg-cyan-500 text-white hover:bg-cyan-600 text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm h-8" title={editingFlow ? "Atualizar" : "Salvar"}>
               <Save className="w-3.5 h-3.5" />
-              {editingFlow ? "Atualizar" : "Salvar"}
+              <span className="hidden sm:inline">{editingFlow ? "Atualizar" : "Salvar"}</span>
             </button>
           </div>
         </div>,
@@ -596,7 +588,7 @@ function FlowsContent() {
 
       {/* RIGHT: saved flows panel */}
       {showSavedPanel ? (
-        <div className="flex flex-col border-l border-border bg-card/40" style={{ width: 280 }}>
+        <div className="flex flex-col border-l border-border bg-card/40" style={{ width: 'min(260px, 55vw)' }}>
           <div className="flex items-center justify-between px-4 border-b border-border" style={{ minHeight: 64, paddingTop: 12, paddingBottom: 12 }}>
             <div className="flex items-center gap-2">
               <GitBranch className="w-3.5 h-3.5 text-muted-foreground" />

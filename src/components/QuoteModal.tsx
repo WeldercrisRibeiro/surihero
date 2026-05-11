@@ -27,9 +27,11 @@ export interface QuoteData {
   finalPrice: number;
   discount: number;
   hasDiscount: boolean;
+  discountPercent: number;
   implantacao: number;
   marketingPrice: number;
   utilityPrice: number;
+  excessDiscountPercent: number;
   suriShopCommission: string;
 }
 
@@ -84,13 +86,17 @@ function StoreIntegrations() {
 }
 
 function PlanCard({ d }: { d: QuoteData }) {
+  const hasExcessDiscount = d.excessDiscountPercent > 0;
+  const mktPrice = hasExcessDiscount ? d.marketingPrice * (1 - d.excessDiscountPercent / 100) : d.marketingPrice;
+  const utlPrice = hasExcessDiscount ? d.utilityPrice * (1 - d.excessDiscountPercent / 100) : d.utilityPrice;
+
   const items = [
     { icon: <MessageCircle style={{ width: 16, height: 16, color: CYAN }} />, label: "Interações", value: fmtN(d.interactions) },
     { icon: <Clock style={{ width: 16, height: 16, color: CYAN }} />, label: "Preço/Interação", value: `R$ ${fmt(d.interactionPrice)}` },
     { icon: <Wallet style={{ width: 16, height: 16, color: CYAN }} />, label: "Valor base", value: `R$ ${fmt(d.basePrice)}` },
     { icon: <ArrowUpRight style={{ width: 16, height: 16, color: CYAN }} />, label: "Implantação", value: `R$ ${fmt(d.implantacao)}` },
-    { icon: <Megaphone style={{ width: 16, height: 16, color: CYAN }} />, label: "Mensagens de Marketing (Excedentes)", value: `R$ ${fmt(d.marketingPrice)}` },
-    { icon: <Settings style={{ width: 16, height: 16, color: CYAN }} />, label: "Mensagens de Utilidade (Excedentes)", value: `R$ ${fmt(d.utilityPrice)}` },
+    { icon: <Megaphone style={{ width: 16, height: 16, color: CYAN }} />, label: "Marketing (Excedentes)", value: hasExcessDiscount ? <><span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: 6 }}>R$ {fmt(d.marketingPrice)}</span> <span style={{ color: '#16a34a' }}>R$ {fmt(mktPrice)}</span></> : `R$ ${fmt(d.marketingPrice)}` },
+    { icon: <Settings style={{ width: 16, height: 16, color: CYAN }} />, label: "Utilidade (Excedentes)", value: hasExcessDiscount ? <><span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: 6 }}>R$ {fmt(d.utilityPrice)}</span> <span style={{ color: '#16a34a' }}>R$ {fmt(utlPrice)}</span></> : `R$ ${fmt(d.utilityPrice)}` },
     { 
       icon: <ShoppingBag style={{ width: 16, height: 16, color: CYAN }} />, 
       label: "Suri Shop Assistant", 
@@ -125,8 +131,8 @@ function PlanCard({ d }: { d: QuoteData }) {
         <h2 style={{ fontSize: 20, fontWeight: 900, letterSpacing: "-0.02em" }}>{d.plan}</h2>
       </div>
 
-      {/* Body - 2 Columns Grid for "Evidence" */}
-      <div style={{ padding: "16px 24px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 32px" }}>
+      {/* Body - Grid */}
+      <div className="plan-grid-mobile">
         {items.map((item, i) => (
           <div key={i} style={{ 
             display: "flex", justifyContent: "space-between", alignItems: "center", 
@@ -141,6 +147,26 @@ function PlanCard({ d }: { d: QuoteData }) {
         ))}
       </div>
 
+      {/* Excedentes com Desconto em Evidência */}
+      {d.excessDiscountPercent > 0 && (
+        <div style={{ padding: "12px 24px", backgroundColor: "#f0fdf4", borderTop: "1px dashed #bbf7d0", borderBottom: "1px dashed #bbf7d0", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          <Zap style={{ width: 16, height: 16, color: "#16a34a" }} />
+          <span style={{ fontSize: 12, fontWeight: 800, color: "#16a34a", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            {d.excessDiscountPercent}% de desconto em mensagens excedentes!
+          </span>
+        </div>
+      )}
+
+      {/* Desconto Mensal em Evidência */}
+      {d.hasDiscount && (
+        <div style={{ padding: "12px 24px", backgroundColor: "#fff7ed", borderTop: "1px dashed #fdba74", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          <Zap style={{ width: 16, height: 16, color: "#ea580c" }} />
+          <span style={{ fontSize: 12, fontWeight: 800, color: "#ea580c", textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "center" }}>
+            {d.discountPercent}% de desconto na mensalidade!
+          </span>
+        </div>
+      )}
+
       {/* Price Box */}
       <div style={{ padding: "0 24px 24px 24px" }}>
         <div style={{ 
@@ -148,6 +174,9 @@ function PlanCard({ d }: { d: QuoteData }) {
           border: "1px solid #f1f5f9"
         }}>
            <p style={{ fontSize: 10, fontWeight: 800, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Mensal</p>
+           {d.hasDiscount && (
+             <p style={{ fontSize: 18, fontWeight: 800, color: "#94a3b8", textDecoration: "line-through", marginBottom: -4 }}>R$ {fmt(d.basePrice)}</p>
+           )}
            <p style={{ fontSize: 36, fontWeight: 900, color: "#0891b2" }}>R$ {fmt(d.finalPrice)}</p>
         </div>
       </div>
@@ -172,7 +201,7 @@ export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProp
     if (!printWindow) return;
     printWindow.document.write(`<!DOCTYPE html><html><head>
       <title>Orçamento Suri</title>
-      <link rel="shortcut icon" href="https://portal.suri.ai/images/favicon.png">
+      <link rel="shortcut icon" href="${window.location.origin}/totvs.svg">
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
       <style>
         * { margin:0; padding:0; box-sizing:border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -233,11 +262,11 @@ export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProp
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[1200px] max-h-[95vh] overflow-y-auto p-0 border-none rounded-[3rem]">
-        <div className="p-10 pb-6">
+        <div className="p-4 sm:p-8 md:p-10 pb-6">
            {/* Form Section */}
            <div className="mb-10">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-6">Informações do Cliente</p>
-              <div className="grid grid-cols-3 gap-6">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-6 px-2">Informações do Cliente</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 px-2">
                 <div className="space-y-2">
                   <Label className="text-xs font-bold text-slate-600 flex items-center gap-2 ml-1">
                     <UserCheck className="w-4 h-4 opacity-40" /> Negociador
@@ -274,8 +303,12 @@ export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProp
            <Separator className="mb-10 opacity-50" />
 
            {/* Preview Container */}
-           <div className="bg-slate-50/50 p-1 rounded-[2.5rem] border border-slate-100">
-             <div ref={printRef} style={{ backgroundColor: "white", padding: "24px 32px", borderRadius: 36 }}>
+           <div className="bg-slate-50/50 p-1 sm:p-2 rounded-[2.5rem] border border-slate-100 overflow-x-hidden">
+             <div ref={printRef} className="bg-white p-4 sm:p-6 md:p-8 rounded-[2.25rem]">
+                <style>{`
+                  .plan-grid-mobile { display: grid; grid-template-columns: 1fr; gap: 0 32px; padding: 16px 24px; }
+                  @media (min-width: 640px) { .plan-grid-mobile { grid-template-columns: 1fr 1fr; } }
+                `}</style>
                 {/* Document Header */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
                    <div style={{ display: "flex", alignItems: "center", gap: 16 }}>

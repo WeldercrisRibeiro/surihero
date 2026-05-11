@@ -11,13 +11,13 @@ export const HubLayout = ({ children }: { children: React.ReactNode }) => {
     <div className="app-container-simple">
       {!isDashboard ? (
         <header className="suri-topbar-solid">
-          <Link to="/" className="back-btn-solid">
+          <Link to="/" className="back-btn-solid shrink-0">
             <ChevronLeft size={15} strokeWidth={2.5} />
-            <span>Dashboard</span>
+            <span className="hidden sm:inline">Dashboard</span>
           </Link>
           
           {/* Portal target for module headers */}
-          <div id="topbar-portal-target" className="flex-1 flex items-center justify-between h-full px-6" />
+          <div id="topbar-portal-target" className="flex-1 min-w-0 flex items-center justify-between h-full px-2 sm:px-6" />
 
           <ThemeToggle />
         </header>

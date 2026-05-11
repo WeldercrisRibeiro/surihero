@@ -55,9 +55,6 @@ export function CredentialsBar() {
       <div className="flex h-12 items-center justify-between px-4 bg-background border-b border-border shadow-sm">
         {/* ESQUERDA: STATUS COMPACTO */}
         <div className="flex items-center gap-4">
-          <div className="flex h-7 w-7 items-center justify-center rounded bg-primary text-primary-foreground font-bold text-sm shadow-sm">
-            S
-          </div>
           <div className="h-4 w-px bg-border mx-1" />
           <div className="flex items-center gap-2">
             {connected ? (
