@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
   Minus, Plus, FileText,
   Lightbulb, Zap, Calculator, Megaphone
@@ -37,33 +38,38 @@ export default function PricingCalculator() {
   const [activeTab, setActiveTab] = useState<"upsell" | "downsell">("upsell");
 
   // Downsell Calculator States
-  const [downsellPlanValue, setDownsellPlanValue] = useState(399.00);
+  const [downsellPlanValue, setDownsellPlanValue] = useState(660.00);
+  const [contractDuration, setContractDuration] = useState(12);
+  const [monthsUsed, setMonthsUsed] = useState(4);
+  const [penaltyPercent, setPenaltyPercent] = useState(30);
   const [contractStart, setContractStart] = useState("2025-09-30");
   const [downsellDate, setDownsellDate] = useState("2026-05-07");
-  const [overdueInvoices, setOverdueInvoices] = useState(2.00);
+  const [overdueInvoices, setOverdueInvoices] = useState(660.00);
+  const [overdueDueDate, setOverdueDueDate] = useState("2026-05-15");
 
   const [portalNode, setPortalNode] = useState<HTMLElement | null>(null);
   useEffect(() => {
     setPortalNode(document.getElementById('topbar-portal-target'));
   }, []);
 
-  const usedMonths = useMemo(() => {
-    if (!contractStart || !downsellDate) return 0;
+  useEffect(() => {
+    if (!contractStart || !downsellDate) return;
     const [sy, sm, sd] = contractStart.split("-").map(Number);
     const [ey, em, ed] = downsellDate.split("-").map(Number);
-    if (!sy || !ey) return 0;
+    if (!sy || !ey) return;
     const start = new Date(sy, sm - 1, sd);
     const end = new Date(ey, em - 1, ed);
     let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
     if (end.getDate() < start.getDate()) {
       months--;
     }
-    return Math.max(0, months);
+    setMonthsUsed(Math.max(0, months));
   }, [contractStart, downsellDate]);
 
-  const remainingMonths = Math.max(0, 12 - usedMonths);
-  const remainingBalance = downsellPlanValue * remainingMonths;
-  const penaltyAmount = usedMonths >= 12 ? 0 : remainingBalance * 0.3;
+  const contractTotal = downsellPlanValue * contractDuration;
+  const valueUsed = downsellPlanValue * monthsUsed;
+  const remainingBalance = Math.max(0, contractTotal - valueUsed);
+  const penaltyAmount = monthsUsed >= contractDuration ? 0 : remainingBalance * (penaltyPercent / 100);
   const totalDue = penaltyAmount + overdueInvoices;
 
 
@@ -390,17 +396,58 @@ export default function PricingCalculator() {
             <div className="grid md:grid-cols-2 gap-8">
               {/* Entradas */}
               <div className="space-y-4">
-                <div>
-                  <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Valor mensal atual (R$)</Label>
-                  <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
-                    <Input
-                      type="number"
-                      value={downsellPlanValue}
-                      onChange={(e) => setDownsellPlanValue(Number(e.target.value))}
-                      className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg"
-                    />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Valor mensal (R$)</Label>
+                    <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
+                      <Input
+                        type="number"
+                        value={downsellPlanValue}
+                        onChange={(e) => setDownsellPlanValue(Number(e.target.value))}
+                        className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Vigência (meses)</Label>
+                    <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
+                      <Input
+                        type="number"
+                        value={contractDuration}
+                        onChange={(e) => setContractDuration(Number(e.target.value))}
+                        className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg"
+                      />
+                    </div>
                   </div>
                 </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Meses Utilizados</Label>
+                    <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
+                      <Input
+                        type="number"
+                        value={monthsUsed}
+                        onChange={(e) => setMonthsUsed(Number(e.target.value))}
+                        className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Multa (%)</Label>
+                    <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
+                      <Input
+                        type="number"
+                        value={penaltyPercent}
+                        onChange={(e) => setPenaltyPercent(Number(e.target.value))}
+                        className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg text-cyan-600 dark:text-cyan-400"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <Separator className="my-2 opacity-50" />
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Início Contrato</Label>
@@ -414,7 +461,7 @@ export default function PricingCalculator() {
                     </div>
                   </div>
                   <div>
-                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Data Downsell</Label>
+                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Data Cancelamento</Label>
                     <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
                       <Input
                         type="date"
@@ -425,15 +472,29 @@ export default function PricingCalculator() {
                     </div>
                   </div>
                 </div>
-                <div>
-                  <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Valor Faturas Vencidas (R$)</Label>
-                  <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
-                    <Input
-                      type="number"
-                      value={overdueInvoices}
-                      onChange={(e) => setOverdueInvoices(Number(e.target.value))}
-                      className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg"
-                    />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Fatura em Aberto (R$)</Label>
+                    <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
+                      <Input
+                        type="number"
+                        value={overdueInvoices}
+                        onChange={(e) => setOverdueInvoices(Number(e.target.value))}
+                        className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Vencimento Fatura</Label>
+                    <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
+                      <Input
+                        type="date"
+                        value={overdueDueDate}
+                        onChange={(e) => setOverdueDueDate(e.target.value)}
+                        className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -442,28 +503,56 @@ export default function PricingCalculator() {
               <div className="bg-cyan-50 dark:bg-cyan-900/10 rounded-3xl p-6 border border-cyan-100 dark:border-cyan-800/50 flex flex-col justify-center">
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Meses já utilizados</span>
-                    <span className="text-base font-bold text-slate-800 dark:text-slate-200">{usedMonths}</span>
+                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Valor total do contrato</span>
+                    <span className="text-base font-bold text-slate-800 dark:text-slate-200">R$ {fmt(contractTotal)}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Meses restantes (até 12)</span>
-                    <span className="text-base font-bold text-slate-800 dark:text-slate-200">{remainingMonths}</span>
+                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Valor utilizado</span>
+                    <span className="text-base font-bold text-slate-800 dark:text-slate-200">R$ {fmt(valueUsed)}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Saldo contratual</span>
+                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Saldo remanescente</span>
                     <span className="text-base font-bold text-slate-800 dark:text-slate-200">R$ {fmt(remainingBalance)}</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Multa contratual (30%)</span>
-                    <span className="text-base font-bold text-cyan-600 dark:text-cyan-400">
-                      {usedMonths >= 12 ? "SEM MULTA" : `R$ ${fmt(penaltyAmount)}`}
+                  <div className="flex justify-between items-center bg-rose-50 dark:bg-rose-900/20 p-2 rounded-xl border border-rose-100 dark:border-rose-900/40">
+                    <span className="text-sm font-bold text-rose-600 dark:text-rose-400">Multa rescisória ({penaltyPercent}%)</span>
+                    <span className="text-base font-black text-rose-600 dark:text-rose-400">
+                      {monthsUsed >= contractDuration ? "SEM MULTA" : `R$ ${fmt(penaltyAmount)}`}
                     </span>
                   </div>
                   <div className="pt-4 border-t border-cyan-200 dark:border-cyan-800/50 flex justify-between items-center">
-                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest">Valor Total Devido</span>
+                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest">Total devido</span>
                     <span className="text-2xl font-black text-cyan-600 dark:text-cyan-400">R$ {fmt(totalDue)}</span>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Texto Cliente Block */}
+            <div className="mt-8 p-6 bg-slate-50 dark:bg-slate-800/40 rounded-3xl border border-slate-100 dark:border-slate-700 relative group">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Texto Sugerido para o Cliente</h4>
+                <Button 
+                  variant="ghost" size="sm" 
+                  className="h-8 rounded-lg text-[10px] font-black uppercase tracking-wider text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50 dark:hover:bg-cyan-900/20"
+                  onClick={() => {
+                    const text = `Conforme contrato vigente, o pedido de cancelamento realizado em ${new Date(downsellDate).toLocaleDateString('pt-BR')} está sujeito à multa rescisória de ${penaltyPercent}% sobre o saldo contratual remanescente, além da quitação das faturas já emitidas.\n\nDessa forma, temos:\n\nMulta rescisória: R$ ${fmt(penaltyAmount)}\nFatura em aberto (venc. ${new Date(overdueDueDate).toLocaleDateString('pt-BR')}): R$ ${fmt(overdueInvoices)}\n👉 Total devido: R$ ${fmt(totalDue)}`;
+                    navigator.clipboard.writeText(text);
+                  }}
+                >
+                  Copiar Texto
+                </Button>
+              </div>
+              <div className="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed whitespace-pre-line">
+                Conforme contrato vigente, o pedido de cancelamento realizado em <span className="font-bold text-slate-900 dark:text-slate-200">{new Date(downsellDate).toLocaleDateString('pt-BR')}</span> está sujeito à multa rescisória de <span className="font-bold text-slate-900 dark:text-slate-200">{penaltyPercent}%</span> sobre o saldo contratual remanescente, além da quitação das faturas já emitidas.
+                {"\n\n"}
+                Dessa forma, temos:
+                {"\n\n"}
+                Multa rescisória: <span className="font-bold text-slate-900 dark:text-slate-200">R$ {fmt(penaltyAmount)}</span>
+                {"\n"}
+                Fatura em aberto (venc. <span className="font-bold text-slate-900 dark:text-slate-200">{new Date(overdueDueDate).toLocaleDateString('pt-BR')}</span>): <span className="font-bold text-slate-900 dark:text-slate-200">R$ {fmt(overdueInvoices)}</span>
+                {"\n"}
+                <span className="text-sm">👉</span> <span className="text-sm font-black text-cyan-600 dark:text-cyan-400">Total devido: R$ {fmt(totalDue)}</span>
               </div>
             </div>
           </Card>
@@ -500,8 +589,8 @@ export default function PricingCalculator() {
 
       <QuoteModal open={quoteOpen} onOpenChange={setQuoteOpen} plans={getQuotePlans()} />
       <DownsellModal open={downsellModalOpen} onOpenChange={setDownsellModalOpen} data={{
-        downsellPlanValue, contractStart, downsellDate, usedMonths, remainingMonths,
-        remainingBalance, penaltyAmount, overdueInvoices, totalDue
+        downsellPlanValue, contractStart, downsellDate, monthsUsed, contractDuration,
+        contractTotal, valueUsed, remainingBalance, penaltyAmount, overdueInvoices, totalDue, penaltyPercent, overdueDueDate
       }} />
     </div>
   );

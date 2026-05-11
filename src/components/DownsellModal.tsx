@@ -23,11 +23,15 @@ export interface DownsellData {
   downsellPlanValue: number;
   contractStart: string;
   downsellDate: string;
-  usedMonths: number;
-  remainingMonths: number;
+  monthsUsed: number;
+  contractDuration: number;
+  contractTotal: number;
+  valueUsed: number;
   remainingBalance: number;
   penaltyAmount: number;
+  penaltyPercent: number;
   overdueInvoices: number;
+  overdueDueDate: string;
   totalDue: number;
 }
 
@@ -216,36 +220,36 @@ export default function DownsellModal({ open, onOpenChange, data }: DownsellModa
                   
                   <div style={{ border: "1px solid #e2e8f0", borderRadius: 24, overflow: "hidden" }}>
                     <div style={rowStyle}>
-                      <span style={labelStyle}>Valor Mensal Atual do Plano</span>
+                      <span style={labelStyle}>Valor Mensal</span>
                       <span style={valueStyle}>R$ {fmt(data.downsellPlanValue)}</span>
                     </div>
                     <div style={rowAltStyle}>
-                      <span style={labelStyle}>Data de Início do Contrato</span>
-                      <span style={valueStyle}>{formatDate(data.contractStart)}</span>
+                      <span style={labelStyle}>Vigência do Contrato</span>
+                      <span style={valueStyle}>{data.contractDuration} meses</span>
                     </div>
                     <div style={rowStyle}>
-                      <span style={labelStyle}>Data da Solicitação Downsell/Cancelamento</span>
-                      <span style={valueStyle}>{formatDate(data.downsellDate)}</span>
-                    </div>
-                    <div style={rowAltStyle}>
                       <span style={labelStyle}>Meses Já Utilizados</span>
-                      <span style={valueStyle}>{data.usedMonths} {data.usedMonths === 1 ? 'mês' : 'meses'}</span>
-                    </div>
-                    <div style={rowStyle}>
-                      <span style={labelStyle}>Meses Restantes (até 12 meses)</span>
-                      <span style={valueStyle}>{data.remainingMonths} {data.remainingMonths === 1 ? 'mês' : 'meses'}</span>
+                      <span style={valueStyle}>{data.monthsUsed} {data.monthsUsed === 1 ? 'mês' : 'meses'}</span>
                     </div>
                     <div style={rowAltStyle}>
-                      <span style={labelStyle}>Saldo Contratual Restante</span>
+                      <span style={labelStyle}>Valor Total do Contrato</span>
+                      <span style={valueStyle}>R$ {fmt(data.contractTotal)}</span>
+                    </div>
+                    <div style={rowStyle}>
+                      <span style={labelStyle}>Valor Utilizado</span>
+                      <span style={valueStyle}>R$ {fmt(data.valueUsed)}</span>
+                    </div>
+                    <div style={rowAltStyle}>
+                      <span style={labelStyle}>Saldo Contratual Remanescente</span>
                       <span style={valueStyle}>R$ {fmt(data.remainingBalance)}</span>
                     </div>
                     <div style={rowStyle}>
-                      <span style={labelStyle}>Faturas Vencidas</span>
-                      <span style={valueStyle}>R$ {fmt(data.overdueInvoices)}</span>
+                      <span style={labelStyle}>Multa Rescisória ({data.penaltyPercent}%)</span>
+                      <span style={highlightStyle}>{data.monthsUsed >= data.contractDuration ? "SEM MULTA" : `R$ ${fmt(data.penaltyAmount)}`}</span>
                     </div>
                     <div style={rowAltStyle}>
-                      <span style={labelStyle}>Multa Contratual (30%)</span>
-                      <span style={highlightStyle}>{data.usedMonths >= 12 ? "SEM MULTA" : `R$ ${fmt(data.penaltyAmount)}`}</span>
+                      <span style={labelStyle}>Fatura em Aberto (venc. {formatDate(data.overdueDueDate)})</span>
+                      <span style={valueStyle}>R$ {fmt(data.overdueInvoices)}</span>
                     </div>
                   </div>
 
@@ -256,7 +260,7 @@ export default function DownsellModal({ open, onOpenChange, data }: DownsellModa
                   
                   <div style={{ marginTop: 20, padding: 16, backgroundColor: "#f8fafc", borderRadius: 16, border: "1px dashed #cbd5e1" }}>
                     <p style={{ fontSize: 11, color: "#64748b", lineHeight: 1.5 }}>
-                      <strong>Importante:</strong> Caso o cliente tenha mais de 12 meses, não haverá multa. A multa segue cláusula contratual de 30% do saldo restante. O boleto é gerado a partir do momento que o cliente der o aceite para pagar o downsell.
+                      <strong>Importante:</strong> Caso o cliente tenha cumprido a vigência total, não haverá multa. A multa segue cláusula contratual de {data.penaltyPercent}% do saldo restante. O boleto é gerado a partir do momento que o cliente der o aceite para o cancelamento/downsell.
                     </p>
                   </div>
                 </div>
