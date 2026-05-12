@@ -154,31 +154,31 @@ export default function DownsellModal({ open, onOpenChange, data }: DownsellModa
                   <Label className="text-xs font-bold text-slate-600 flex items-center gap-2 ml-1">
                     <UserCheck className="w-4 h-4 opacity-40" /> Negociador
                   </Label>
-                  <Input placeholder="Seu nome" value={client.negociador} onChange={e => setClient(c => ({...c, negociador: e.target.value}))} className="h-12 rounded-2xl border-slate-100 bg-cyan-50/30" />
+                  <Input placeholder="Maria Lima" value={client.negociador} onChange={e => setClient(c => ({...c, negociador: e.target.value}))} className="h-12 rounded-2xl border-slate-100 bg-cyan-50/30" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-bold text-slate-600 flex items-center gap-2 ml-1">
                     <Building2 className="w-4 h-4 opacity-40" /> Empresa
                   </Label>
-                  <Input placeholder="Nome da empresa" value={client.empresa} onChange={e => setClient(c => ({...c, empresa: e.target.value}))} className="h-12 rounded-2xl border-slate-100" />
+                  <Input placeholder="Empresa Teste Ltda" value={client.empresa} onChange={e => setClient(c => ({...c, empresa: e.target.value}))} className="h-12 rounded-2xl border-slate-100" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-bold text-slate-600 flex items-center gap-2 ml-1">
                     <User className="w-4 h-4 opacity-40" /> Responsável
                   </Label>
-                  <Input placeholder="Nome do responsável" value={client.responsavel} onChange={e => setClient(c => ({...c, responsavel: e.target.value}))} className="h-12 rounded-2xl border-slate-100" />
+                  <Input placeholder="Fulano de Tal" value={client.responsavel} onChange={e => setClient(c => ({...c, responsavel: e.target.value}))} className="h-12 rounded-2xl border-slate-100" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-bold text-slate-600 flex items-center gap-2 ml-1">
                     <Mail className="w-4 h-4 opacity-40" /> E-mail
                   </Label>
-                  <Input placeholder="email@empresa.com" value={client.email} onChange={e => setClient(c => ({...c, email: e.target.value}))} className="h-12 rounded-2xl border-slate-100" />
+                  <Input placeholder="email@exemplo.com" value={client.email} onChange={e => setClient(c => ({...c, email: e.target.value}))} className="h-12 rounded-2xl border-slate-100" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-bold text-slate-600 flex items-center gap-2 ml-1">
                     <Phone className="w-4 h-4 opacity-40" /> Telefone
                   </Label>
-                  <Input placeholder="(00) 00000-0000" value={client.telefone} onChange={e => setClient(c => ({...c, telefone: e.target.value}))} className="h-12 rounded-2xl border-slate-100" />
+                  <Input placeholder="(99) 99999-9999" value={client.telefone} onChange={e => setClient(c => ({...c, telefone: e.target.value}))} className="h-12 rounded-2xl border-slate-100" />
                 </div>
               </div>
            </div>
@@ -260,7 +260,7 @@ export default function DownsellModal({ open, onOpenChange, data }: DownsellModa
                   
                   <div style={{ marginTop: 20, padding: 16, backgroundColor: "#f8fafc", borderRadius: 16, border: "1px dashed #cbd5e1" }}>
                     <p style={{ fontSize: 11, color: "#64748b", lineHeight: 1.5 }}>
-                      <strong>Importante:</strong> Caso o cliente tenha cumprido a vigência total, não haverá multa. A multa segue cláusula contratual de {data.penaltyPercent}% do saldo restante. O boleto é gerado a partir do momento que o cliente der o aceite para o cancelamento/downsell.
+                      <strong>Importante:</strong> Caso tenha cumprido a vigência total, não haverá multa. A multa segue cláusula contratual de {data.penaltyPercent}% do saldo restante. O boleto é gerado a partir do momento que o cliente der o aceite para o cancelamento/downsell.
                     </p>
                   </div>
                 </div>

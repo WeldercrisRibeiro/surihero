@@ -5,12 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Toaster } from "sonner";
 import {
   Minus, Plus, FileText,
   Lightbulb, Zap, Calculator, Megaphone
 } from "lucide-react";
 import QuoteModal, { type QuoteData } from "./QuoteModal";
 import DownsellModal from "./DownsellModal";
+import { toast } from "sonner";
 
 const PRICE_PER_INTERACTION = { essential: 0.53, pro: 0.66 };
 const IMPLANTACAO = 1890;
@@ -538,6 +540,7 @@ export default function PricingCalculator() {
                   onClick={() => {
                     const text = `Conforme contrato vigente, o pedido de cancelamento realizado em ${new Date(downsellDate).toLocaleDateString('pt-BR')} está sujeito à multa rescisória de ${penaltyPercent}% sobre o saldo contratual remanescente, além da quitação das faturas já emitidas.\n\nDessa forma, temos:\n\nMulta rescisória: R$ ${fmt(penaltyAmount)}\nFatura em aberto (venc. ${new Date(overdueDueDate).toLocaleDateString('pt-BR')}): R$ ${fmt(overdueInvoices)}\n👉 Total devido: R$ ${fmt(totalDue)}`;
                     navigator.clipboard.writeText(text);
+                    toast("Texto copiado para a área de transferência!");
                   }}
                 >
                   Copiar Texto
