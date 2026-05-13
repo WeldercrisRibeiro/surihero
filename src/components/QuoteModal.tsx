@@ -49,7 +49,7 @@ const STORES = [
   "Loja - Suri", "Loja - Mercadapp", "Loja - Shopify", "Loja - Lexos by Totvs", "Loja - VTEX", "Loja - Neomode"
 ];
 
-const PLAN_NAMES = ["Essential", "PRO"];
+const PLAN_NAMES = ["Essential", "Advanced", "PRO"];
 
 function StoreIntegrations() {
   return (
@@ -100,7 +100,7 @@ function PlanCard({ d }: { d: QuoteData }) {
     { 
       icon: <ShoppingBag style={{ width: 16, height: 16, color: CYAN }} />, 
       label: "Suri Shop Assistant", 
-      value: d.plan.toUpperCase() === "PRO" ? "Incluso com IA" : "Incluso sem IA" 
+      value: ["PRO", "ADVANCED"].includes(d.plan.toUpperCase()) ? "Incluso com IA" : "Incluso sem IA" 
     },
   ];
 

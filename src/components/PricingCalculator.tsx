@@ -12,9 +12,16 @@ import {
 } from "lucide-react";
 import QuoteModal, { type QuoteData } from "./QuoteModal";
 import DownsellModal from "./DownsellModal";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
-const PRICE_PER_INTERACTION = { essential: 0.53, pro: 0.66 };
+const PRICE_PER_INTERACTION = { essential: 0.53, pro: 0.66, advanced: 0.66 };
 const IMPLANTACAO = 1890;
 
 function fmt(v: number) {
@@ -25,9 +32,10 @@ function fmtN(v: number) {
 }
 
 export default function PricingCalculator() {
-  const [interactions, setInteractions] = useState(1000);
+  const [interactions, setInteractions] = useState(5000);
   const [essPrice, setEssPrice] = useState(PRICE_PER_INTERACTION.essential);
   const [proPrice, setProPrice] = useState(PRICE_PER_INTERACTION.pro);
+  const [advPrice, setAdvPrice] = useState(PRICE_PER_INTERACTION.advanced);
   const [discountPercent, setDiscountPercent] = useState(0);
   const [setupPrice, setSetupPrice] = useState(IMPLANTACAO);
   const [setupDiscount, setSetupDiscount] = useState(100);
@@ -35,18 +43,18 @@ export default function PricingCalculator() {
   const [selectedPlans, setSelectedPlans] = useState<Set<string>>(new Set());
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [downsellModalOpen, setDownsellModalOpen] = useState(false);
-  const [marketingPrice, setMarketingPrice] = useState(0.90);
-  const [utilityPrice, setUtilityPrice] = useState(0.90);
+  const [marketingPrice, setMarketingPrice] = useState(0.49);
+  const [utilityPrice, setUtilityPrice] = useState(0.25);
   const [activeTab, setActiveTab] = useState<"upsell" | "downsell">("upsell");
 
   // Downsell Calculator States
-  const [downsellPlanValue, setDownsellPlanValue] = useState(660.00);
+  const [downsellPlanValue, setDownsellPlanValue] = useState(2640.00);
   const [contractDuration, setContractDuration] = useState(12);
   const [monthsUsed, setMonthsUsed] = useState(4);
   const [penaltyPercent, setPenaltyPercent] = useState(30);
   const [contractStart, setContractStart] = useState("2025-09-30");
   const [downsellDate, setDownsellDate] = useState("2026-05-07");
-  const [overdueInvoices, setOverdueInvoices] = useState(660.00);
+  const [overdueInvoices, setOverdueInvoices] = useState(2640.00);
   const [overdueDueDate, setOverdueDueDate] = useState("2026-05-15");
 
   const [portalNode, setPortalNode] = useState<HTMLElement | null>(null);
@@ -96,6 +104,17 @@ export default function PricingCalculator() {
         suriShopCommission: ""
       });
     }
+    if (selectedPlans.has("Advanced")) {
+      plans.push({
+        plan: "Advanced", interactions, interactionPrice: advPrice,
+        basePrice: calc.advanced.base, finalPrice: calc.advanced.final,
+        discount: calc.advanced.discount, hasDiscount: discountPercent > 0,
+        discountPercent,
+        implantacao: calc.implantacao.final, marketingPrice, utilityPrice,
+        excessDiscountPercent,
+        suriShopCommission: ""
+      });
+    }
     if (selectedPlans.has("Pro")) {
       plans.push({
         plan: "Pro", interactions, interactionPrice: proPrice,
@@ -113,15 +132,17 @@ export default function PricingCalculator() {
   const calc = useMemo(() => {
     const essBase = interactions * essPrice;
     const proBase = interactions * proPrice;
+    const advBase = interactions * advPrice;
     const applyDiscount = (price: number) => price * (1 - discountPercent / 100);
     const setupFinal = Math.max(0, setupPrice * (1 - setupDiscount / 100));
 
     return {
       essential: { base: essBase, final: applyDiscount(essBase), discount: essBase - applyDiscount(essBase) },
       pro: { base: proBase, final: applyDiscount(proBase), discount: proBase - applyDiscount(proBase) },
+      advanced: { base: advBase, final: applyDiscount(advBase), discount: advBase - applyDiscount(advBase) },
       implantacao: { base: setupPrice, final: setupFinal, discount: setupPrice - setupFinal }
     };
-  }, [interactions, essPrice, proPrice, discountPercent, setupPrice, setupDiscount]);
+  }, [interactions, essPrice, proPrice, advPrice, discountPercent, setupPrice, setupDiscount]);
 
   return (
     <div className="flex-1 overflow-y-auto pt-4 pb-12 px-4 transition-colors duration-500">
@@ -221,11 +242,16 @@ export default function PricingCalculator() {
                   <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Mensal (%)</Label>
                 </div>
                 <div className="relative">
-                  <Input
-                    type="number" min={0} max={30} value={discountPercent || ""} placeholder="0"
-                    onChange={(e) => setDiscountPercent(Math.min(30, Math.max(0, Number(e.target.value))))}
-                    className="h-10 border-none bg-cyan-50/30 dark:bg-slate-900/40 font-black text-slate-700 dark:text-white rounded-xl text-center" />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 text-xs font-black">%</div>
+                  <Select value={String(discountPercent)} onValueChange={(v) => setDiscountPercent(Number(v))}>
+                    <SelectTrigger className="h-10 border-none bg-cyan-50/30 dark:bg-slate-900/40 font-black text-slate-700 dark:text-white rounded-xl">
+                      <SelectValue placeholder="0%" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[0, 5, 10, 15, 20, 25].map(v => (
+                        <SelectItem key={v} value={String(v)}>{v}%</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -253,11 +279,16 @@ export default function PricingCalculator() {
                   <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Excedentes (%)</Label>
                 </div>
                 <div className="relative">
-                  <Input
-                    type="number" min={0} max={100} value={excessDiscountPercent || ""} placeholder="0"
-                    onChange={(e) => setExcessDiscountPercent(Math.min(100, Math.max(0, Number(e.target.value))))}
-                    className="h-10 border-none bg-green-50/30 dark:bg-green-900/20 font-black text-green-600 dark:text-green-400 rounded-xl text-center" />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-green-300 text-xs font-black">%</div>
+                  <Select value={String(excessDiscountPercent)} onValueChange={(v) => setExcessDiscountPercent(Number(v))}>
+                    <SelectTrigger className="h-10 border-none bg-green-50/30 dark:bg-green-900/20 font-black text-green-600 dark:text-green-400 rounded-xl">
+                      <SelectValue placeholder="0%" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[0, 5, 10, 15, 20, 25].map(v => (
+                        <SelectItem key={v} value={String(v)}>{v}%</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
@@ -276,6 +307,7 @@ export default function PricingCalculator() {
             <div className="space-y-2">
               {[
                 { label: "Essential (R$)", value: essPrice, setter: setEssPrice },
+                { label: "Advanced (R$)", value: advPrice, setter: setAdvPrice },
                 { label: "Pro (R$)", value: proPrice, setter: setProPrice },
                 { label: "Implantação (R$)", value: setupPrice, setter: setSetupPrice, color: "bg-cyan-50 dark:bg-cyan-900/20", inputColor: "text-cyan-600 dark:text-cyan-400" },
                 { label: "Mensagens de Marketing (R$)", value: marketingPrice, setter: setMarketingPrice, isExcess: true },
@@ -301,7 +333,7 @@ export default function PricingCalculator() {
         </div>
 
         {/* Lower Row: Plan Cards */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-12 max-w-4xl mx-auto items-stretch">
+        <div className="grid lg:grid-cols-3 gap-8 mb-12 items-stretch">
 
           {/* Essential Plan Card */}
           <Card
@@ -337,6 +369,43 @@ export default function PricingCalculator() {
                 Implantação
               </div>
               <span className="text-cyan-500 font-black italic">R$ {fmt(calc.implantacao.final)}</span>
+            </div>
+          </Card>
+
+          {/* Advanced Plan Card */}
+          <Card
+            onClick={() => togglePlan("Advanced")}
+            className={`group h-full p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[22rem]
+              bg-cyan-600 dark:bg-cyan-700 shadow-[0_20px_50px_-12px_rgba(8,145,178,0.4)]
+              ${selectedPlans.has("Advanced") ? "border-white ring-4 ring-white/20" : "border-transparent"}
+              hover:scale-[1.02] active:scale-95 duration-300
+            `}
+          >
+            <div>
+              <div className="flex justify-between items-start mb-6">
+                <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-white">
+                  <Zap className="w-6 h-6 fill-current" />
+                </div>
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Advanced") ? "border-white bg-white" : "border-white/40"}`}>
+                  {selectedPlans.has("Advanced") && <div className="w-2 h-2 rounded-full bg-cyan-600" />}
+                </div>
+              </div>
+              <h2 className="text-2xl font-black text-white mb-1">Advanced</h2>
+              <p className="text-cyan-100 text-xs font-medium mb-8 uppercase tracking-widest">O mais popular</p>
+
+              <div className="items-baseline flex gap-1 mb-8">
+                <span className="text-cyan-100 font-bold text-lg">R$</span>
+                <span className="text-5xl font-black text-white tracking-tighter">{fmt(calc.advanced.final)}</span>
+                <span className="text-cyan-100 font-bold text-sm">/mês</span>
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-white/10 flex justify-between items-center">
+              <div className="flex items-center gap-2 text-[10px] font-black text-white uppercase tracking-widest">
+                <div className="w-4 h-4 rounded-full bg-white flex items-center justify-center text-cyan-600"><Plus className="w-3 h-3" /></div>
+                Implantação
+              </div>
+              <span className="text-white font-black italic">R$ {fmt(calc.implantacao.final)}</span>
             </div>
           </Card>
 
