@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Bot, Cable, Calculator, Workflow, ArrowRight } from 'lucide-react';
+import { Bot, Cable, Calculator, Workflow, ArrowRight, Shield, User, LogOut } from 'lucide-react';
 import { useTheme } from '@/hooks/use-theme';
+import { useAuth } from '@/hooks/useAuth';
 
 // URLs dos logos
 const LOGO_LIGHT = "/totvs-cyan.svg"; 
@@ -44,7 +45,10 @@ const apps = [
 
 export const HubDashboard = () => {
   const { theme } = useTheme();
+  const { profile, isAdmin, signOut, mockLogin } = useAuth();
   const currentLogo = theme === 'light' ? LOGO_LIGHT : LOGO_DARK;
+
+  const visibleApps = apps;
 
   return (
     <div className="hub-page">
@@ -54,12 +58,12 @@ export const HubDashboard = () => {
           <img src={currentLogo} alt="Logo" className="hub-page__logo" />
           <p className="hub-page__eyebrow">SURI TOOLS</p>
         </div>
-        <h1 className="hub-page__title">Bem-vindo!</h1>
-        <p className="hub-page__subtitle">Módulos disponíveis</p>
+        <h1 className="hub-page__title">Soluções SURI</h1>
+        <p className="hub-page__subtitle">Selecione um módulo para começar</p>
       </div>
 
     <div className="hub-grid">
-      {apps.map((app) => (
+      {visibleApps.map((app) => (
         <Link
           key={app.path}
           to={app.path}

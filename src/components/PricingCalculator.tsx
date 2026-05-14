@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 
-const PRICE_PER_INTERACTION = { essential: 0.53, pro: 0.66, advanced: 0.66 };
+const PRICE_PER_INTERACTION = { essential: 0.53, pro: 0.66, advanced: 0.00 };
 const IMPLANTACAO = 1890;
 
 function fmt(v: number) {
@@ -32,7 +32,7 @@ function fmtN(v: number) {
 }
 
 export default function PricingCalculator() {
-  const [interactions, setInteractions] = useState(5000);
+  const [interactions, setInteractions] = useState(1000);
   const [essPrice, setEssPrice] = useState(PRICE_PER_INTERACTION.essential);
   const [proPrice, setProPrice] = useState(PRICE_PER_INTERACTION.pro);
   const [advPrice, setAdvPrice] = useState(PRICE_PER_INTERACTION.advanced);

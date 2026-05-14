@@ -1,8 +1,3 @@
-Crie um controle de acesso entre:
+cOMO O LOGIN É SOMENTE NA PARTE DO KANMBAM, O BOTÃO COM O NOME E BOTÃO DE SAIR SÓ APARECE NAQUELE MÓDULO.
 
-Usuário 
-Admin
-
-Serão essas duas roles somente.
-
-Implemente na ferramenta de kanban inicialmente
+IMPLEMENTE UMA MELHOR VISUALIZAÇÃO, POIS ESTÁ FIACANDO MAIS ABAIXO O ACESSO AOS USUÁRIOS. iSSO DEVE FICAR SOMENTE NA PARTE DE KANBAN.

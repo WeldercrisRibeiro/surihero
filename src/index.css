@@ -144,6 +144,13 @@ body {
 
 html {
   overflow: hidden;
+  font-size: 13.5px; /* Ajuste para que 100% de zoom pareça ~85% do tamanho padrão, melhorando a densidade de informação */
+}
+
+@media (min-width: 1536px) {
+  html {
+    font-size: 15px; /* Telas muito grandes mantêm uma escala um pouco maior */
+  }
 }
 
 /* Glassmorphism */
@@ -199,8 +206,8 @@ html {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  height: 52px;
+  padding: 0 16px;
+  height: 48px;
   background: var(--suri-surface);
   border-bottom: 1px solid var(--suri-border);
   flex-shrink: 0;

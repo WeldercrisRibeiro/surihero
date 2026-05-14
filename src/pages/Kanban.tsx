@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Plus,
   Search,
@@ -12,8 +13,16 @@ import {
   GripHorizontal,
   X,
   ChevronDown,
+  LogOut,
+  Shield,
+  User,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+import { KanbanService } from '@/lib/kanban-service';
+import { supabase, type Profile } from '@/lib/supabase';
+import { toast } from 'sonner';
+import { AdminUsersModal } from '@/components/AdminUsersModal';
 
 // ──────────────────────────── Types ────────────────────────────
 
@@ -31,6 +40,7 @@ interface KanbanCard {
   priority: Priority;
   tags?: KanbanTag[];
   dueDate?: string;
+  owner_email?: string; // For global view
 }
 
 interface KanbanColumn {
@@ -133,6 +143,12 @@ const CardItem = ({ card, onDelete, onEdit, onDragStart, onDragEnd }: CardItemPr
           <div className="kb-card-date">
             <Calendar size={11} />
             <span>{formatDate(card.dueDate)}</span>
+          </div>
+        )}
+        {card.owner_email && (
+          <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/50 flex items-center gap-1.5 opacity-60">
+            <User size={10} className="text-cyan-500" />
+            <span className="text-[9px] font-bold truncate uppercase tracking-wider">{card.owner_email.split('@')[0]}</span>
           </div>
         )}
       </div>
@@ -345,21 +361,160 @@ const ColModal = ({ onClose, onAdd, initialData }: ColModalProps) => {
 // ──────────────────────────── Main KanbanBoard ────────────────────────────
 
 export const KanbanBoard = () => {
-  const [columns, setColumns] = useState<KanbanColumn[]>(() => {
-    const saved = localStorage.getItem('suri-kanban-v2');
-    if (saved) return JSON.parse(saved);
-    return [
-      { id: '1', title: 'BACKLOG', color: '#9ca3af', cards: [] },
-      { id: '2', title: 'A FAZER', color: '#9ca3af', cards: [] },
-      { id: '3', title: 'FAZENDO', color: '#3b82f6', cards: [] },
-      { id: '4', title: 'CONCLUÍDO', color: '#22c55e', cards: [] },
-      { id: '5', title: 'PENDENTE', color: '#9ca3af', cards: [] },
-    ];
-  });
+  const { profile, isAdmin, loading: authLoading, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [columns, setColumns] = useState<KanbanColumn[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [allUsers, setAllUsers] = useState<Profile[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
+  // Initial load
+  useEffect(() => {
+    if (!authLoading) {
+      if (profile) {
+        setSelectedUserId(profile.id);
+        fetchUsers();
+      } else {
+        navigate('/login');
+      }
+    }
+  }, [authLoading, profile]);
 
   useEffect(() => {
-    localStorage.setItem('suri-kanban-v2', JSON.stringify(columns));
-  }, [columns]);
+    if (selectedUserId) {
+      loadBoard(selectedUserId);
+    }
+  }, [selectedUserId]);
+
+  const fetchUsers = async () => {
+    try {
+      const { data, error } = await supabase.from('profiles').select('*');
+      if (error) throw error;
+      
+      let userList = data || [];
+      // Ensure current profile is in the list even if DB is empty/mock
+      if (profile && !userList.some(u => u.id === profile.id)) {
+        userList = [profile, ...userList];
+      }
+      setAllUsers(userList);
+    } catch (err) {
+      console.error('Error fetching users:', err);
+      if (profile) setAllUsers([profile]);
+    }
+  };
+
+  const loadBoard = async (uid: string) => {
+    if (!uid || authLoading || !profile) return;
+    setLoading(true);
+
+    // Segurança: Forçar fechamento do loading após 5s
+    const timeout = setTimeout(() => setLoading(false), 5000);
+
+    try {
+      if (uid === 'all') {
+        // 1. Buscar colunas do admin como base
+        const { data: adminCols, error: adminColsError } = await supabase
+          .from('kanban_columns')
+          .select('*')
+          .eq('user_id', profile?.id)
+          .order('position');
+
+        if (adminColsError) throw adminColsError;
+
+        // 2. Tentar buscar cards com Join de email
+        let { data: allCards, error: allCardsError } = await supabase
+          .from('kanban_cards')
+          .select('*, profiles!user_id(email)');
+
+        // Fallback se o Join falhar (evita tela branca)
+        if (allCardsError) {
+          console.warn('Busca com profiles falhou, tentando busca simples');
+          const { data: simpleCards } = await supabase.from('kanban_cards').select('*');
+          allCards = simpleCards;
+        }
+
+        if (!adminCols) {
+          setLoading(false);
+          return;
+        }
+
+        // 3. Mapear nomes de colunas para agrupar cards de todos
+        const { data: allCols } = await supabase.from('kanban_columns').select('*');
+        const colIdToTitle: Record<string, string> = {};
+        allCols?.forEach(c => colIdToTitle[c.id] = c.title);
+
+        const merged = adminCols.map(ac => ({
+          id: ac.id,
+          title: ac.title,
+          color: ac.color,
+          cards: (allCards || [])
+            .filter(card => colIdToTitle[card.column_id] === ac.title)
+            .map(card => ({
+              id: card.id,
+              title: card.title,
+              description: card.description || undefined,
+              priority: card.priority,
+              tags: card.tags,
+              dueDate: card.due_date || undefined,
+              owner_email: (card as any).profiles?.email || 'Desconhecido'
+            }))
+        }));
+
+        setColumns(merged);
+
+        // Auto-init Admin columns if empty
+        if (adminCols.length === 0 && profile) {
+          const defaults = [
+            { title: 'Solicitação', color: '#3b82f6', position: 0 },
+            { title: 'Em Triagem', color: '#8b5cf6', position: 1 },
+            { title: 'Agendado', color: '#10b981', position: 2 },
+            { title: 'Finalizado', color: '#6366f1', position: 3 }
+          ];
+          for (const d of defaults) {
+            await supabase.from('kanban_columns').insert([{ ...d, user_id: profile.id }]);
+          }
+          const { data: fresh } = await supabase.from('kanban_columns').select('*').eq('user_id', profile.id).order('position');
+          if (fresh) setColumns(fresh.map(c => ({ ...c, cards: [] })));
+        }
+      } else {
+        // Modo Usuário: Carregar apenas seus dados
+        const { data: cols } = await supabase.from('kanban_columns').select('*').eq('user_id', uid).order('position');
+        const { data: cards } = await supabase.from('kanban_cards').select('*').eq('user_id', uid);
+        
+        if (cols && cols.length > 0) {
+          setColumns(cols.map(col => ({
+            ...col,
+            cards: (cards || []).filter(c => c.column_id === col.id).map(c => ({
+              ...c,
+              dueDate: c.due_date || undefined,
+              description: c.description || undefined
+            }))
+          })));
+        } else if (uid === profile?.id) {
+          // Inicializar se for o próprio usuário
+          const defaults = [
+            { title: 'Solicitação', color: '#3b82f6', position: 0 },
+            { title: 'Em Triagem', color: '#8b5cf6', position: 1 },
+            { title: 'Agendado', color: '#10b981', position: 2 },
+            { title: 'Finalizado', color: '#6366f1', position: 3 }
+          ];
+          for (const d of defaults) {
+            await supabase.from('kanban_columns').insert([{ ...d, user_id: uid }]);
+          }
+          const { data: fresh } = await supabase.from('kanban_columns').select('*').eq('user_id', uid).order('position');
+          if (fresh) setColumns(fresh.map(c => ({ ...c, cards: [] })));
+        } else {
+          setColumns([]);
+        }
+      }
+    } catch (err) {
+      console.error('Erro ao carregar quadro:', err);
+      toast.error('Erro na conexão com o banco');
+    } finally {
+      clearTimeout(timeout);
+      setLoading(false);
+    }
+  };
 
   const [search, setSearch] = useState('');
   const [taskModal, setTaskModal] = useState<{ isOpen: boolean; colId: string; card?: KanbanCard }>({
@@ -371,15 +526,9 @@ export const KanbanBoard = () => {
   });
 
   const [defaultNewColId, setDefaultNewColId] = useState('');
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+  // Column persistence is now managed by Admin only
 
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
-    const saved = localStorage.getItem('suri-kanban-view');
-    return (saved as 'grid' | 'list') || 'grid';
-  });
-
-  useEffect(() => {
-    localStorage.setItem('suri-kanban-view', viewMode);
-  }, [viewMode]);
 
   // Drag state (cards)
   const draggingCard = useRef<{ cardId: string; fromColId: string } | null>(null);
@@ -397,56 +546,59 @@ export const KanbanBoard = () => {
 
   // ── Actions ──
 
-  const saveCard = (colId: string, card: KanbanCard) => {
-    setColumns((prev) => {
-      // If it's an edit, we might have changed columns
-      const originalCol = prev.find((c) => c.cards.some((k) => k.id === card.id));
+  const saveCard = async (colId: string, card: KanbanCard) => {
+    if (!selectedUserId) return;
+    try {
+      const col = columns.find(c => c.id === colId);
+      const position = card.id.length > 10 ? columns.find(c => c.cards.some(k => k.id === card.id))?.cards.findIndex(k => k.id === card.id) ?? 0 : (col?.cards.length || 0);
       
-      let updatedCols = prev;
-      if (originalCol && originalCol.id !== colId) {
-        // Remove from old col
-        updatedCols = updatedCols.map((c) =>
-          c.id === originalCol.id ? { ...c, cards: c.cards.filter((k) => k.id !== card.id) } : c
-        );
-      }
-
-      return updatedCols.map((col) => {
-        if (col.id === colId) {
-          const cardExists = col.cards.some((k) => k.id === card.id);
-          if (cardExists) {
-            return { ...col, cards: col.cards.map((k) => (k.id === card.id ? card : k)) };
-          } else {
-            return { ...col, cards: [...col.cards, card] };
-          }
-        }
-        return col;
+      await KanbanService.saveCard(selectedUserId, colId, {
+        ...card,
+        position
       });
-    });
-  };
-
-  const deleteCard = (colId: string, cardId: string) => {
-    setColumns((prev) =>
-      prev.map((col) =>
-        col.id === colId
-          ? { ...col, cards: col.cards.filter((c) => c.id !== cardId) }
-          : col
-      )
-    );
-  };
-
-  const deleteColumn = (colId: string) => {
-    if (confirm('Deseja excluir esta coluna e todas as suas tarefas?')) {
-      setColumns((prev) => prev.filter((c) => c.id !== colId));
+      loadBoard(selectedUserId);
+      toast.success('Tarefa salva');
+    } catch (err) {
+      toast.error('Erro ao salvar tarefa');
     }
   };
 
-  const saveColumn = (title: string, color: string, colId?: string) => {
-    if (colId) {
-      setColumns((prev) =>
-        prev.map((c) => (c.id === colId ? { ...c, title, color } : c))
-      );
-    } else {
-      setColumns((prev) => [...prev, { id: generateId(), title, color, cards: [] }]);
+  const deleteCard = async (colId: string, cardId: string) => {
+    if (!confirm('Excluir esta tarefa?')) return;
+    try {
+      await KanbanService.deleteCard(cardId);
+      loadBoard(selectedUserId!);
+      toast.success('Tarefa excluída');
+    } catch (err) {
+      toast.error('Erro ao excluir');
+    }
+  };
+
+  const deleteColumn = async (colId: string) => {
+    if (confirm('Deseja excluir esta coluna e todas as suas tarefas?')) {
+      try {
+        await KanbanService.deleteColumn(colId);
+        loadBoard(selectedUserId!);
+        toast.success('Coluna excluída');
+      } catch (err) {
+        toast.error('Erro ao excluir coluna');
+      }
+    }
+  };
+
+  const saveColumn = async (title: string, color: string, colId?: string) => {
+    if (!selectedUserId) return;
+    try {
+      await KanbanService.saveColumn(selectedUserId, {
+        id: colId,
+        title,
+        color,
+        position: colId ? columns.find(c => c.id === colId)!.position : columns.length
+      });
+      loadBoard(selectedUserId);
+      toast.success('Coluna salva');
+    } catch (err) {
+      toast.error('Erro ao salvar coluna');
     }
   };
 
@@ -477,38 +629,23 @@ export const KanbanBoard = () => {
     setDragOverCardId(cardId);
   };
 
-  const handleDrop = (e: React.DragEvent, toColId: string, toCardId?: string) => {
+  const handleDrop = async (e: React.DragEvent, toColId: string, toCardId?: string) => {
     e.preventDefault();
-    if (!draggingCard.current) return;
+    if (!draggingCard.current || !selectedUserId) return;
     const { cardId, fromColId } = draggingCard.current;
-    if (cardId === toCardId) return;
+    
+    try {
+      const toCol = columns.find(c => c.id === toColId);
+      let newPos = toCol?.cards.length || 0;
+      if (toCardId) {
+        newPos = toCol?.cards.findIndex(c => c.id === toCardId) ?? newPos;
+      }
 
-    setColumns((prev) => {
-      // Find card
-      const fromCol = prev.find((c) => c.id === fromColId);
-      if (!fromCol) return prev;
-      const card = fromCol.cards.find((c) => c.id === cardId);
-      if (!card) return prev;
-
-      // Remove from source
-      const newCols = prev.map((col) =>
-        col.id === fromColId
-          ? { ...col, cards: col.cards.filter((c) => c.id !== cardId) }
-          : col
-      );
-
-      // Insert into destination
-      return newCols.map((col) => {
-        if (col.id !== toColId) return col;
-        if (!toCardId) {
-          return { ...col, cards: [...col.cards, card] };
-        }
-        const idx = col.cards.findIndex((c) => c.id === toCardId);
-        const newCards = [...col.cards];
-        newCards.splice(idx, 0, card);
-        return { ...col, cards: newCards };
-      });
-    });
+      await KanbanService.updateCardPosition(cardId, toColId, newPos);
+      loadBoard(selectedUserId);
+    } catch (err) {
+      toast.error('Erro ao mover card');
+    }
 
     setDragOverColId(null);
     setDragOverCardId(null);
@@ -601,6 +738,30 @@ export const KanbanBoard = () => {
           {/* Título — oculto no mobile, visível em sm+ */}
           <div className="hidden sm:flex items-center gap-2 shrink-0">
             <h1 className="text-sm font-bold text-foreground m-0 whitespace-nowrap">Kanban Board</h1>
+            {isAdmin && (
+              <select 
+                className="ml-2 text-[11px] bg-slate-100 dark:bg-slate-800 border-none rounded-lg px-2 py-1 outline-none ring-1 ring-slate-200 dark:ring-slate-700 min-w-[120px]"
+                value={selectedUserId || ''}
+                onChange={(e) => setSelectedUserId(e.target.value)}
+              >
+                {allUsers.length === 0 && <option value="">Sem usuários</option>}
+                <option value="all">🌐 Todos os Usuários</option>
+                <optgroup label="Usuários Individuais">
+                  {allUsers.map(u => (
+                    <option key={u.id} value={u.id}>{u.email}</option>
+                  ))}
+                </optgroup>
+              </select>
+            )}
+            {isAdmin && (
+              <button 
+                onClick={() => setIsAdminModalOpen(true)}
+                className="ml-2 flex items-center justify-center w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-all"
+                title="Gerenciar Usuários"
+              >
+                <Shield size={14} />
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
@@ -626,50 +787,56 @@ export const KanbanBoard = () => {
               <Search size={14} />
             </button>
 
-            {/* Toggle Grid/Lista — oculto em mobile, visível em sm+ */}
-            <div className="kb-view-toggle h-8 hidden sm:flex">
-              <button
-                className={cn("kb-view-btn h-full px-2.5", viewMode === 'grid' && "active")}
-                onClick={() => setViewMode('grid')}
-                title="Grid"
-              >
-                <LayoutGrid size={14} />
-              </button>
-              <button
-                className={cn("kb-view-btn h-full px-2.5", viewMode === 'list' && "active")}
-                onClick={() => setViewMode('list')}
-                title="Lista"
-              >
-                <List size={14} />
-              </button>
-            </div>
+            {/* View toggle removed as per request */}
 
-            {/* Botão Nova Coluna — ícone em mobile, texto em sm+ */}
-            <button
-              className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-bold uppercase tracking-wider transition-all border border-slate-200 dark:border-slate-700 h-8"
-              onClick={() => setColModal({ isOpen: true })}
-              title="Nova Coluna"
-            >
-              <Plus size={13} />
-              <span className="hidden sm:inline">Coluna</span>
-            </button>
+
+            {/* Botão Nova Coluna — APENAS ADMIN */}
+            {isAdmin && (
+              <button
+                className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-bold uppercase tracking-wider transition-all border border-slate-200 dark:border-slate-700 h-8"
+                onClick={() => setColModal({ isOpen: true })}
+                title="Nova Coluna (Admin)"
+              >
+                <Plus size={13} />
+                <span className="hidden sm:inline">Coluna</span>
+              </button>
+            )}
 
             {/* Botão Nova Tarefa — ícone em mobile, texto em sm+ */}
-            <button
-              className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl bg-cyan-500 text-white hover:bg-cyan-600 text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm h-8"
-              onClick={() => openNewTask()}
-              title="Nova Tarefa"
-            >
-              <Plus size={13} />
-              <span className="hidden sm:inline">Tarefa</span>
-            </button>
+            {(isAdmin || selectedUserId === profile?.id) && (
+              <button
+                className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl bg-cyan-500 text-white hover:bg-cyan-600 text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm h-8"
+                onClick={() => openNewTask()}
+                title="Nova Tarefa"
+              >
+                <Plus size={13} />
+                <span className="hidden sm:inline">Tarefa</span>
+              </button>
+            )}
+
+            <div className="w-px h-4 bg-slate-200 dark:bg-slate-800 mx-1" />
+
+            {/* User Info & Logout */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="hidden lg:flex flex-col items-end">
+                <span className="text-[10px] font-bold text-foreground leading-none">{profile?.email}</span>
+                <span className="text-[9px] text-slate-400 uppercase tracking-tighter">{profile?.role}</span>
+              </div>
+              <button 
+                onClick={() => { signOut(); navigate('/'); }}
+                className="flex items-center justify-center w-8 h-8 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all border border-transparent hover:border-red-100 dark:hover:border-red-900/30"
+                title="Sair"
+              >
+                <LogOut size={14} />
+              </button>
+            </div>
           </div>
         </div>,
         portalNode
       )}
 
       {/* ── Board ── */}
-      <div className={cn("kb-board", viewMode === 'list' && "kb-board--list")}>
+      <div className="kb-board">
         {filteredColumns.map((col) => (
           <div
             key={col.id}
@@ -697,13 +864,13 @@ export const KanbanBoard = () => {
             {/* Column header */}
             <div
               className="kb-col-header"
-              draggable
-              onDragStart={(e) => handleColDragStart(e, col.id)}
-              style={{ cursor: 'grab' }}
-              title="Arraste para reordenar a coluna"
+              draggable={isAdmin}
+              onDragStart={(e) => isAdmin && handleColDragStart(e, col.id)}
+              style={{ cursor: isAdmin ? 'grab' : 'default' }}
+              title={isAdmin ? "Arraste para reordenar a coluna" : ""}
             >
               <div className="kb-col-title">
-                <GripHorizontal size={13} className="opacity-30 mr-1 flex-shrink-0" />
+                {isAdmin && <GripHorizontal size={13} className="opacity-30 mr-1 flex-shrink-0" />}
                 <span className="kb-col-dot" style={{ background: col.color }} />
                 <span className="kb-col-name">{col.title}</span>
                 <span className="kb-col-count">{col.cards.length}</span>
@@ -716,20 +883,24 @@ export const KanbanBoard = () => {
                 >
                   <Plus size={14} />
                 </button>
-                <button
-                  className="kb-icon-btn"
-                  title="Editar coluna"
-                  onClick={() => openEditCol(col)}
-                >
-                  <ChevronDown size={14} />
-                </button>
-                <button
-                  className="kb-icon-btn kb-delete-btn"
-                  title="Excluir coluna"
-                  onClick={() => deleteColumn(col.id)}
-                >
-                  <Trash2 size={14} />
-                </button>
+                {isAdmin && (
+                  <>
+                    <button
+                      className="kb-icon-btn"
+                      title="Editar coluna"
+                      onClick={() => openEditCol(col)}
+                    >
+                      <ChevronDown size={14} />
+                    </button>
+                    <button
+                      className="kb-icon-btn kb-delete-btn"
+                      title="Excluir coluna"
+                      onClick={() => deleteColumn(col.id)}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
@@ -753,12 +924,31 @@ export const KanbanBoard = () => {
               ))}
               {col.cards.length === 0 && (
                 <div className="kb-empty-col">
-                  <p>Arraste cards aqui</p>
+                  <p>Arraste algo para cá</p>
                 </div>
               )}
             </div>
           </div>
         ))}
+
+        {filteredColumns.length === 0 && !loading && (
+          <div className="flex-1 flex flex-col items-center justify-center text-slate-400 py-20 animate-in fade-in zoom-in-95 duration-500">
+            <div className="w-16 h-16 rounded-3xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+              <LayoutGrid size={32} className="opacity-20" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300">Nenhuma coluna encontrada</h3>
+            <p className="text-sm opacity-60 mb-6">Crie sua primeira coluna para começar a organizar suas tarefas.</p>
+            {isAdmin && (
+              <button 
+                onClick={() => setColModal({ isOpen: true })}
+                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-cyan-500 text-white font-bold hover:bg-cyan-600 transition-all shadow-lg shadow-cyan-500/20"
+              >
+                <Plus size={18} />
+                Nova Coluna
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── Modals ── */}
@@ -776,6 +966,13 @@ export const KanbanBoard = () => {
           initialData={colModal.initialData}
           onClose={() => setColModal({ isOpen: false })}
           onAdd={(title, color) => saveColumn(title, color, colModal.colId)}
+        />
+      )}
+
+      {isAdminModalOpen && (
+        <AdminUsersModal 
+          onClose={() => setIsAdminModalOpen(false)}
+          onUsersUpdated={fetchUsers}
         />
       )}
     </div>
