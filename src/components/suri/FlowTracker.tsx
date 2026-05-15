@@ -215,7 +215,7 @@ export function FlowTracker() {
           </div>
 
           {showRaw && (
-            <pre className="max-h-[50vh] overflow-auto rounded-2xl border border-border/40 bg-[#0a0d12] p-8 text-[11px] font-mono leading-relaxed text-primary/60 selection:bg-primary/20">
+            <pre className="max-h-[50vh] overflow-auto rounded-2xl border border-border/40 bg-[#0a0d12] p-8 text-[11px] font-mono leading-relaxed text-white selection:bg-primary/20">
               {JSON.stringify(raw, null, 2)}
             </pre>
           )}
