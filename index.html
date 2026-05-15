@@ -1,36 +1,38 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
 
-    <!-- PWA & mobile -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="SURI Tools" />
-    <meta name="application-name" content="SURI Tools" />
-    <meta name="theme-color" content="#00e5ff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#080d1a" media="(prefers-color-scheme: dark)" />
-    <meta name="description" content="Módulos internos da plataforma SURI — API, Calcs, Kanban e WorkFlow." />
+<head>
+  <meta charset="UTF-8" />
 
-    <!-- PWA Manifest automatically injected by vite-plugin-pwa -->
+  <!-- PWA & mobile -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Suri Tools" />
+  <meta name="application-name" content="Suri Tools" />
+  <meta name="description" content="Módulos internos da plataforma Suri — Testes de API, Calculadora, Kanban e WorkFlow." />
+  <meta name="theme-color" content="#020519" />
 
-    <!-- Icons -->
-    <link rel="icon" type="image/svg+xml" href="/totvs.svg" />
-    <link rel="shortcut icon" href="/totvs.svg" />
-    <link rel="apple-touch-icon" href="/pwa-192.svg" />
-    <link rel="mask-icon" href="/totvs.svg" color="#00e5ff" />
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.webmanifest?v=1">
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Icons -->
+  <link rel="icon" type="image/svg+xml" href="/identidadevisual/icons/totvs.svg" />
+  <link rel="shortcut icon" href="/identidadevisual/icons/totvs.svg" />
+  <link rel="apple-touch-icon" href="/identidadevisual/icons/totvs.svg" />
 
-    <title>SURI Tools</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
+
+  <title>Suri Tools</title>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>

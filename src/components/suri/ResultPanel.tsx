@@ -122,7 +122,7 @@ export function ResultPanel({ data }: Omit<Props, 'url'>) {
         </TabsContent>
         <TabsContent value="json" className="mt-0 p-0 ring-0 focus-visible:ring-0">
           <div className="relative group">
-            <pre className="max-h-[550px] overflow-auto bg-[#0a0d12] p-10 text-[11px] font-mono leading-relaxed text-primary/80 selection:bg-primary/20">
+            <pre className="max-h-[550px] overflow-auto bg-[#0a0d12] p-10 text-[11px] font-mono leading-relaxed text-primary/80 dark:text-white selection:bg-primary/20">
               {json}
             </pre>
             <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">

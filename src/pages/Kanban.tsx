@@ -3,8 +3,6 @@ import { createPortal } from 'react-dom';
 import {
   Plus,
   Search,
-  LayoutGrid,
-  List,
   Trash2,
   Tag,
   Calendar,
@@ -43,13 +41,13 @@ interface KanbanColumn {
 // ──────────────────────────── Helpers ────────────────────────────
 
 const PRIORITY_STYLES: Record<Priority, { bg: string; color: string }> = {
-  BAIXO:   { bg: '#f3f4f6', color: '#6b7280' },
-  MÉDIO:   { bg: '#e0f2fe', color: '#3b82f6' }, // Light blue bg, blue text
+  BAIXO: { bg: '#f3f4f6', color: '#6b7280' },
+  MÉDIO: { bg: '#ffffff', color: '#4a54ff' }, // Snow Blue bg, Suri Blue text
   URGENTE: { bg: '#fee2e2', color: '#ef4444' }, // Light red bg, red text
-  IMEDIATO:{ bg: '#ffedd5', color: '#f97316' }, // Light orange bg, orange text
+  IMEDIATO: { bg: '#ffedd5', color: '#f97316' }, // Light orange bg, orange text
 };
 
-const COLUMN_COLORS = ['#9ca3af', '#3b82f6', '#f97316', '#22c55e', '#a855f7', '#ec4899'];
+const COLUMN_COLORS = ['#9ca3af', '#4a54ff', '#f97316', '#00b914', '#2e1de8', '#ec4899'];
 
 function generateId() {
   return Math.random().toString(36).slice(2, 10);
@@ -347,13 +345,23 @@ const ColModal = ({ onClose, onAdd, initialData }: ColModalProps) => {
 export const KanbanBoard = () => {
   const [columns, setColumns] = useState<KanbanColumn[]>(() => {
     const saved = localStorage.getItem('suri-kanban-v2');
-    if (saved) return JSON.parse(saved);
+    if (saved) {
+      const cols = JSON.parse(saved);
+      // Garantir que PENDENTE venha antes de CONCLUÍDO
+      const pIdx = cols.findIndex((c: any) => c.title === 'PENDENTE');
+      const cIdx = cols.findIndex((c: any) => c.title === 'CONCLUÍDO');
+      if (pIdx !== -1 && cIdx !== -1 && cIdx < pIdx) {
+        const [pCol] = cols.splice(pIdx, 1);
+        cols.splice(cIdx, 0, pCol);
+      }
+      return cols;
+    }
     return [
       { id: '1', title: 'BACKLOG', color: '#9ca3af', cards: [] },
       { id: '2', title: 'A FAZER', color: '#9ca3af', cards: [] },
-      { id: '3', title: 'FAZENDO', color: '#3b82f6', cards: [] },
+      { id: '3', title: 'FAZENDO', color: '#4a54ff', cards: [] },
       { id: '4', title: 'PENDENTE', color: '#9ca3af', cards: [] },
-      { id: '5', title: 'CONCLUÍDO', color: '#22c55e', cards: [] },
+      { id: '5', title: 'CONCLUÍDO', color: '#00b914', cards: [] },
     ];
   });
 
@@ -372,14 +380,7 @@ export const KanbanBoard = () => {
 
   const [defaultNewColId, setDefaultNewColId] = useState('');
 
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
-    const saved = localStorage.getItem('suri-kanban-view');
-    return (saved as 'grid' | 'list') || 'grid';
-  });
 
-  useEffect(() => {
-    localStorage.setItem('suri-kanban-view', viewMode);
-  }, [viewMode]);
 
   // Drag state (cards)
   const draggingCard = useRef<{ cardId: string; fromColId: string } | null>(null);
@@ -401,7 +402,7 @@ export const KanbanBoard = () => {
     setColumns((prev) => {
       // If it's an edit, we might have changed columns
       const originalCol = prev.find((c) => c.cards.some((k) => k.id === card.id));
-      
+
       let updatedCols = prev;
       if (originalCol && originalCol.id !== colId) {
         // Remove from old col
@@ -626,23 +627,7 @@ export const KanbanBoard = () => {
               <Search size={14} />
             </button>
 
-            {/* Toggle Grid/Lista — oculto em mobile, visível em sm+ */}
-            <div className="kb-view-toggle h-8 hidden sm:flex">
-              <button
-                className={cn("kb-view-btn h-full px-2.5", viewMode === 'grid' && "active")}
-                onClick={() => setViewMode('grid')}
-                title="Grid"
-              >
-                <LayoutGrid size={14} />
-              </button>
-              <button
-                className={cn("kb-view-btn h-full px-2.5", viewMode === 'list' && "active")}
-                onClick={() => setViewMode('list')}
-                title="Lista"
-              >
-                <List size={14} />
-              </button>
-            </div>
+
 
             {/* Botão Nova Coluna — ícone em mobile, texto em sm+ */}
             <button
@@ -656,7 +641,7 @@ export const KanbanBoard = () => {
 
             {/* Botão Nova Tarefa — ícone em mobile, texto em sm+ */}
             <button
-              className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl bg-cyan-500 text-white hover:bg-cyan-600 text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm h-8"
+              className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl bg-primary text-primary-foreground hover:opacity-90 text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm h-8"
               onClick={() => openNewTask()}
               title="Nova Tarefa"
             >
@@ -669,7 +654,7 @@ export const KanbanBoard = () => {
       )}
 
       {/* ── Board ── */}
-      <div className={cn("kb-board", viewMode === 'list' && "kb-board--list")}>
+      <div className="kb-board">
         {filteredColumns.map((col) => (
           <div
             key={col.id}

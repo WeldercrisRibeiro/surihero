@@ -4,11 +4,7 @@ export type Theme = "dark" | "light";
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window !== "undefined") {
-      const savedTheme = localStorage.getItem("theme") as Theme | null;
-      if (savedTheme) return savedTheme;
-      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    }
+    // Forçado para tema claro por tempo indeterminado
     return "light";
   });
 

@@ -5,8 +5,8 @@ interface PricingInfoProps {
 }
 
 export default function PricingInfo({ variant = "dashboard" }: PricingInfoProps) {
-  const ACCENT = "hsl(243 75% 59%)";
-  const CYAN = "#0891b2";
+  const ACCENT = "#4a54ff";
+  const SURI_BLUE = "#4a54ff";
   const content = {
     title: "Informativos",
     items: [
@@ -17,22 +17,22 @@ export default function PricingInfo({ variant = "dashboard" }: PricingInfoProps)
         highlight: true
       },
       {
-        icon: <MessageCircle style={{ width: 20, height: 20, color: CYAN }} />,
+        icon: <MessageCircle style={{ width: 20, height: 20, color: SURI_BLUE }} />,
         label: "CONTATO RECEPTIVO",
         description: "Contatos que se comunicam com a empresa por WhatsApp, Facebook, Instagram ou Webchat. O contato é contabilizado uma única vez por mês como 1 interação, independente de quantas conversas iniciar."
       },
       {
-        icon: <Send style={{ width: 20, height: 20, color: CYAN }} />,
+        icon: <Send style={{ width: 20, height: 20, color: SURI_BLUE }} />,
         label: "MENSAGEM ATIVA",
         description: "Mensagens enviadas pela empresa pelo WhatsApp usando templates de Marketing, Utilidade ou Autenticação. Cada envio é contabilizado como uma interação."
       },
       {
-        icon: <Zap style={{ width: 20, height: 20, color: CYAN }} />,
+        icon: <Zap style={{ width: 20, height: 20, color: SURI_BLUE }} />,
         label: "INTERAÇÕES EXCEDENTES",
         description: "São as interações que ultrapassam o volume contratado no seu plano mensal. Elas garantem que seu atendimento nunca pare, sendo faturadas individualmente com base no valor unitário do seu plano atual."
       },
       {
-        icon: <ShoppingBag style={{ width: 20, height: 20, color: CYAN }} />,
+        icon: <ShoppingBag style={{ width: 20, height: 20, color: SURI_BLUE }} />,
         label: "SURI SHOP ASSISTANT",
         description: "O Suri Shop Assistant é uma IA generativa focada em vendas e atendimento. Ele guia o cliente por toda a jornada de compra — da busca de produtos (por texto, áudio ou imagem) até o pagamento — utilizando o catálogo da loja. Além disso, automatiza respostas a dúvidas frequentes com base em sites ou documentos e sugere respostas em tempo real para otimizar o trabalho dos atendentes."
       },
@@ -55,7 +55,7 @@ export default function PricingInfo({ variant = "dashboard" }: PricingInfoProps)
             width: 32, height: 32, borderRadius: 10, backgroundColor: "#f0f0ff",
             display: "flex", alignItems: "center", justifyContent: "center"
           }}>
-            <Info style={{ width: 14, height: 14, color: CYAN }} />
+            <Info style={{ width: 14, height: 14, color: SURI_BLUE }} />
           </div>
           <h3 style={{ fontSize: 16, fontWeight: 800, color: "#1e293b" }}>{content.title}</h3>
         </div>
@@ -68,7 +68,7 @@ export default function PricingInfo({ variant = "dashboard" }: PricingInfoProps)
                 <div style={{ 
                   width: 36, height: 36, borderRadius: "50%", 
                   backgroundColor: isHighlight ? "#fef3c7" : "#f0f0ff",
-                  color: isHighlight ? "#d97706" : CYAN,
+                  color: isHighlight ? "#d97706" : SURI_BLUE,
                   display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
                 }}>
                   {item.icon}
@@ -90,8 +90,8 @@ export default function PricingInfo({ variant = "dashboard" }: PricingInfoProps)
   return (
     <div className="p-8 rounded-[2.5rem] border-none glass-card dark:bg-slate-900/40">
       <div className="flex items-center gap-3 mb-8">
-        <div className="w-10 h-10 rounded-full bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center">
-          <Info className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+        <div className="w-10 h-10 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+          <Info className="w-5 h-5 text-primary" />
         </div>
         <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">{content.title}</h3>
       </div>
@@ -101,7 +101,7 @@ export default function PricingInfo({ variant = "dashboard" }: PricingInfoProps)
           const isHighlight = item.highlight;
           return (
             <div key={idx} className={`flex gap-4 p-4 rounded-3xl transition-all ${isHighlight ? "bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-400 dark:border-amber-600 shadow-md" : "bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-100/50 dark:hover:bg-slate-800/60"}`}>
-              <div className={`w-12 h-12 rounded-full shadow-sm flex items-center justify-center shrink-0 ${isHighlight ? "bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400" : "bg-white dark:bg-slate-700 text-cyan-600 dark:text-cyan-400"}`}>
+              <div className={`w-12 h-12 rounded-full shadow-sm flex items-center justify-center shrink-0 ${isHighlight ? "bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400" : "bg-white dark:bg-slate-700 text-primary"}`}>
                 {item.icon}
               </div>
               <div>

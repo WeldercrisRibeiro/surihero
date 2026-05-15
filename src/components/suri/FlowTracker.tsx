@@ -124,11 +124,11 @@ export function FlowTracker() {
           RASTREADOR DE FLUXO
         </h2>
         <p className="text-sm text-slate-400 dark:text-slate-400 font-medium leading-relaxed max-w-xl">
-          Analise o histórico de mensagens para identificar o <code className="font-mono text-cyan-500 bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-100 dark:border-cyan-500/20 px-1.5 py-0.5 rounded text-xs">quickReplyPostback</code> atual do contato.
+          Analise o histórico de mensagens para identificar o <code className="font-mono text-primary bg-primary/5 dark:bg-primary/10 border border-primary/20 dark:border-primary/30 px-1.5 py-0.5 rounded text-xs">quickReplyPostback</code> atual do contato.
         </p>
       </div>
 
-      <div className="relative flex flex-col justify-center bg-slate-50/50 dark:bg-slate-900/40 p-4 rounded-[1.5rem] border border-slate-200 dark:border-slate-800/50 shadow-sm dark:shadow-none transition-all focus-within:border-cyan-500/50 dark:focus-within:border-cyan-500/50 focus-within:ring-4 focus-within:ring-cyan-500/10">
+      <div className="relative flex flex-col justify-center bg-slate-50/50 dark:bg-slate-900/40 p-4 rounded-[1.5rem] border border-slate-200 dark:border-slate-800/50 shadow-sm dark:shadow-none transition-all focus-within:border-primary/50 dark:focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/10">
         <Label htmlFor="userId" className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 font-mono mb-1 px-4">
           USER ID (SURI/WHATSAPP)
         </Label>
@@ -145,7 +145,7 @@ export function FlowTracker() {
             onClick={track} 
             disabled={loading} 
             size="lg" 
-            className="h-10 px-8 ml-4 rounded-full font-bold bg-cyan-500 hover:bg-cyan-600 text-white shadow-lg shadow-cyan-500/20 dark:shadow-none transition-all hover:scale-[1.02] active:scale-[0.98] uppercase tracking-wider text-[11px]"
+            className="h-10 px-8 ml-4 rounded-full font-bold bg-primary hover:opacity-90 text-white shadow-lg shadow-primary/20 dark:shadow-none transition-all hover:scale-[1.02] active:scale-[0.98] uppercase tracking-wider text-[11px]"
           >
             {loading ? "PROCESSANDO..." : "RASTREAR FLUXO"}
           </Button>
@@ -176,7 +176,7 @@ export function FlowTracker() {
                   </div>
                   {flowName && (
                     <div className="mt-4 pt-4 border-t border-primary/10">
-                      <span className="text-[10px] font-bold text-cyan-500/60 dark:text-cyan-400/60 uppercase tracking-widest block mb-1">NOME IDENTIFICADO</span>
+                      <span className="text-[10px] font-bold text-primary/60 dark:text-primary/40 uppercase tracking-widest block mb-1">NOME IDENTIFICADO</span>
                       <div className="text-xl font-black text-slate-800 dark:text-white tracking-tight">
                         {flowName}
                       </div>

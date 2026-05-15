@@ -81,7 +81,7 @@ const defaultEdges: Edge[] = [
     source: "1",
     target: "2",
     type: 'smoothstep',
-    style: { stroke: "#00e5ff", strokeWidth: 3 },
+    style: { stroke: "var(--primary)", strokeWidth: 3 },
     pathOptions: { borderRadius: 20 },
   },
   {
@@ -89,7 +89,7 @@ const defaultEdges: Edge[] = [
     source: "2",
     target: "3",
     type: 'smoothstep',
-    style: { stroke: "#00e5ff", strokeWidth: 3 },
+    style: { stroke: "var(--primary)", strokeWidth: 3 },
     pathOptions: { borderRadius: 20 },
   },
 ];
@@ -117,7 +117,7 @@ function FlowsContent() {
   const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
   const [nodeLabelDraft, setNodeLabelDraft] = useState("");
   const [editingEdgeId, setEditingEdgeId] = useState<string | null>(null);
-  const [edgeStyleDraft, setEdgeStyleDraft] = useState({ color: "#00e5ff", dashed: false });
+  const [edgeStyleDraft, setEdgeStyleDraft] = useState({ color: "var(--primary)", dashed: false });
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [flowTitleDraft, setFlowTitleDraft] = useState("Novo Fluxo");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -132,7 +132,7 @@ function FlowsContent() {
   
   const buttonBase = "group flex items-center justify-center gap-3 rounded-2xl text-sm font-semibold transition-all duration-200 active:scale-[0.98]";
   const buttonSecondary = `${buttonBase} px-5 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-500 shadow-sm`;
-  const buttonPrimary = `${buttonBase} px-6 py-2.5 bg-cyan-500 text-white hover:bg-cyan-600 shadow-md shadow-cyan-500/20 dark:shadow-cyan-500/40 border border-transparent`;
+  const buttonPrimary = `${buttonBase} px-6 py-2.5 bg-primary text-primary-foreground hover:opacity-90 shadow-md shadow-primary/20 dark:shadow-primary/40 border border-transparent`;
   const buttonDanger = `${buttonBase} px-5 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-500/30 dark:text-red-300 dark:hover:bg-red-500/50 border border-red-200 dark:border-red-500/40`;
   const buttonGhost = `${buttonBase} px-4 py-2 text-foreground/80 hover:bg-accent hover:text-foreground`;
 
@@ -165,7 +165,7 @@ function FlowsContent() {
           {
             ...connection,
             type: 'smoothstep',
-            style: { stroke: "#00e5ff", strokeWidth: 3 },
+            style: { stroke: "var(--primary)", strokeWidth: 3 },
             pathOptions: { borderRadius: 20 },
           },
           eds
@@ -329,7 +329,7 @@ function FlowsContent() {
 
   const onEdgeClick = useCallback((_event: React.MouseEvent, edge: Edge) => {
     setEditingEdgeId(edge.id);
-    const stroke = (edge.style?.stroke as string) || "#00e5ff";
+    const stroke = (edge.style?.stroke as string) || "var(--primary)";
     const dashed = !!edge.style?.strokeDasharray;
     setEdgeStyleDraft({ color: stroke, dashed });
   }, []);
@@ -417,7 +417,8 @@ function FlowsContent() {
         flex: 1,
         minHeight: 0,
         overflow: "hidden",
-        background: "hsl(var(--background))",
+        background: isDark ? "#020519" : "#eef2f6",
+        padding: "1rem",
       }}
     >
       {/* LEFT: canvas area */}
@@ -427,7 +428,7 @@ function FlowsContent() {
         <div className="flex w-full items-center justify-between gap-1.5 min-w-0">
           {/* Título editável */}
           <div className="flex items-center gap-1.5 min-w-0 shrink-0">
-            <Workflow className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
+            <Workflow className="w-3.5 h-3.5 text-primary shrink-0" />
             {isEditingTitle ? (
               <input
                 type="text"
@@ -454,7 +455,7 @@ function FlowsContent() {
             {/* Foto */}
             <button onClick={saveAsPhoto} className="flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-xl text-[11px] font-bold text-foreground/80 hover:bg-accent hover:text-foreground transition-all h-8" title="Salvar como Foto">
               <Camera className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline uppercase tracking-wider">Foto</span>
+              <span className="hidden sm:inline uppercase tracking-wider">Exportar</span>
             </button>
 
             <div className="w-px h-4 bg-border/40 hidden sm:block" />
@@ -480,7 +481,7 @@ function FlowsContent() {
 
             <div className="w-px h-4 bg-border/40 hidden sm:block" />
 
-            <button onClick={openSaveDialog} className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 rounded-xl bg-cyan-500 text-white hover:bg-cyan-600 text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm h-8" title={editingFlow ? "Atualizar" : "Salvar"}>
+            <button onClick={openSaveDialog} className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 rounded-xl bg-primary text-primary-foreground hover:opacity-90 text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm h-8" title={editingFlow ? "Atualizar" : "Salvar"}>
               <Save className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{editingFlow ? "Atualizar" : "Salvar"}</span>
             </button>
@@ -508,9 +509,19 @@ function FlowsContent() {
             snapToGrid
             snapGrid={[20, 20]}
             colorMode={isDark ? "dark" : "light"}
-            style={{ background: isDark ? "#0f0f0f" : "#f8f9fa" }}
+            style={{ 
+              background: isDark ? "#020519" : "#f0f4f8",
+              border: `1px solid ${isDark ? "#1e293b" : "#e2e8f0"}`,
+              borderRadius: "1rem",
+              margin: "0.5rem"
+            }}
           >
-            <Background color={isDark ? "#333" : "#cbd5e1"} gap={20} size={1} />
+            <Background 
+              color={isDark ? "#1e293b" : "#cbd5e1"} 
+              gap={20} 
+              size={1} 
+              variant={isDark ? "dots" : "lines"}
+            />
             <Controls className={cn(
               "!rounded-lg !shadow-2xl",
               isDark 
@@ -552,7 +563,7 @@ function FlowsContent() {
                   <div>
                     <label className="text-[10px] font-black uppercase text-muted-foreground mb-2 block">Cor da Linha</label>
                     <div className="grid grid-cols-5 gap-2">
-                      {["#00e5ff", "#a855f7", "#eab308", "#ef4444", "#22c55e"].map((c) => (
+                      {["var(--primary)", "#a855f7", "#eab308", "#ef4444", "#22c55e"].map((c) => (
                         <button
                           key={c}
                           onClick={() => setEdgeStyleDraft(prev => ({ ...prev, color: c }))}
@@ -588,8 +599,8 @@ function FlowsContent() {
 
       {/* RIGHT: saved flows panel */}
       {showSavedPanel ? (
-        <div className="flex flex-col border-l border-border bg-card/40" style={{ width: 'min(260px, 55vw)' }}>
-          <div className="flex items-center justify-between px-4 border-b border-border" style={{ minHeight: 64, paddingTop: 12, paddingBottom: 12 }}>
+        <div className="flex flex-col border-l border-border bg-white dark:bg-slate-900 shadow-xl z-20" style={{ width: 'min(280px, 60vw)' }}>
+          <div className="flex items-center justify-between px-5 border-b border-border bg-slate-50/50 dark:bg-slate-800/30" style={{ minHeight: 70, paddingTop: 12, paddingBottom: 12 }}>
             <div className="flex items-center gap-2">
               <GitBranch className="w-3.5 h-3.5 text-muted-foreground" />
               <span className="text-sm font-semibold text-foreground">Fluxos Salvos</span>
@@ -646,11 +657,11 @@ function FlowsContent() {
             <div className="space-y-3">
               <div>
                 <label className="text-xs font-medium text-foreground block mb-1">Titulo <span className="text-destructive">*</span></label>
-                <input type="text" value={saveTitle} onChange={(e) => setSaveTitle(e.target.value)} placeholder="Ex: Processo de Deploy" className="w-full px-3 py-2 rounded-lg bg-secondary border-0 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" autoFocus />
+                <input type="text" value={saveTitle} onChange={(e) => setSaveTitle(e.target.value)} placeholder="Ex: Processo de Deploy" className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" autoFocus />
               </div>
               <div>
                 <label className="text-xs font-medium text-foreground block mb-1">Descricao <span className="text-muted-foreground font-normal">(opcional)</span></label>
-                <textarea value={saveDescription} onChange={(e) => setSaveDescription(e.target.value)} placeholder="Breve descricao..." rows={3} className="w-full px-3 py-2 rounded-lg bg-secondary border-0 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
+                <textarea value={saveDescription} onChange={(e) => setSaveDescription(e.target.value)} placeholder="Breve descricao..." rows={3} className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-all" />
               </div>
             </div>
             <div className="flex gap-2 mt-5 justify-end">

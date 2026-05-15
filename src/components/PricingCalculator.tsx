@@ -172,9 +172,9 @@ export default function PricingCalculator() {
             {/* Título — oculto em mobile, visível em sm+ */}
             <div className="hidden sm:flex items-center gap-2 shrink-0">
               <div className="w-7 h-7 bg-white dark:bg-slate-900 rounded-lg shadow-sm flex items-center justify-center border border-slate-100 dark:border-slate-800">
-                <Calculator className="w-3.5 h-3.5 text-cyan-600" />
+                <Calculator className="w-3.5 h-3.5 text-primary-600" />
               </div>
-              <h1 className="text-sm font-black italic tracking-tighter text-cyan-900 dark:text-cyan-400 whitespace-nowrap">
+              <h1 className="text-sm font-black italic tracking-tighter text-primary-900 dark:text-primary-400 whitespace-nowrap">
                 Suri Calcs
               </h1>
             </div>
@@ -185,7 +185,7 @@ export default function PricingCalculator() {
                 onClick={() => setActiveTab("upsell")}
                 className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
                   activeTab === "upsell"
-                    ? "bg-white dark:bg-slate-900 text-cyan-600 shadow-sm"
+                    ? "bg-white dark:bg-slate-900 text-primary-600 shadow-sm"
                     : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                 }`}
               >
@@ -196,7 +196,7 @@ export default function PricingCalculator() {
                 onClick={() => setActiveTab("downsell")}
                 className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
                   activeTab === "downsell"
-                    ? "bg-white dark:bg-slate-900 text-cyan-600 shadow-sm"
+                    ? "bg-white dark:bg-slate-900 text-primary-600 shadow-sm"
                     : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                 }`}
               >
@@ -216,8 +216,8 @@ export default function PricingCalculator() {
           {/* Interaction Control Card */}
           <Card className="h-full p-8 rounded-[2.5rem] border-none glass-card dark:bg-slate-900/40 relative overflow-hidden">
             <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 rounded-full bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center">
-                <Zap className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+              <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+                <Zap className="w-5 h-5 text-primary-600 dark:text-primary-400" />
               </div>
               <div>
                 <h3 className="font-bold text-slate-800 dark:text-slate-200">Interações / Mês</h3>
@@ -228,7 +228,7 @@ export default function PricingCalculator() {
             <div className="flex items-center justify-between gap-4 mb-4">
               <button
                 onClick={() => setInteractions(p => Math.max(1000, p - 500))}
-                className="w-14 h-14 rounded-2xl bg-cyan-50 dark:bg-cyan-900/20 flex items-center justify-center text-cyan-600 dark:text-cyan-400 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 transition-all border border-cyan-100/50 dark:border-cyan-500/20"
+                className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-all border border-primary-100/50 dark:border-primary-500/20"
               >
                 <Minus className="w-6 h-6" />
               </button>
@@ -242,7 +242,7 @@ export default function PricingCalculator() {
 
               <button
                 onClick={() => setInteractions(p => p + 500)}
-                className="w-14 h-14 rounded-2xl bg-cyan-50 dark:bg-cyan-900/20 flex items-center justify-center text-cyan-600 dark:text-cyan-400 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 transition-all border border-cyan-100/50 dark:border-cyan-500/20"
+                className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-all border border-primary-100/50 dark:border-primary-500/20"
               >
                 <Plus className="w-6 h-6" />
               </button>
@@ -254,14 +254,14 @@ export default function PricingCalculator() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center">
-                    <Lightbulb className="w-4 h-4 text-cyan-500" />
+                  <div className="w-7 h-7 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+                    <Lightbulb className="w-4 h-4 text-primary-500" />
                   </div>
                   <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Mensal (%)</Label>
                 </div>
                 <div className="relative">
                   <Select value={String(discountPercent)} onValueChange={(v) => setDiscountPercent(Number(v))}>
-                    <SelectTrigger className="h-10 border-none bg-cyan-50/30 dark:bg-slate-900/40 font-black text-slate-700 dark:text-white rounded-xl">
+                    <SelectTrigger className="h-10 border-none bg-primary-50/30 dark:bg-slate-900/40 font-black text-slate-700 dark:text-white rounded-xl">
                       <SelectValue placeholder="0%" />
                     </SelectTrigger>
                     <SelectContent>
@@ -275,8 +275,8 @@ export default function PricingCalculator() {
 
               <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center">
-                    <Zap className="w-4 h-4 text-cyan-500" />
+                  <div className="w-7 h-7 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+                    <Zap className="w-4 h-4 text-primary-500" />
                   </div>
                   <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Implantação (%)</Label>
                 </div>
@@ -284,8 +284,8 @@ export default function PricingCalculator() {
                   <Input
                     type="number" min={0} max={100} value={setupDiscount || ""} placeholder="0"
                     onChange={(e) => setSetupDiscount(Math.min(100, Math.max(0, Number(e.target.value))))}
-                    className="h-10 border-none bg-cyan-50/30 dark:bg-slate-900/40 font-black text-cyan-600 dark:text-cyan-400 rounded-xl text-center" />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-cyan-300 text-xs font-black">%</div>
+                    className="h-10 border-none bg-primary-50/30 dark:bg-slate-900/40 font-black text-primary-600 dark:text-primary-400 rounded-xl text-center" />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-primary-300 text-xs font-black">%</div>
                 </div>
               </div>
 
@@ -319,7 +319,7 @@ export default function PricingCalculator() {
                 <span className="text-slate-600 dark:text-slate-400 font-black">$</span>
               </div>
               <h3 className="font-bold text-slate-800 dark:text-slate-200">Ajuste de Preços</h3>
-              <span className="ml-auto text-slate-100 dark:text-slate-800 opacity-50"><Calculator className="w-12 h-12" /></span>
+              <span className="ml-auto text-slate-300 dark:text-white/10"><Calculator className="w-12 h-12" /></span>
             </div>
 
             <div className="space-y-2">
@@ -327,7 +327,7 @@ export default function PricingCalculator() {
                 { label: "Essential (R$)", value: essPrice, setter: setEssPrice },
                 { label: "Advanced (R$)", value: advPrice, setter: setAdvPrice },
                 { label: "Pro (R$)", value: proPrice, setter: setProPrice },
-                { label: "Implantação (R$)", value: setupPrice, setter: setSetupPrice, color: "bg-cyan-50 dark:bg-cyan-900/20", inputColor: "text-cyan-600 dark:text-cyan-400" },
+                { label: "Implantação (R$)", value: setupPrice, setter: setSetupPrice, color: "bg-primary-50 dark:bg-primary-900/20", inputColor: "text-primary-600 dark:text-primary-400" },
                 { label: "Mensagens de Marketing (R$)", value: marketingPrice, setter: setMarketingPrice, isExcess: true },
                 { label: "Mensagens de Utilidades (R$)", value: utilityPrice, setter: setUtilityPrice, isExcess: true }
               ].map((f, i) => (
@@ -354,20 +354,20 @@ export default function PricingCalculator() {
         <div className="grid lg:grid-cols-3 gap-8 mb-12 items-stretch">
 
           {/* Essential Plan Card */}
-          <Card
+            <Card
             onClick={() => togglePlan("Essential")}
             className={`group h-full p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[22rem]
-              bg-white dark:bg-[#083344] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_50px_-12px_rgba(8,51,68,0.4)]
-              ${selectedPlans.has("Essential") ? "border-cyan-500 ring-4 ring-cyan-500/20 dark:ring-cyan-500/50" : "border-transparent"}
+              bg-white dark:bg-[#000f9b] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_50px_-12px_rgba(0,15,155,0.4)]
+              ${selectedPlans.has("Essential") ? "border-primary-500 ring-4 ring-primary-500/20 dark:ring-primary-500/50" : "border-transparent"}
               hover:scale-[1.02] active:scale-95 duration-300
             `}
           >
             <div>
               <div className="flex justify-between items-start mb-6">
-                <div className="w-12 h-12 bg-cyan-50 dark:bg-cyan-500/20 rounded-2xl flex items-center justify-center text-cyan-600 dark:text-cyan-400">
+                <div className="w-12 h-12 bg-primary-50 dark:bg-primary-500/20 rounded-2xl flex items-center justify-center text-primary-600 dark:text-primary-400">
                   <Zap className="w-6 h-6 fill-current" />
                 </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Essential") ? "border-cyan-500 bg-cyan-500" : "border-slate-200 dark:border-white/20"}`}>
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Essential") ? "border-primary-500 bg-primary-500" : "border-slate-200 dark:border-white/20"}`}>
                   {selectedPlans.has("Essential") && <div className="w-2 h-2 rounded-full bg-white" />}
                 </div>
               </div>
@@ -390,11 +390,20 @@ export default function PricingCalculator() {
             </div>
 
             <div className="pt-6 border-t border-slate-100 dark:border-white/10 flex justify-between items-center">
-              <div className="flex items-center gap-2 text-[10px] font-black text-cyan-500 uppercase tracking-widest">
-                <div className="w-4 h-4 rounded-full bg-cyan-500 flex items-center justify-center text-white"><Plus className="w-3 h-3" /></div>
+              <div className="flex items-center gap-2 text-[10px] font-black text-primary-500 uppercase tracking-widest">
+                <div className="w-4 h-4 rounded-full bg-primary-500 flex items-center justify-center text-white"><Plus className="w-3 h-3" /></div>
                 Implantação
               </div>
-              <span className="text-cyan-500 font-black italic">R$ {fmt(calc.implantacao.final)}</span>
+              <span className="text-primary-500 font-black italic">
+                {calc.implantacao.final === 0 ? (
+                  <span className="flex items-center gap-2">
+                    <span className="line-through opacity-30 text-[8px] text-slate-400">R$ 1.500,00</span>
+                    <span>R$ 0,00</span>
+                  </span>
+                ) : (
+                  `R$ ${fmt(calc.implantacao.final)}`
+                )}
+              </span>
             </div>
           </Card>
 
@@ -402,8 +411,8 @@ export default function PricingCalculator() {
           <Card
             onClick={() => togglePlan("Advanced")}
             className={`group h-full p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[22rem]
-              bg-cyan-600 dark:bg-cyan-700 shadow-[0_20px_50px_-12px_rgba(8,145,178,0.4)]
-              ${selectedPlans.has("Advanced") ? "border-white ring-4 ring-white/20" : "border-transparent"}
+              bg-[#020519] shadow-[0_20px_50px_-12px_rgba(2,5,25,0.4)]
+              ${selectedPlans.has("Advanced") ? "border-white ring-4 ring-white/20" : "border-white/10"}
               hover:scale-[1.02] active:scale-95 duration-300
             `}
           >
@@ -413,16 +422,16 @@ export default function PricingCalculator() {
                   <Zap className="w-6 h-6 fill-current" />
                 </div>
                 <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Advanced") ? "border-white bg-white" : "border-white/40"}`}>
-                  {selectedPlans.has("Advanced") && <div className="w-2 h-2 rounded-full bg-cyan-600" />}
+                  {selectedPlans.has("Advanced") && <div className="w-2 h-2 rounded-full bg-[#020519]" />}
                 </div>
               </div>
               <h2 className="text-2xl font-black text-white mb-1">Advanced</h2>
-              <p className="text-cyan-100 text-xs font-medium mb-8 uppercase tracking-widest">O mais popular</p>
+              <p className="text-white/40 text-xs font-medium mb-8 uppercase tracking-widest">O mais popular</p>
 
               <div className="items-baseline flex gap-1 mb-8">
-                <span className="text-cyan-100 font-bold text-lg">R$</span>
+                <span className="text-white/60 font-bold text-lg">R$</span>
                 <span className="text-5xl font-black text-white tracking-tighter">{fmt(calc.advanced.final)}</span>
-                <span className="text-cyan-100 font-bold text-sm">/mês</span>
+                <span className="text-white/60 font-bold text-sm">/mês</span>
               </div>
               {calc.advanced.discount > 0 && (
                 <div className="bg-white/20 px-3 py-1.5 rounded-xl border border-white/10 inline-flex items-center gap-1.5 mb-6">
@@ -436,10 +445,19 @@ export default function PricingCalculator() {
 
             <div className="pt-6 border-t border-white/10 flex justify-between items-center">
               <div className="flex items-center gap-2 text-[10px] font-black text-white uppercase tracking-widest">
-                <div className="w-4 h-4 rounded-full bg-white flex items-center justify-center text-cyan-600"><Plus className="w-3 h-3" /></div>
+                <div className="w-4 h-4 rounded-full bg-white flex items-center justify-center text-[#020519]"><Plus className="w-3 h-3" /></div>
                 Implantação
               </div>
-              <span className="text-white font-black italic">R$ {fmt(calc.implantacao.final)}</span>
+              <span className="text-white font-black italic">
+                {calc.implantacao.final === 0 ? (
+                  <span className="flex items-center gap-2">
+                    <span className="line-through opacity-30 text-[8px]">R$ 1.500,00</span>
+                    <span>R$ 0,00</span>
+                  </span>
+                ) : (
+                  `R$ ${fmt(calc.implantacao.final)}`
+                )}
+              </span>
             </div>
           </Card>
 
@@ -447,25 +465,25 @@ export default function PricingCalculator() {
           <Card
             onClick={() => togglePlan("Pro")}
             className={`group h-full p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between duration-500 min-h-[22rem]
-              bg-[#083344] dark:bg-white border-transparent shadow-[0_20px_50px_-12px_rgba(8,51,68,0.4)] dark:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.05)]
-              ${selectedPlans.has("Pro") ? "border-cyan-500 ring-4 ring-cyan-500/50 dark:ring-cyan-500/20" : "border-transparent"}
+              bg-[#000f9b] dark:bg-white border-transparent shadow-[0_20px_50px_-12px_rgba(0,15,155,0.4)] dark:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.05)]
+              ${selectedPlans.has("Pro") ? "border-primary-500 ring-4 ring-primary-500/50 dark:ring-primary-500/20" : "border-transparent"}
               hover:scale-[1.02] active:scale-95
             `}
           >
             <div className="relative z-10">
               <div className="flex justify-between items-start mb-6">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-cyan-500/20 dark:bg-cyan-50 text-cyan-400 dark:text-cyan-600">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/20 dark:bg-[#000f9b] text-white dark:text-white">
                   <Zap className="w-6 h-6 fill-current" />
                 </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Pro") ? 'border-cyan-400 dark:border-cyan-500 bg-cyan-400 dark:bg-cyan-500' : 'border-white/20 dark:border-slate-200'}`}>
-                  {selectedPlans.has("Pro") && <div className="w-2 h-2 rounded-full bg-[#083344] dark:bg-white" />}
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Pro") ? 'border-primary-400 dark:border-primary-500 bg-primary-400 dark:bg-primary-500' : 'border-white/20 dark:border-slate-200'}`}>
+                  {selectedPlans.has("Pro") && <div className="w-2 h-2 rounded-full bg-[#000f9b] dark:bg-white" />}
                 </div>
               </div>
               <h2 className="text-2xl font-black text-white dark:text-slate-900 mb-1">Pro</h2>
               <p className="text-xs font-medium mb-8 uppercase tracking-widest text-slate-400">Para alta performance</p>
 
               <div className="items-baseline flex gap-1 mb-8">
-                <span className="font-bold text-lg text-cyan-400 dark:text-slate-400">R$</span>
+                <span className="font-bold text-lg text-primary/40 dark:text-slate-400">R$</span>
                 <span className="text-5xl font-black tracking-tighter text-white dark:text-slate-900">{fmt(calc.pro.final)}</span>
                 <span className="font-bold text-sm opacity-50 text-white dark:text-slate-500">/mês</span>
               </div>
@@ -480,11 +498,20 @@ export default function PricingCalculator() {
             </div>
 
             <div className="pt-6 border-t border-white/10 dark:border-slate-100 flex justify-between items-center relative z-10">
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-cyan-400 dark:text-cyan-500">
-                <div className="w-4 h-4 rounded-full flex items-center justify-center text-white bg-cyan-500"><Plus className="w-3 h-3" /></div>
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white dark:text-slate-900">
+                <div className="w-4 h-4 rounded-full flex items-center justify-center text-[#000f9b] bg-white dark:bg-[#000f9b] dark:text-white"><Plus className="w-3 h-3" /></div>
                 Implantação
               </div>
-              <span className="font-black italic text-cyan-400">R$ {fmt(calc.implantacao.final)}</span>
+              <span className="font-black italic text-white dark:text-slate-900">
+                {calc.implantacao.final === 0 ? (
+                  <span className="flex items-center gap-2">
+                    <span className="line-through opacity-30 dark:opacity-20 text-[8px]">R$ 1.500,00</span>
+                    <span>R$ 0,00</span>
+                  </span>
+                ) : (
+                  `R$ ${fmt(calc.implantacao.final)}`
+                )}
+              </span>
             </div>
           </Card>
         </div>
@@ -495,10 +522,10 @@ export default function PricingCalculator() {
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Downsell / Penalty Calculator */}
             <div className="max-w-4xl mx-auto mb-12">
-          <Card className="p-8 rounded-[2.5rem] border-none glass-card dark:bg-slate-900/40 relative overflow-hidden">
+          <Card className="p-8 rounded-[2.5rem] border-none glass-card bg-white dark:bg-white/5 relative overflow-hidden">
             <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 rounded-full bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center">
-                <Calculator className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+              <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+                <Calculator className="w-5 h-5 text-primary-600 dark:text-primary-400" />
               </div>
               <div>
                 <h3 className="font-bold text-slate-800 dark:text-slate-200">Calculadora de Downsell / Multa</h3>
@@ -512,7 +539,7 @@ export default function PricingCalculator() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Valor mensal (R$)</Label>
-                    <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
+                    <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
                       <Input
                         type="number"
                         value={downsellPlanValue}
@@ -523,7 +550,7 @@ export default function PricingCalculator() {
                   </div>
                   <div>
                     <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Vigência (meses)</Label>
-                    <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
+                    <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
                       <Input
                         type="number"
                         value={contractDuration}
@@ -537,7 +564,7 @@ export default function PricingCalculator() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Meses Utilizados</Label>
-                    <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
+                    <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
                       <Input
                         type="number"
                         value={monthsUsed}
@@ -548,12 +575,12 @@ export default function PricingCalculator() {
                   </div>
                   <div>
                     <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Multa (%)</Label>
-                    <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
+                    <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
                       <Input
                         type="number"
                         value={penaltyPercent}
                         onChange={(e) => setPenaltyPercent(Number(e.target.value))}
-                        className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg text-cyan-600 dark:text-cyan-400"
+                        className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg text-primary-600 dark:text-primary-400"
                       />
                     </div>
                   </div>
@@ -564,7 +591,7 @@ export default function PricingCalculator() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Início Contrato</Label>
-                    <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
+                    <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
                       <Input
                         type="date"
                         value={contractStart}
@@ -575,7 +602,7 @@ export default function PricingCalculator() {
                   </div>
                   <div>
                     <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Data Cancelamento</Label>
-                    <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
+                    <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
                       <Input
                         type="date"
                         value={downsellDate}
@@ -589,7 +616,7 @@ export default function PricingCalculator() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Fatura em Aberto (R$)</Label>
-                    <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
+                    <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
                       <Input
                         type="number"
                         value={overdueInvoices}
@@ -600,7 +627,7 @@ export default function PricingCalculator() {
                   </div>
                   <div>
                     <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Vencimento Fatura</Label>
-                    <div className="flex bg-white dark:bg-slate-800/50 rounded-2xl h-12 items-center border border-slate-100 dark:border-slate-700 px-4">
+                    <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
                       <Input
                         type="date"
                         value={overdueDueDate}
@@ -613,7 +640,7 @@ export default function PricingCalculator() {
               </div>
 
               {/* Resultados */}
-              <div className="bg-cyan-50 dark:bg-cyan-900/10 rounded-3xl p-6 border border-cyan-100 dark:border-cyan-800/50 flex flex-col justify-center">
+              <div className="bg-primary-50 dark:bg-primary-900/10 rounded-3xl p-6 border border-primary-100 dark:border-primary-800/50 flex flex-col justify-center">
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Valor total do contrato</span>
@@ -633,9 +660,9 @@ export default function PricingCalculator() {
                       {monthsUsed >= contractDuration ? "SEM MULTA" : `R$ ${fmt(penaltyAmount)}`}
                     </span>
                   </div>
-                  <div className="pt-4 border-t border-cyan-200 dark:border-cyan-800/50 flex justify-between items-center">
+                  <div className="pt-4 border-t border-primary-200 dark:border-primary-800/50 flex justify-between items-center">
                     <span className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest">Total devido</span>
-                    <span className="text-2xl font-black text-cyan-600 dark:text-cyan-400">R$ {fmt(totalDue)}</span>
+                    <span className="text-2xl font-black text-primary-600 dark:text-primary-400">R$ {fmt(totalDue)}</span>
                   </div>
                 </div>
               </div>
@@ -647,7 +674,7 @@ export default function PricingCalculator() {
                 <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Texto Sugerido para o Cliente</h4>
                 <Button 
                   variant="ghost" size="sm" 
-                  className="h-8 rounded-lg text-[10px] font-black uppercase tracking-wider text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50 dark:hover:bg-cyan-900/20"
+                  className="h-8 rounded-lg text-[10px] font-black uppercase tracking-wider text-primary-600 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20"
                   onClick={() => {
                     const text = `Conforme contrato vigente, o pedido de cancelamento realizado em ${new Date(downsellDate).toLocaleDateString('pt-BR')} está sujeito à multa rescisória de ${penaltyPercent}% sobre o saldo contratual remanescente, além da quitação das faturas já emitidas.\n\nDessa forma, temos:\n\nMulta rescisória: R$ ${fmt(penaltyAmount)}\nFatura em aberto (venc. ${new Date(overdueDueDate).toLocaleDateString('pt-BR')}): R$ ${fmt(overdueInvoices)}\n👉 Total devido: R$ ${fmt(totalDue)}`;
                     navigator.clipboard.writeText(text);
@@ -666,7 +693,7 @@ export default function PricingCalculator() {
                 {"\n"}
                 Fatura em aberto (venc. <span className="font-bold text-slate-900 dark:text-slate-200">{new Date(overdueDueDate).toLocaleDateString('pt-BR')}</span>): <span className="font-bold text-slate-900 dark:text-slate-200">R$ {fmt(overdueInvoices)}</span>
                 {"\n"}
-                <span className="text-sm">👉</span> <span className="text-sm font-black text-cyan-600 dark:text-cyan-400">Total devido: R$ {fmt(totalDue)}</span>
+                <span className="text-sm">👉</span> <span className="text-sm font-black text-primary-600 dark:text-primary-400">Total devido: R$ {fmt(totalDue)}</span>
               </div>
             </div>
           </Card>
@@ -686,7 +713,7 @@ export default function PricingCalculator() {
                 setQuoteOpen(true);
               }}
               disabled={isTotalZero}
-              className={`${isTotalZero ? 'opacity-50 cursor-not-allowed grayscale' : ''} bg-cyan-600 hover:bg-cyan-700 text-white font-black px-10 h-16 rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(79,70,229,0.5)] gap-3 border-4 border-white/20 backdrop-blur-md group animate-in fade-in slide-in-from-bottom-5 duration-500`}
+              className={`${isTotalZero ? 'opacity-50 cursor-not-allowed grayscale' : ''} bg-primary text-white font-black px-10 h-16 rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(74,84,255,0.5)] gap-3 border-4 border-white/20 backdrop-blur-md group animate-in fade-in slide-in-from-bottom-5 duration-500`}
             >
               <FileText className="w-5 h-5 group-hover:scale-110 transition-transform" />
               GERAR ORÇAMENTO ({selectedPlans.size})
@@ -699,7 +726,7 @@ export default function PricingCalculator() {
           <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50">
             <Button
               onClick={() => setDownsellModalOpen(true)}
-              className="bg-cyan-600 hover:bg-cyan-700 text-white font-black px-10 h-16 rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(79,70,229,0.5)] gap-3 border-4 border-white/20 backdrop-blur-md group animate-in fade-in slide-in-from-bottom-5 duration-500"
+              className="bg-primary text-white font-black px-10 h-16 rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(74,84,255,0.5)] gap-3 border-4 border-white/20 backdrop-blur-md group animate-in fade-in slide-in-from-bottom-5 duration-500"
             >
               <FileText className="w-5 h-5 group-hover:scale-110 transition-transform" />
               GERAR EXTRATO DE DOWNSELL

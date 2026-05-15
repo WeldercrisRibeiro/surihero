@@ -96,7 +96,7 @@ export function EndpointRunner({ endpoint }: { endpoint: EndpointDef }) {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1 flex-1 min-w-0">
                 <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60">Caminho do Endpoint:</p>
-                <p className="font-mono text-xs text-primary/70 truncate bg-background/50 px-3 py-1.5 rounded border border-border/10">
+                <p className="font-mono text-xs text-primary/70 dark:text-white truncate bg-background/50 px-3 py-1.5 rounded border border-border/10">
                   {displayUrl}
                 </p>
               </div>

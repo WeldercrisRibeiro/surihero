@@ -36,7 +36,7 @@ export function CredentialsBar() {
     saveCredentials({ baseUrl: normalizedUrl, token: token.trim() });
     setConnected(true);
     setIsOpen(false);
-    toast.success("Gateway conectado");
+    toast.success("Api Suri conectada");
     // Recarrega para aplicar as novas credenciais globalmente
     setTimeout(() => window.location.reload(), 500);
   };
@@ -58,15 +58,15 @@ export function CredentialsBar() {
           <div className="h-4 w-px bg-border mx-1" />
           <div className="flex items-center gap-2">
             {connected ? (
-              <CheckCircle2 size={14} className="text-cyan-500" />
+              <CheckCircle2 size={14} className="text-primary" />
             ) : (
               <XCircle size={14} className="text-muted-foreground/40" />
             )}
             <span className={cn(
               "text-[10px] font-bold uppercase tracking-[0.2em]",
-              connected ? "text-cyan-600/80" : "text-muted-foreground/40"
+              connected ? "text-primary/80" : "text-muted-foreground/40"
             )}>
-              {connected ? "Gateway Online" : "Desconectado"}
+              {connected ? "Api Online" : "Api Desconectada"}
             </span>
           </div>
         </div>
@@ -91,9 +91,9 @@ export function CredentialsBar() {
         <div className="absolute top-13 right-4 w-80 rounded-xl border border-border bg-card p-5 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
           <div className="space-y-4">
             <div className="flex items-center justify-between border-b border-border pb-2 mb-2">
-              <h3 className="text-xs font-bold uppercase tracking-widest">Gateway Suri</h3>
+              <h3 className="text-xs font-bold uppercase tracking-widest">Api Suri</h3>
               {connected && (
-                <Badge variant="secondary" className="bg-cyan-500/10 text-cyan-600 border-none text-[8px] h-4">
+                <Badge variant="secondary" className="bg-primary/10 text-primary border-none text-[8px] h-4">
                   ATIVO
                 </Badge>
               )}
