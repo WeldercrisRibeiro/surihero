@@ -1,3 +1,12 @@
-Para o logotipo maior, coloque uma animação de rolagem. ele parado está com 15deg, então é pra ele vir da direita para a esquerda passando por toda a área da tela e parando nos 15deg. Seria como se estivesse em 45deg e viesse caindo em direção ao centro e parasse no 15deg. Isso somente para a versão desktop. 
+Adicionar possibilidade de Digitar interações 
 
-IMplemente um rodapé na parte debaixo bem pequeno, onde tenha o número da versão e feito por Weldercris Ribeiro.
+Plano:
+
+Escolher primeiro o plano (só vai aparecer os três planos)
+ao escolher, vai aparecer a tela de interações e ajuste de preços já com dados mockados (então cada plano, os dados serão diferente fixos mas editáveis.)
+
+Visualmente é pra acontecer uma animação:
+
+Entrou na calculadora -> Aparece os três planos SOMENTE > escolhe o plano > some os planos e o plano escolhido fica com tamanho menor e aparecer a tela de interações e ajuste de preços em forma maior;
+
+corrija os erros 
