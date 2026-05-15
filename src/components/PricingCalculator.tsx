@@ -235,9 +235,14 @@ export default function PricingCalculator() {
 
               <div className="flex-1 bg-white dark:bg-slate-800/50 rounded-2xl h-14 flex items-center justify-center border border-slate-100 dark:border-slate-700 shadow-inner px-4">
                 <Input
-                  type="text" value={fmtN(interactions)}
-                  onChange={(e) => setInteractions(Math.max(1000, parseInt(e.target.value.replace(/\D/g, "")) || 0))}
-                  className="border-none bg-transparent text-center text-2xl font-black text-slate-900 dark:text-white focus-visible:ring-0 shadow-none h-full w-full font-sans" />
+                  type="number"
+                  min={1000}
+                  value={interactions}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value) || 1000;
+                    setInteractions(Math.max(1000, v));
+                  }}
+                  className="border-none bg-transparent text-center text-2xl font-black text-slate-900 dark:text-white focus-visible:ring-0 shadow-none h-full w-full font-sans [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
               </div>
 
               <button
@@ -248,7 +253,7 @@ export default function PricingCalculator() {
               </button>
             </div>
             <p className="text-center text-[10px] text-slate-400 font-bold mb-10 italic">
-              Mínimo: 1.000 • Incrementos de 500
+              Mínimo: 1.000 • Use +/− ou digite diretamente
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

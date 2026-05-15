@@ -12,6 +12,7 @@ import Kanban from "./pages/Kanban";
 import WorkFlow from "./pages/WorkFlow";
 import SuriApi from "./pages/ApiSuri";
 import SuriCalc from "./pages/Calcs";
+import Docs from "./pages/Docs";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ function App() {
                   <Route path="/workflow" element={<WorkFlow />} />
                   <Route path="/apisuri" element={<SuriApi />} />
                   <Route path="/calcs" element={<SuriCalc />} />
+                  <Route path="/docs" element={<Docs />} />
                 </Routes>
               </HubLayout>
             } />

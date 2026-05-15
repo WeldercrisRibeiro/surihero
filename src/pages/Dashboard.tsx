@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Bot, Cable, Calculator, Workflow, ArrowRight } from 'lucide-react';
+import { Bot, Cable, Calculator, Workflow, ArrowRight, BookOpen } from 'lucide-react';
 import { useTheme } from '@/hooks/use-theme';
 
 // URLs dos logos
@@ -39,6 +39,14 @@ const apps = [
     icon: Workflow,
     color: 'var(--app-work)',
     tag: 'IA',
+  },
+  {
+    path: '/docs',
+    label: 'Docs',
+    description: 'Documentação centralizada da plataforma',
+    icon: BookOpen,
+    color: 'var(--app-template)',
+    tag: 'Docs',
   },
 ];
 
