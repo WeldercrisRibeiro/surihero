@@ -10,11 +10,11 @@ export const HubLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="app-container-simple">
       {/* Background Watermark - Agora em todas as telas */}
-      <div className="fixed -top-[268px] -right-[25%] pointer-events-none opacity-[0.95] select-none z-0 transform rotate-[20deg]">
+      <div className="fixed inset-0 -top-[50px] flex items-start justify-center pointer-events-none opacity-[0.05] sm:opacity-[0.95] select-none z-0 sm:inset-auto sm:top-[-268px] sm:right-[-25%] sm:block">
         <img
           src="/identidadevisual/icons/totvs.svg"
           alt="Background Watermark"
-          className="w-[1450px] h-auto brightness-0"
+          className="w-[1500vw] sm:w-[1450px] max-none h-auto brightness-0 transform rotate-[20deg]"
         />
       </div>
 

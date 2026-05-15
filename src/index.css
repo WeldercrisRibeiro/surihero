@@ -1355,12 +1355,29 @@ html {
   -ms-overflow-style: none;  /* IE and Edge */
 }
 
+@media (max-width: 640px) {
+  .hub-page {
+    padding: 0 20px 40px;
+  }
+}
+
 .hub-page::-webkit-scrollbar {
   display: none; /* Chrome, Safari and Opera */
 }
 
 .hub-page__header {
-  margin-bottom: 10px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 640px) {
+  .hub-page__header {
+    align-items: center;
+    text-align: center;
+    padding-top: 20px;
+    margin-bottom: 24px;
+  }
 }
 
 /* Logo + label em linha */
@@ -1368,14 +1385,27 @@ html {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 640px) {
+  .hub-page__brand-row {
+    justify-content: center;
+    margin-bottom: 20px;
+  }
 }
 
 .hub-page__logo {
-  height: 28px;
+  height: 32px;
   width: auto;
   object-fit: contain;
   opacity: 0.9;
+}
+
+@media (max-width: 640px) {
+  .hub-page__logo {
+    height: 48px; /* Logo maior e mais centralizado */
+  }
 }
 
 .hub-page__eyebrow {
@@ -1408,8 +1438,15 @@ html {
 .hub-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 16px;
   flex: 1;
+}
+
+@media (max-width: 640px) {
+  .hub-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 
 .hub-app-card {

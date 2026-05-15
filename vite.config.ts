@@ -26,14 +26,14 @@ export default defineConfig({
         categories: ["productivity", "business"],
         icons: [
           {
-            src: "/identidadevisual/icons/totvs.svg?v=1",
-            sizes: "192x192 512x512",
+            src: "/identidadevisual/icons/totvs.svg",
+            sizes: "any",
             type: "image/svg+xml",
             purpose: "any",
           },
           {
-            src: "/identidadevisual/icons/totvs.svg?v=1",
-            sizes: "192x192 512x512",
+            src: "/identidadevisual/icons/totvs.svg",
+            sizes: "any",
             type: "image/svg+xml",
             purpose: "maskable",
           },
