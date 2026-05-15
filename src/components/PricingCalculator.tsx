@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 
-const PRICE_PER_INTERACTION = { essential: 0.53, pro: 0.66, advanced: 0.66 };
+const PRICE_PER_INTERACTION = { essential: 0.53, pro: 0.66, advanced: 0.00 };
 const IMPLANTACAO = 1890;
 
 function fmt(v: number) {
@@ -99,7 +99,10 @@ export default function PricingCalculator() {
         basePrice: calc.essential.base, finalPrice: calc.essential.final,
         discount: calc.essential.discount, hasDiscount: discountPercent > 0,
         discountPercent,
-        implantacao: calc.implantacao.final, marketingPrice, utilityPrice,
+        implantacao: calc.implantacao.final,
+        implantacaoBase: calc.implantacao.base,
+        implantacaoDiscount: calc.implantacao.discount,
+        marketingPrice, utilityPrice,
         excessDiscountPercent,
         suriShopCommission: ""
       });
@@ -110,7 +113,10 @@ export default function PricingCalculator() {
         basePrice: calc.advanced.base, finalPrice: calc.advanced.final,
         discount: calc.advanced.discount, hasDiscount: discountPercent > 0,
         discountPercent,
-        implantacao: calc.implantacao.final, marketingPrice, utilityPrice,
+        implantacao: calc.implantacao.final,
+        implantacaoBase: calc.implantacao.base,
+        implantacaoDiscount: calc.implantacao.discount,
+        marketingPrice, utilityPrice,
         excessDiscountPercent,
         suriShopCommission: ""
       });
@@ -121,7 +127,10 @@ export default function PricingCalculator() {
         basePrice: calc.pro.base, finalPrice: calc.pro.final,
         discount: calc.pro.discount, hasDiscount: discountPercent > 0,
         discountPercent,
-        implantacao: calc.implantacao.final, marketingPrice, utilityPrice,
+        implantacao: calc.implantacao.final,
+        implantacaoBase: calc.implantacao.base,
+        implantacaoDiscount: calc.implantacao.discount,
+        marketingPrice, utilityPrice,
         excessDiscountPercent,
         suriShopCommission: ""
       });
@@ -143,6 +152,15 @@ export default function PricingCalculator() {
       implantacao: { base: setupPrice, final: setupFinal, discount: setupPrice - setupFinal }
     };
   }, [interactions, essPrice, proPrice, advPrice, discountPercent, setupPrice, setupDiscount]);
+
+  const isTotalZero = useMemo(() => {
+    if (selectedPlans.size === 0) return true;
+    let total = 0;
+    if (selectedPlans.has("Essential")) total += calc.essential.final + calc.implantacao.final;
+    if (selectedPlans.has("Advanced")) total += calc.advanced.final + calc.implantacao.final;
+    if (selectedPlans.has("Pro")) total += calc.pro.final + calc.implantacao.final;
+    return total <= 0;
+  }, [selectedPlans, calc]);
 
   return (
     <div className="flex-1 overflow-y-auto pt-4 pb-12 px-4 transition-colors duration-500">
@@ -361,6 +379,14 @@ export default function PricingCalculator() {
                 <span className="text-5xl font-black text-slate-900 dark:text-white tracking-tighter">{fmt(calc.essential.final)}</span>
                 <span className="text-slate-400 dark:text-slate-500 font-bold text-sm">/mês</span>
               </div>
+              {calc.essential.discount > 0 && (
+                <div className="bg-orange-50 dark:bg-orange-950/30 px-3 py-1.5 rounded-xl border border-orange-100 dark:border-orange-900/40 inline-flex items-center gap-1.5 mb-6">
+                  <Zap className="w-3 h-3 text-orange-500" />
+                  <span className="text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                    Economia de R$ {fmt(calc.essential.discount)}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="pt-6 border-t border-slate-100 dark:border-white/10 flex justify-between items-center">
@@ -398,6 +424,14 @@ export default function PricingCalculator() {
                 <span className="text-5xl font-black text-white tracking-tighter">{fmt(calc.advanced.final)}</span>
                 <span className="text-cyan-100 font-bold text-sm">/mês</span>
               </div>
+              {calc.advanced.discount > 0 && (
+                <div className="bg-white/20 px-3 py-1.5 rounded-xl border border-white/10 inline-flex items-center gap-1.5 mb-6">
+                  <Zap className="w-3 h-3 text-white" />
+                  <span className="text-[10px] font-black text-white uppercase tracking-wider">
+                    Economia de R$ {fmt(calc.advanced.discount)}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="pt-6 border-t border-white/10 flex justify-between items-center">
@@ -435,6 +469,14 @@ export default function PricingCalculator() {
                 <span className="text-5xl font-black tracking-tighter text-white dark:text-slate-900">{fmt(calc.pro.final)}</span>
                 <span className="font-bold text-sm opacity-50 text-white dark:text-slate-500">/mês</span>
               </div>
+              {calc.pro.discount > 0 && (
+                <div className="bg-orange-500/10 dark:bg-orange-50 px-3 py-1.5 rounded-xl border border-orange-500/20 dark:border-orange-100 inline-flex items-center gap-1.5 mb-6">
+                  <Zap className="w-3 h-3 text-orange-500" />
+                  <span className="text-[10px] font-black text-orange-500 uppercase tracking-wider">
+                    Economia de R$ {fmt(calc.pro.discount)}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="pt-6 border-t border-white/10 dark:border-slate-100 flex justify-between items-center relative z-10">
@@ -636,8 +678,15 @@ export default function PricingCalculator() {
         {activeTab === "upsell" && selectedPlans.size > 0 && (
           <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50">
             <Button
-              onClick={() => setQuoteOpen(true)}
-              className="bg-cyan-600 hover:bg-cyan-700 text-white font-black px-10 h-16 rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(79,70,229,0.5)] gap-3 border-4 border-white/20 backdrop-blur-md group animate-in fade-in slide-in-from-bottom-5 duration-500"
+              onClick={() => {
+                if (isTotalZero) {
+                  toast.error("O valor total do orçamento não pode ser R$ 0,00");
+                  return;
+                }
+                setQuoteOpen(true);
+              }}
+              disabled={isTotalZero}
+              className={`${isTotalZero ? 'opacity-50 cursor-not-allowed grayscale' : ''} bg-cyan-600 hover:bg-cyan-700 text-white font-black px-10 h-16 rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(79,70,229,0.5)] gap-3 border-4 border-white/20 backdrop-blur-md group animate-in fade-in slide-in-from-bottom-5 duration-500`}
             >
               <FileText className="w-5 h-5 group-hover:scale-110 transition-transform" />
               GERAR ORÇAMENTO ({selectedPlans.size})

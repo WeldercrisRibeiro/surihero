@@ -352,8 +352,8 @@ export const KanbanBoard = () => {
       { id: '1', title: 'BACKLOG', color: '#9ca3af', cards: [] },
       { id: '2', title: 'A FAZER', color: '#9ca3af', cards: [] },
       { id: '3', title: 'FAZENDO', color: '#3b82f6', cards: [] },
-      { id: '4', title: 'CONCLUÍDO', color: '#22c55e', cards: [] },
-      { id: '5', title: 'PENDENTE', color: '#9ca3af', cards: [] },
+      { id: '4', title: 'PENDENTE', color: '#9ca3af', cards: [] },
+      { id: '5', title: 'CONCLUÍDO', color: '#22c55e', cards: [] },
     ];
   });
 

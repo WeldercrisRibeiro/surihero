@@ -29,6 +29,8 @@ export interface QuoteData {
   hasDiscount: boolean;
   discountPercent: number;
   implantacao: number;
+  implantacaoBase: number;
+  implantacaoDiscount: number;
   marketingPrice: number;
   utilityPrice: number;
   excessDiscountPercent: number;
@@ -94,7 +96,16 @@ function PlanCard({ d }: { d: QuoteData }) {
     { icon: <MessageCircle style={{ width: 16, height: 16, color: CYAN }} />, label: "Interações", value: fmtN(d.interactions) },
     { icon: <Clock style={{ width: 16, height: 16, color: CYAN }} />, label: "Preço/Interação", value: `R$ ${fmt(d.interactionPrice)}` },
     { icon: <Wallet style={{ width: 16, height: 16, color: CYAN }} />, label: "Valor base", value: `R$ ${fmt(d.basePrice)}` },
-    { icon: <ArrowUpRight style={{ width: 16, height: 16, color: CYAN }} />, label: "Implantação", value: `R$ ${fmt(d.implantacao)}` },
+    { 
+      icon: <ArrowUpRight style={{ width: 16, height: 16, color: CYAN }} />, 
+      label: "Implantação", 
+      value: d.implantacaoDiscount > 0 ? (
+        <>
+          <span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: 6 }}>R$ {fmt(d.implantacaoBase)}</span>
+          <span style={{ color: '#16a34a' }}>R$ {fmt(d.implantacao)}</span>
+        </>
+      ) : `R$ ${fmt(d.implantacao)}` 
+    },
     { icon: <Megaphone style={{ width: 16, height: 16, color: CYAN }} />, label: "Marketing (Excedentes)", value: hasExcessDiscount ? <><span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: 6 }}>R$ {fmt(d.marketingPrice)}</span> <span style={{ color: '#16a34a' }}>R$ {fmt(mktPrice)}</span></> : `R$ ${fmt(d.marketingPrice)}` },
     { icon: <Settings style={{ width: 16, height: 16, color: CYAN }} />, label: "Utilidade (Excedentes)", value: hasExcessDiscount ? <><span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: 6 }}>R$ {fmt(d.utilityPrice)}</span> <span style={{ color: '#16a34a' }}>R$ {fmt(utlPrice)}</span></> : `R$ ${fmt(d.utilityPrice)}` },
     { 
@@ -162,7 +173,7 @@ function PlanCard({ d }: { d: QuoteData }) {
         <div style={{ padding: "8px 20px", backgroundColor: "#fff7ed", borderTop: "1px dashed #fdba74", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
           <Zap style={{ width: 14, height: 14, color: "#ea580c" }} />
           <span style={{ fontSize: 10, fontWeight: 800, color: "#ea580c", textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "center" }}>
-            {d.discountPercent}% de desconto na mensalidade!
+            {d.discountPercent}% (R$ {fmt(d.discount)}) de desconto na mensalidade!
           </span>
         </div>
       )}
