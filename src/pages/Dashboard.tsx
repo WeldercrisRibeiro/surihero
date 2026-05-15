@@ -54,8 +54,8 @@ export const HubDashboard = () => {
           <img src={currentLogo} alt="Logo" className="hub-page__logo" />
           {/* <p className="hub-page__eyebrow">SURI TOOLS</p> */}
         </div>
-        <h1 className="hub-page__title">Bem-vindo ao Suri Tools!</h1>
-        <p className="hub-page__subtitle">Módulos disponíveis abaixo</p>
+        <h1 className="hub-page__title">Bem-vindo!</h1>
+        <p className="hub-page__subtitle">Acesse aos módulos disponíveis abaixo:</p>
       </div>
 
     <div className="hub-grid">

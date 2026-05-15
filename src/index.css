@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap');
 @import "tailwindcss";
 @config "../tailwind.config.ts";
 
@@ -24,7 +24,7 @@ All colors MUST be HSL.
     --primary-foreground: 0 0% 100%;
 
     --secondary: 237 100% 65%;
-    /* Suri Blue - Secundário */
+    /* Suri Blue - SecundÃ¡rio */
     --secondary-foreground: 0 0% 100%;
 
     --muted: 205 100% 90%;
@@ -68,7 +68,7 @@ All colors MUST be HSL.
     --primary-foreground: 0 0% 100%;
 
     --secondary: 237 100% 65%;
-    /* Suri Blue - Secundário */
+    /* Suri Blue - SecundÃ¡rio */
     --secondary-foreground: 210 40% 98%;
 
     --muted: 233 40% 15%;
@@ -192,7 +192,7 @@ html {
   overflow: hidden;
 }
 
-/* ── Layout sem sidebar ──────────────────────────────── */
+/* â”€â”€ Layout sem sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .app-container-simple {
   display: flex;
   flex-direction: column;
@@ -201,7 +201,7 @@ html {
   overflow: hidden;
 }
 
-/* ── Layout sem sidebar ──────────────────────────────── */
+/* â”€â”€ Layout sem sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .app-container-simple {
   display: flex;
   flex-direction: column;
@@ -211,7 +211,7 @@ html {
   position: relative;
 }
 
-/* Topbar fixa para os módulos (sem conflitar com absolute) */
+/* Topbar fixa para os mÃ³dulos (sem conflitar com absolute) */
 .suri-topbar-solid {
   display: flex;
   align-items: center;
@@ -251,7 +251,7 @@ html {
   z-index: 1000;
 }
 
-.theme-toggle-dash button {
+.theme-toggle-dash button:not(.pwa-install-btn-dash) {
   background: var(--suri-surface);
   border: 1.5px solid var(--suri-border);
   width: 40px !important;
@@ -259,7 +259,7 @@ html {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.dark .theme-toggle-dash button {
+.dark .theme-toggle-dash button:not(.pwa-install-btn-dash) {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
@@ -275,10 +275,10 @@ html {
   display: flex;
   flex-direction: column;
   overflow: auto;
-  padding: 20px 0; /* Reduzido para remover espaço excessivo */
+  padding: 20px 0; /* Reduzido para remover espaÃ§o excessivo */
 }
 
-/* Estilos legados (topbar embutido) — mantidos para compatibilidade */
+/* Estilos legados (topbar embutido) â€” mantidos para compatibilidade */
 .suri-topbar--simple {
   display: flex;
   align-items: center;
@@ -523,9 +523,9 @@ html {
   color: var(--suri-text-muted);
 }
 
-/* ════════════════════════════════════════
-   KANBAN BOARD – VextFlow
-════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   KANBAN BOARD â€“ VextFlow
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 /* Root */
 .kb-root {
@@ -1077,11 +1077,11 @@ html {
   transform: scale(1.2);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   SURI UNIFIED DESIGN SYSTEM — Sidebar · Topbar · Dashboard
-═══════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   SURI UNIFIED DESIGN SYSTEM â€” Sidebar Â· Topbar Â· Dashboard
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Sidebar ─────────────────────────────────────────────── */
+/* â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .suri-sidebar {
   width: 240px;
   min-width: 240px;
@@ -1239,7 +1239,7 @@ html {
   background: var(--suri-surface-hover);
 }
 
-/* ── Topbar ──────────────────────────────────────────────── */
+/* â”€â”€ Topbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .suri-topbar {
   height: 64px;
   display: flex;
@@ -1340,7 +1340,7 @@ html {
   color: var(--suri-text);
 }
 
-/* ── Hub Dashboard ───────────────────────────────────────── */
+/* â”€â”€ Hub Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .hub-page { 
   padding: 10px 32px; 
   max-width: 1100px; 
@@ -1679,12 +1679,12 @@ html {
   margin-top: 0 !important;
 }
 
-/* ════════════════════════════════════════════════════════
-   RESPONSIVE — MOBILE FIRST
-   Breakpoints: 640px (sm) · 768px (md) · 1024px (lg)
-════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   RESPONSIVE â€” MOBILE FIRST
+   Breakpoints: 640px (sm) Â· 768px (md) Â· 1024px (lg)
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Topbar ─────────────────────────────────────────── */
+/* â”€â”€ Topbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 640px) {
   .suri-topbar {
     height: 52px;
@@ -1720,7 +1720,7 @@ html {
   }
 }
 
-/* ── Dashboard / Hub ────────────────────────────────── */
+/* â”€â”€ Dashboard / Hub â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 640px) {
   .hub-page {
     padding: 16px 14px 80px;
@@ -1778,7 +1778,7 @@ html {
     right: 14px;
   }
 
-  .theme-toggle-dash button {
+  .theme-toggle-dash button:not(.pwa-install-btn-dash) {
     width: 34px !important;
     height: 34px !important;
   }
@@ -1796,7 +1796,7 @@ html {
   }
 }
 
-/* ── Kanban Board ───────────────────────────────────── */
+/* â”€â”€ Kanban Board â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 768px) {
   .kb-root {
     overflow: hidden;
@@ -1875,11 +1875,11 @@ html {
   }
 }
 
-/* ── App Container principal ────────────────────────── */
+/* â”€â”€ App Container principal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 640px) {
   .app-container-simple {
     height: 100dvh;
-    /* dynamic viewport height — safe for mobile browsers */
+    /* dynamic viewport height â€” safe for mobile browsers */
   }
 
   .main-content-simple {
@@ -1891,10 +1891,10 @@ html {
   }
 }
 
-/* ── API Module ─────────────────────────────────────── */
+/* â”€â”€ API Module â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 768px) {
 
-  /* Reduz padding de painéis internos de módulos */
+  /* Reduz padding de painÃ©is internos de mÃ³dulos */
   .module-header {
     margin-bottom: 14px;
   }
@@ -1904,7 +1904,7 @@ html {
   }
 }
 
-/* ── WorkFlow / React Flow ──────────────────────────── */
+/* â”€â”€ WorkFlow / React Flow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 640px) {
 
   /* O ReactFlow precisa de 100% mas em mobile podemos ajudar */
@@ -1921,7 +1921,7 @@ html {
   }
 }
 
-/* ── Scrollbars mobile thin ─────────────────────────── */
+/* â”€â”€ Scrollbars mobile thin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 768px) {
   ::-webkit-scrollbar {
     width: 3px;
@@ -1938,7 +1938,7 @@ html {
   }
 }
 
-/* ── Touch-friendly tap targets ─────────────────────── */
+/* â”€â”€ Touch-friendly tap targets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (pointer: coarse) {
   .kb-icon-btn {
     padding: 8px;
@@ -1967,4 +1967,137 @@ html {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
   }
+}
+
+/* â”€â”€ Watermark Animation & Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@keyframes logo-entrance {
+  0% {
+    transform: translate(100vw, -20vh) rotate(45deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(0, 0) rotate(15deg);
+    opacity: 0.95;
+  }
+}
+
+.animate-logo-entrance {
+  animation: logo-entrance 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.footer-simple {
+  padding: 6px 24px;
+  border-top: 1px solid var(--suri-border);
+  background: var(--suri-surface);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  color: var(--suri-text-muted);
+  font-weight: 500;
+  z-index: 10;
+  flex-shrink: 0;
+}
+/* â”€â”€ PWA Install Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.pwa-install-btn-dash {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--suri-primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 8px 24px -6px hsla(var(--primary), 0.5);
+  animation: pulse-primary 2s infinite;
+}
+
+.pwa-install-btn-dash:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 28px -8px hsla(var(--primary), 0.6);
+}
+
+.pwa-install-btn-small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--suri-surface);
+  color: var(--suri-text);
+  border: 1.5px solid var(--suri-border);
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 12px;
+}
+
+.pwa-install-btn-small:hover {
+  background: var(--suri-surface-hover);
+  border-color: var(--suri-primary);
+  color: var(--suri-primary);
+}
+
+@keyframes pulse-primary {
+  0% { box-shadow: 0 0 0 0 hsla(var(--primary), 0.4); }
+  70% { box-shadow: 0 0 0 10px hsla(var(--primary), 0); }
+  100% { box-shadow: 0 0 0 0 hsla(var(--primary), 0); }
+}
+
+.pwa-install-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--suri-primary);
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pwa-install-link:hover {
+  background: var(--suri-surface-hover);
+}
+
+.pwa-install-btn-dash {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), padding 0.3s ease;
+  border-radius: 12px;
+  gap: 0;
+}
+
+.pwa-install-btn-dash span {
+  opacity: 0;
+  width: 0;
+  transition: opacity 0.2s ease, width 0.3s ease;
+  overflow: hidden;
+}
+
+.pwa-install-btn-dash:hover {
+  width: 160px;
+  padding: 0 16px;
+  gap: 10px;
+}
+
+.pwa-install-btn-dash:hover span {
+  opacity: 1;
+  width: auto;
 }

@@ -1,20 +1,25 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Download } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { usePWAInstall } from '@/hooks/usePWAInstall';
 
 export const HubLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const isDashboard = location.pathname === '/';
+  const { isInstallable, isInstalled, installPWA } = usePWAInstall();
 
   return (
     <div className="app-container-simple">
       {/* Background Watermark - Agora em todas as telas */}
-      <div className="fixed inset-0 -top-[50px] flex items-start justify-center pointer-events-none opacity-[0.05] sm:opacity-[0.95] select-none z-0 sm:inset-auto sm:top-[-268px] sm:right-[-25%] sm:block">
+      <div 
+        key={location.pathname}
+        className="fixed inset-0 -top-[50px] flex items-start justify-center pointer-events-none opacity-[0.20] sm:opacity-[0.95] select-none z-0 sm:inset-auto sm:top-[-268px] sm:right-[-25%] sm:block"
+      >
         <img
           src="/identidadevisual/icons/totvs.svg"
           alt="Background Watermark"
-          className="w-[1500vw] sm:w-[1450px] max-none h-auto brightness-0 transform rotate-[20deg]"
+          className="w-[1500vw] sm:w-[1450px] max-none h-auto brightness-0 transform rotate-[15deg] animate-logo-entrance"
         />
       </div>
 
@@ -32,7 +37,13 @@ export const HubLayout = ({ children }: { children: React.ReactNode }) => {
           {/* <ThemeToggle /> */}
         </header>
       ) : (
-        <div className="theme-toggle-dash">
+        <div className="theme-toggle-dash flex items-center gap-3">
+          {!isInstalled && (
+            <button onClick={installPWA} className="pwa-install-btn-dash">
+              <Download size={16} />
+              <span>Instalar App</span>
+            </button>
+          )}
           {/* <ThemeToggle /> */}
         </div>
       )}
@@ -41,6 +52,14 @@ export const HubLayout = ({ children }: { children: React.ReactNode }) => {
       <main className="main-content-simple">
         <div className="page-wrapper">{children}</div>
       </main>
+
+      <footer className="footer-simple">
+        <div className="flex items-center gap-2">
+          <span>v2.1.0</span>
+          <span>•</span>
+          <span>Feito por <a href="https://weldercrisdev.vercel.app" target="_blank" rel="noopener noreferrer">Weldercris Ribeiro 🧡</a></span>
+        </div>
+      </footer>
     </div>
   );
 };
