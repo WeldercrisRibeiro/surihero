@@ -62,7 +62,8 @@ function parseMarkdown(md: string): string {
       const level = hm[1].length;
       const text = hm[2].trim();
       if (level === 1) { i++; continue; }
-      const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+      const rawId = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+      const id = /^\d/.test(rawId) ? `h-${rawId}` : rawId;
       html += `<h${level} id="${id}" class="docs-heading docs-heading--${level}"><a href="#${id}" class="docs-heading-anchor">#</a>${inlineMd(text)}</h${level}>`;
       i++; continue;
     }
@@ -142,14 +143,18 @@ function allPages(manifest: ManifestCategory[]): ManifestPage[] {
 }
 
 /** Extrai headings h2/h3/h4 do markdown para o sumário lateral */
+function makeHeadingId(text: string): string {
+  const raw = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  return /^\d/.test(raw) ? `h-${raw}` : raw;
+}
+
 function extractHeadings(md: string) {
   const result: { level: number; text: string; id: string }[] = [];
   for (const line of md.split('\n')) {
     const m = line.match(/^(#{2,4})\s+(.+)/);
     if (m) {
       const text = m[2].trim().replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1').replace(/`(.+?)`/g, '$1');
-      const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
-      result.push({ level: m[1].length, text, id });
+      result.push({ level: m[1].length, text, id: makeHeadingId(text) });
     }
   }
   return result;

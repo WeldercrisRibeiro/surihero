@@ -57,7 +57,7 @@ export const HubLayout = ({ children }: { children: React.ReactNode }) => {
         <div className="flex items-center gap-2">
           <span>v2.1.0</span>
           <span>•</span>
-          <span>Feito por <a href="https://weldercrisdev.vercel.app" target="_blank" rel="noopener noreferrer">Weldercris Ribeiro 🧡</a></span>
+          <span>Feito por Weldercris Ribeiro</span>
         </div>
       </footer>
     </div>

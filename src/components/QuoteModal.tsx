@@ -34,6 +34,7 @@ export interface QuoteData {
   marketingPrice: number;
   utilityPrice: number;
   excessDiscountPercent: number;
+  utilityDiscountPercent: number;
   suriShopCommission: string;
 }
 
@@ -89,8 +90,9 @@ function StoreIntegrations() {
 
 function PlanCard({ d }: { d: QuoteData }) {
   const hasExcessDiscount = d.excessDiscountPercent > 0;
+  const hasUtilityDiscount = d.utilityDiscountPercent > 0;
   const mktPrice = hasExcessDiscount ? d.marketingPrice * (1 - d.excessDiscountPercent / 100) : d.marketingPrice;
-  const utlPrice = hasExcessDiscount ? d.utilityPrice * (1 - d.excessDiscountPercent / 100) : d.utilityPrice;
+  const utlPrice = hasUtilityDiscount ? d.utilityPrice * (1 - d.utilityDiscountPercent / 100) : d.utilityPrice;
 
   const items = [
     { icon: <MessageCircle style={{ width: 16, height: 16, color: CYAN }} />, label: "Interações", value: fmtN(d.interactions) },
@@ -107,7 +109,7 @@ function PlanCard({ d }: { d: QuoteData }) {
       ) : `R$ ${fmt(d.implantacao)}`
     },
     { icon: <Megaphone style={{ width: 16, height: 16, color: CYAN }} />, label: "Marketing (Excedentes)", value: hasExcessDiscount ? <><span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: 6 }}>R$ {fmt(d.marketingPrice)}</span> <span style={{ color: '#16a34a' }}>R$ {fmt(mktPrice)}</span></> : `R$ ${fmt(d.marketingPrice)}` },
-    { icon: <Settings style={{ width: 16, height: 16, color: CYAN }} />, label: "Utilidade (Excedentes)", value: hasExcessDiscount ? <><span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: 6 }}>R$ {fmt(d.utilityPrice)}</span> <span style={{ color: '#16a34a' }}>R$ {fmt(utlPrice)}</span></> : `R$ ${fmt(d.utilityPrice)}` },
+    { icon: <Settings style={{ width: 16, height: 16, color: CYAN }} />, label: "Utilidade (Excedentes)", value: hasUtilityDiscount ? <><span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: 6 }}>R$ {fmt(d.utilityPrice)}</span> <span style={{ color: '#16a34a' }}>R$ {fmt(utlPrice)}</span></> : `R$ ${fmt(d.utilityPrice)}` },
     {
       icon: <ShoppingBag style={{ width: 16, height: 16, color: CYAN }} />,
       label: "Suri Shop Assistant",
@@ -159,11 +161,13 @@ function PlanCard({ d }: { d: QuoteData }) {
       </div>
 
       {/* Excedentes com Desconto em Evidência */}
-      {d.excessDiscountPercent > 0 && (
+      {(d.excessDiscountPercent > 0 || d.utilityDiscountPercent > 0) && (
         <div style={{ padding: "8px 20px", backgroundColor: "#f0fdf4", borderTop: "1px dashed #bbf7d0", borderBottom: "1px dashed #bbf7d0", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
           <Zap style={{ width: 14, height: 14, color: "#16a34a" }} />
           <span style={{ fontSize: 10, fontWeight: 800, color: "#16a34a", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            {d.excessDiscountPercent}% de desconto em mensagens excedentes!
+            {d.excessDiscountPercent > 0 ? `${d.excessDiscountPercent}% de desconto em Marketing` : ''}
+            {d.excessDiscountPercent > 0 && d.utilityDiscountPercent > 0 ? ' e ' : ''}
+            {d.utilityDiscountPercent > 0 ? `${d.utilityDiscountPercent}% em Utilidades` : ''} excedentes!
           </span>
         </div>
       )}

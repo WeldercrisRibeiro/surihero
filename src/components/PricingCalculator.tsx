@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Toaster } from "sonner";
 import {
   Minus, Plus, FileText,
-  Lightbulb, Zap, Calculator, Megaphone
+  Lightbulb, Zap, Calculator, Megaphone, Settings
 } from "lucide-react";
 import QuoteModal, { type QuoteData } from "./QuoteModal";
 import DownsellModal from "./DownsellModal";
@@ -40,12 +40,14 @@ export default function PricingCalculator() {
   const [setupPrice, setSetupPrice] = useState(IMPLANTACAO);
   const [setupDiscount, setSetupDiscount] = useState(100);
   const [excessDiscountPercent, setExcessDiscountPercent] = useState(0);
+  const [utilityDiscountPercent, setUtilityDiscountPercent] = useState(0);
   const [selectedPlans, setSelectedPlans] = useState<Set<string>>(new Set());
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [downsellModalOpen, setDownsellModalOpen] = useState(false);
   const [marketingPrice, setMarketingPrice] = useState(0.49);
   const [utilityPrice, setUtilityPrice] = useState(0.25);
   const [activeTab, setActiveTab] = useState<"upsell" | "downsell">("upsell");
+  const controlsRef = useRef<HTMLDivElement>(null);
 
   // Downsell Calculator States
   const [downsellPlanValue, setDownsellPlanValue] = useState(2640.00);
@@ -83,10 +85,17 @@ export default function PricingCalculator() {
   const totalDue = penaltyAmount + overdueInvoices;
 
 
-  const togglePlan = (plan: string) => {
+    const togglePlan = (plan: string) => {
     setSelectedPlans((prev) => {
       const next = new Set(prev);
-      if (next.has(plan)) next.delete(plan); else next.add(plan);
+      if (next.has(plan)) {
+        next.delete(plan);
+      } else {
+        next.add(plan);
+        setTimeout(() => {
+          controlsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 150);
+      }
       return next;
     });
   };
@@ -103,7 +112,7 @@ export default function PricingCalculator() {
         implantacaoBase: calc.implantacao.base,
         implantacaoDiscount: calc.implantacao.discount,
         marketingPrice, utilityPrice,
-        excessDiscountPercent,
+        excessDiscountPercent, utilityDiscountPercent,
         suriShopCommission: ""
       });
     }
@@ -117,7 +126,7 @@ export default function PricingCalculator() {
         implantacaoBase: calc.implantacao.base,
         implantacaoDiscount: calc.implantacao.discount,
         marketingPrice, utilityPrice,
-        excessDiscountPercent,
+        excessDiscountPercent, utilityDiscountPercent,
         suriShopCommission: ""
       });
     }
@@ -131,7 +140,7 @@ export default function PricingCalculator() {
         implantacaoBase: calc.implantacao.base,
         implantacaoDiscount: calc.implantacao.discount,
         marketingPrice, utilityPrice,
-        excessDiscountPercent,
+        excessDiscountPercent, utilityDiscountPercent,
         suriShopCommission: ""
       });
     }
@@ -210,153 +219,19 @@ export default function PricingCalculator() {
 
         {activeTab === "upsell" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Main Grid */}
-            <div className="grid lg:grid-cols-2 gap-8 mb-8">
-
-          {/* Interaction Control Card */}
-          <Card className="h-full p-8 rounded-[2.5rem] border-none glass-card dark:bg-slate-900/40 relative overflow-hidden">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
-                <Zap className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-800 dark:text-slate-200">Interações / Mês</h3>
-                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Configure o volume de conversas</p>
+                        <div className="text-center mb-10 mt-6 animate-in zoom-in-95 duration-500">
+              <div className="inline-flex flex-col items-center bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl px-8 py-5 rounded-3xl">
+                <h2 className="text-3xl font-black mb-2 text-slate-900 dark:text-white">
+                  Escolha os Planos
+                </h2>
+                <p className="text-slate-600 dark:text-slate-400 font-medium">
+                  Selecione um ou mais planos para configurar as interações e preços.
+                </p>
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-4 mb-4">
-              <button
-                onClick={() => setInteractions(p => Math.max(1000, p - 500))}
-                className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-all border border-primary-100/50 dark:border-primary-500/20"
-              >
-                <Minus className="w-6 h-6" />
-              </button>
-
-              <div className="flex-1 bg-white dark:bg-slate-800/50 rounded-2xl h-14 flex items-center justify-center border border-slate-100 dark:border-slate-700 shadow-inner px-4">
-                <Input
-                  type="number"
-                  min={1000}
-                  value={interactions}
-                  onChange={(e) => {
-                    const v = parseInt(e.target.value) || 1000;
-                    setInteractions(Math.max(1000, v));
-                  }}
-                  className="border-none bg-transparent text-center text-2xl font-black text-slate-900 dark:text-white focus-visible:ring-0 shadow-none h-full w-full font-sans [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
-              </div>
-
-              <button
-                onClick={() => setInteractions(p => p + 500)}
-                className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-all border border-primary-100/50 dark:border-primary-500/20"
-              >
-                <Plus className="w-6 h-6" />
-              </button>
-            </div>
-            <p className="text-center text-[10px] text-slate-400 font-bold mb-10 italic">
-              Mínimo: 1.000 • Use +/− ou digite diretamente
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
-                    <Lightbulb className="w-4 h-4 text-primary-500" />
-                  </div>
-                  <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Mensal (%)</Label>
-                </div>
-                <div className="relative">
-                  <Select value={String(discountPercent)} onValueChange={(v) => setDiscountPercent(Number(v))}>
-                    <SelectTrigger className="h-10 border-none bg-primary-50/30 dark:bg-slate-900/40 font-black text-slate-700 dark:text-white rounded-xl">
-                      <SelectValue placeholder="0%" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[0, 5, 10, 15, 20, 25].map(v => (
-                        <SelectItem key={v} value={String(v)}>{v}%</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
-                    <Zap className="w-4 h-4 text-primary-500" />
-                  </div>
-                  <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Implantação (%)</Label>
-                </div>
-                <div className="relative">
-                  <Input
-                    type="number" min={0} max={100} value={setupDiscount || ""} placeholder="0"
-                    onChange={(e) => setSetupDiscount(Math.min(100, Math.max(0, Number(e.target.value))))}
-                    className="h-10 border-none bg-primary-50/30 dark:bg-slate-900/40 font-black text-primary-600 dark:text-primary-400 rounded-xl text-center" />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-primary-300 text-xs font-black">%</div>
-                </div>
-              </div>
-
-              <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-lg bg-green-50 dark:bg-green-900/30 flex items-center justify-center">
-                    <Megaphone className="w-4 h-4 text-green-500" />
-                  </div>
-                  <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Excedentes (%)</Label>
-                </div>
-                <div className="relative">
-                  <Select value={String(excessDiscountPercent)} onValueChange={(v) => setExcessDiscountPercent(Number(v))}>
-                    <SelectTrigger className="h-10 border-none bg-green-50/30 dark:bg-green-900/20 font-black text-green-600 dark:text-green-400 rounded-xl">
-                      <SelectValue placeholder="0%" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[0, 5, 10, 15, 20, 25].map(v => (
-                        <SelectItem key={v} value={String(v)}>{v}%</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Pricing Adjust Table Card */}
-          <Card className="h-full p-8 rounded-[2.5rem] border-none glass-card dark:bg-slate-900/40">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                <span className="text-slate-600 dark:text-slate-400 font-black">$</span>
-              </div>
-              <h3 className="font-bold text-slate-800 dark:text-slate-200">Ajuste de Preços</h3>
-              <span className="ml-auto text-slate-300 dark:text-white/10"><Calculator className="w-12 h-12" /></span>
-            </div>
-
-            <div className="space-y-2">
-              {[
-                { label: "Essential (R$)", value: essPrice, setter: setEssPrice },
-                { label: "Advanced (R$)", value: advPrice, setter: setAdvPrice },
-                { label: "Pro (R$)", value: proPrice, setter: setProPrice },
-                { label: "Implantação (R$)", value: setupPrice, setter: setSetupPrice, color: "bg-primary-50 dark:bg-primary-900/20", inputColor: "text-primary-600 dark:text-primary-400" },
-                { label: "Mensagens de Marketing (R$)", value: marketingPrice, setter: setMarketingPrice, isExcess: true },
-                { label: "Mensagens de Utilidades (R$)", value: utilityPrice, setter: setUtilityPrice, isExcess: true }
-              ].map((f, i) => (
-                <div key={i} className={`flex items-center justify-between p-4 rounded-2xl ${f.color || "bg-slate-50/70 dark:bg-slate-800/40"} border border-transparent transition-all hover:border-slate-200 dark:hover:border-slate-700`}>
-                  <Label className="text-xs font-bold text-slate-600 dark:text-slate-400">{f.label}</Label>
-                  <div className="flex items-center gap-2">
-                    {f.isExcess && excessDiscountPercent > 0 && (
-                      <span className="text-xs font-bold text-green-500 mr-2 bg-green-100 dark:bg-green-900/40 px-2 py-1 rounded-md">
-                        R$ {fmt(f.value * (1 - excessDiscountPercent / 100))}
-                      </span>
-                    )}
-                    <Input
-                      type="number" step="0.01" value={f.value}
-                      onChange={e => f.setter(Number(e.target.value))}
-                      className={`h-8 w-24 text-right font-black text-sm border-none bg-transparent shadow-none focus-visible:ring-0 ${f.inputColor || "text-slate-900 dark:text-slate-200"} ${f.isExcess && excessDiscountPercent > 0 ? "opacity-50 line-through" : ""}`} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
-
-        {/* Lower Row: Plan Cards */}
-        <div className="grid lg:grid-cols-3 gap-8 mb-12 items-stretch">
+            {/* Lower Row: Plan Cards */}
+        <div className="grid lg:grid-cols-3 gap-8 mb-8 items-stretch">
 
           {/* Essential Plan Card */}
             <Card
@@ -372,7 +247,7 @@ export default function PricingCalculator() {
                 <div className="w-12 h-12 bg-primary-50 dark:bg-primary-500/20 rounded-2xl flex items-center justify-center text-primary-600 dark:text-primary-400">
                   <Zap className="w-6 h-6 fill-current" />
                 </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Essential") ? "border-primary-500 bg-primary-500" : "border-slate-200 dark:border-white/20"}`}>
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Essential") ? "border-primary bg-primary" : "border-slate-200 dark:border-white/20"}`}>
                   {selectedPlans.has("Essential") && <div className="w-2 h-2 rounded-full bg-white" />}
                 </div>
               </div>
@@ -480,7 +355,7 @@ export default function PricingCalculator() {
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/20 dark:bg-[#000f9b] text-white dark:text-white">
                   <Zap className="w-6 h-6 fill-current" />
                 </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Pro") ? 'border-primary-400 dark:border-primary-500 bg-primary-400 dark:bg-primary-500' : 'border-white/20 dark:border-slate-200'}`}>
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Pro") ? 'border-white dark:border-primary bg-white dark:bg-primary' : 'border-white/20 dark:border-slate-200'}`}>
                   {selectedPlans.has("Pro") && <div className="w-2 h-2 rounded-full bg-[#000f9b] dark:bg-white" />}
                 </div>
               </div>
@@ -522,6 +397,185 @@ export default function PricingCalculator() {
         </div>
       </div>
       )}
+
+            {selectedPlans.size > 0 && (
+              <div ref={controlsRef} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {/* Main Grid */}
+            <div className="grid lg:grid-cols-2 gap-8 mb-8">
+
+          {/* Interaction Control Card */}
+          <Card className="h-full p-8 rounded-[2.5rem] border-none glass-card dark:bg-slate-900/40 relative overflow-hidden">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+                <Zap className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-800 dark:text-slate-200">Interações / Mês</h3>
+                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Configure o volume de conversas</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <button
+                onClick={() => setInteractions(p => Math.max(1000, p - 500))}
+                className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-all border border-primary-100/50 dark:border-primary-500/20"
+              >
+                <Minus className="w-6 h-6" />
+              </button>
+
+              <div className="flex-1 bg-white dark:bg-slate-800/50 rounded-2xl h-14 flex items-center justify-center border border-slate-100 dark:border-slate-700 shadow-inner px-4">
+                <Input
+                  type="number"
+                  min={1000}
+                  value={interactions}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value) || 1000;
+                    setInteractions(Math.max(1000, v));
+                  }}
+                  className="border-none bg-transparent text-center text-2xl font-black text-slate-900 dark:text-white focus-visible:ring-0 shadow-none h-full w-full font-sans [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
+              </div>
+
+              <button
+                onClick={() => setInteractions(p => p + 500)}
+                className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-all border border-primary-100/50 dark:border-primary-500/20"
+              >
+                <Plus className="w-6 h-6" />
+              </button>
+            </div>
+            <p className="text-center text-[10px] text-slate-400 font-bold mb-10 italic">
+              Mínimo: 1.000 • Use +/− ou digite diretamente
+            </p>
+
+            <div className={`grid grid-cols-1 gap-4 ${selectedPlans.has("Advanced") ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
+              <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-7 h-7 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+                    <Lightbulb className="w-4 h-4 text-primary-500" />
+                  </div>
+                  <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Mensal (%)</Label>
+                </div>
+                <div className="relative">
+                  <Select value={String(discountPercent)} onValueChange={(v) => setDiscountPercent(Number(v))}>
+                    <SelectTrigger className="h-10 border-none bg-primary-50/30 dark:bg-slate-900/40 font-black text-slate-700 dark:text-white rounded-xl">
+                      <SelectValue placeholder="0%" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[0, 5, 10, 15, 20, 25].map(v => (
+                        <SelectItem key={v} value={String(v)}>{v}%</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-7 h-7 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+                    <Zap className="w-4 h-4 text-primary-500" />
+                  </div>
+                  <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Implantação (%)</Label>
+                </div>
+                <div className="relative">
+                  <Input
+                    type="number" min={0} max={100} value={setupDiscount || ""} placeholder="0"
+                    onChange={(e) => setSetupDiscount(Math.min(100, Math.max(0, Number(e.target.value))))}
+                    className="h-10 border-none bg-primary-50/30 dark:bg-slate-900/40 font-black text-primary-600 dark:text-primary-400 rounded-xl text-center" />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-primary-300 text-xs font-black">%</div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-7 h-7 rounded-lg bg-green-50 dark:bg-green-900/30 flex items-center justify-center">
+                    <Megaphone className="w-4 h-4 text-green-500" />
+                  </div>
+                  <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">{selectedPlans.has("Advanced") ? "Desc. Exc. Marketing (%)" : "Desc. Excedentes (%)"}</Label>
+                </div>
+                <div className="relative">
+                  <Select value={String(excessDiscountPercent)} onValueChange={(v) => setExcessDiscountPercent(Number(v))}>
+                    <SelectTrigger className="h-10 border-none bg-green-50/30 dark:bg-green-900/20 font-black text-green-600 dark:text-green-400 rounded-xl">
+                      <SelectValue placeholder="0%" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[0, 5, 10, 15, 20, 25].map(v => (
+                        <SelectItem key={v} value={String(v)}>{v}%</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+
+              {selectedPlans.has("Advanced") && (
+                <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700 animate-in zoom-in-95 duration-300">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+                      <Settings className="w-4 h-4 text-blue-500" />
+                    </div>
+                    <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Exc. Utilidades (%)</Label>
+                  </div>
+                  <div className="relative">
+                    <Select value={String(utilityDiscountPercent)} onValueChange={(v) => setUtilityDiscountPercent(Number(v))}>
+                      <SelectTrigger className="h-10 border-none bg-blue-50/30 dark:bg-blue-900/20 font-black text-blue-600 dark:text-blue-400 rounded-xl">
+                        <SelectValue placeholder="0%" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[0, 5, 10, 15, 20, 25].map(v => (
+                          <SelectItem key={v} value={String(v)}>{v}%</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+
+          {/* Pricing Adjust Table Card */}
+          <Card className="h-full p-8 rounded-[2.5rem] border-none glass-card dark:bg-slate-900/40">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                <span className="text-slate-600 dark:text-slate-400 font-black">$</span>
+              </div>
+              <h3 className="font-bold text-slate-800 dark:text-slate-200">Ajuste de Preços</h3>
+              <span className="ml-auto text-slate-300 dark:text-white/10"><Calculator className="w-12 h-12" /></span>
+            </div>
+
+            <div className="space-y-2">
+              {[
+                { label: "Essential (R$)", value: essPrice, setter: setEssPrice },
+                { label: "Advanced (R$)", value: advPrice, setter: setAdvPrice },
+                { label: "Pro (R$)", value: proPrice, setter: setProPrice },
+                { label: "Implantação (R$)", value: setupPrice, setter: setSetupPrice, color: "bg-primary-50 dark:bg-primary-900/20", inputColor: "text-primary-600 dark:text-primary-400" },
+                { label: "Mensagens de Marketing (R$)", value: marketingPrice, setter: setMarketingPrice, isExcess: true, type: "marketing" },
+                { label: "Mensagens de Utilidades (R$)", value: utilityPrice, setter: setUtilityPrice, isExcess: true, type: "utility" }
+                            ].map((f, i) => {
+                const discountToUse = f.type === "utility" ? utilityDiscountPercent : excessDiscountPercent;
+                return (
+                <div key={i} className={`flex items-center justify-between p-4 rounded-2xl ${f.color || "bg-slate-50/70 dark:bg-slate-800/40"} border border-transparent transition-all hover:border-slate-200 dark:hover:border-slate-700`}>
+                  <Label className="text-xs font-bold text-slate-600 dark:text-slate-400">{f.label}</Label>
+                  <div className="flex items-center gap-2">
+                    {f.isExcess && discountToUse > 0 && (
+                      <span className="text-xs font-bold text-green-500 mr-2 bg-green-100 dark:bg-green-900/40 px-2 py-1 rounded-md">
+                        R$ {fmt(f.value * (1 - discountToUse / 100))}
+                      </span>
+                    )}
+                    <Input
+                      type="number" step="0.01" value={f.value}
+                      onChange={e => f.setter(Number(e.target.value))}
+                      className={`h-8 w-24 text-right font-black text-sm border-none bg-transparent shadow-none focus-visible:ring-0 ${f.inputColor || "text-slate-900 dark:text-slate-200"} ${f.isExcess && discountToUse > 0 ? "opacity-50 line-through" : ""}`} />
+                  </div>
+                </div>
+              );
+              })}
+            </div>
+          </Card>
+        </div>
+
+        
+              </div>
+            )}
+
 
         {activeTab === "downsell" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">

@@ -1,12 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-<<<<<<< HEAD
-import { Bot, Cable, Calculator, Workflow, ArrowRight, BookOpen } from 'lucide-react';
-=======
-import { Bot, Cable, Calculator, Workflow, ArrowRight, Shield, User, LogOut } from 'lucide-react';
->>>>>>> 1cd05325bc0e2710109790437e8f1fcf362b6703
+import { Cable, Calculator, Workflow, ArrowRight, BookOpen } from 'lucide-react';
 import { useTheme } from '@/hooks/use-theme';
-import { useAuth } from '@/hooks/useAuth';
 
 // URLs dos logos
 const LOGO_LIGHT = "/identidadevisual/icons/suri-blue.svg"; 
@@ -57,7 +52,6 @@ const apps = [
 
 export const HubDashboard = () => {
   const { theme } = useTheme();
-  const { profile, isAdmin, signOut, mockLogin } = useAuth();
   const currentLogo = theme === 'light' ? LOGO_LIGHT : LOGO_DARK;
 
   const visibleApps = apps;
@@ -70,13 +64,8 @@ export const HubDashboard = () => {
           <img src={currentLogo} alt="Logo" className="hub-page__logo" />
           {/* <p className="hub-page__eyebrow">SURI TOOLS</p> */}
         </div>
-<<<<<<< HEAD
-        <h1 className="hub-page__title">Bem-vindo!</h1>
-        <p className="hub-page__subtitle">Acesse aos módulos disponíveis abaixo:</p>
-=======
         <h1 className="hub-page__title">Soluções SURI</h1>
         <p className="hub-page__subtitle">Selecione um módulo para começar</p>
->>>>>>> 1cd05325bc0e2710109790437e8f1fcf362b6703
       </div>
 
     <div className="hub-grid">
