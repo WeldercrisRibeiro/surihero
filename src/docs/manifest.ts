@@ -56,7 +56,7 @@ export const DOCS_MANIFEST: ManifestCategory[] = [
         id: 'bem-vindo',
         title: 'Bem-vindo ao Suri Tools',
         file: '/docs/1-introducao/bem-vindo.md',
-        updatedAt: '2026-05-15',
+        updatedAt: '2026-05-16',
         author: AUTHORS.welder,
         banner: {
           type: 'gradient',
@@ -75,25 +75,25 @@ export const DOCS_MANIFEST: ManifestCategory[] = [
       {
         id: 'suri-api',
         title: 'Suri API',
-        file: '/docs/modulos/suri-api.md',
+        file: '/docs/2-modulos/suri-api.md',
         updatedAt: '2026-05-15',
       },
       {
         id: 'suri-calcs',
         title: 'Suri Calcs',
-        file: '/docs/modulos/suri-calcs.md',
+        file: '/docs/2-modulos/suri-calcs.md',
         updatedAt: '2026-05-15',
       },
       {
         id: 'kanban',
         title: 'Kanban',
-        file: '/docs/modulos/kanban.md',
+        file: '/docs/2-modulos/kanban.md',
         updatedAt: '2026-05-15',
       },
       {
         id: 'workflow',
         title: 'Flows',
-        file: '/docs/modulos/workflow.md',
+        file: '/docs/2-modulos/workflow.md',
         updatedAt: '2026-05-15',
       },
     ],
