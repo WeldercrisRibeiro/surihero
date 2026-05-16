@@ -43,7 +43,7 @@ const apps = [
   {
     path: '/docs',
     label: 'Docs',
-    description: 'Documentação centralizada da plataforma',
+    description: 'Documentações internas',
     icon: BookOpen,
     color: 'var(--app-template)',
     tag: 'Docs',
@@ -62,9 +62,9 @@ export const HubDashboard = () => {
         {/* Linha superior: logo + label + toggle espaçado */}
         <div className="hub-page__brand-row">
           <img src={currentLogo} alt="Logo" className="hub-page__logo" />
-          {/* <p className="hub-page__eyebrow">SURI TOOLS</p> */}
+          <p className="hub-page__eyebrow">Suri Tools</p>
         </div>
-        <h1 className="hub-page__title">Soluções SURI</h1>
+        <h1 className="hub-page__title">Bem vindo!</h1>
         <p className="hub-page__subtitle">Selecione um módulo para começar</p>
       </div>
 
