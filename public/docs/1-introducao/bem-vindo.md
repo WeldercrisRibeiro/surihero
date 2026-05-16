@@ -10,7 +10,7 @@ O **Suri Tools** é uma plataforma interna criada para centralizar ferramentas d
 - **Suri API** – Teste e valide endpoints da API TOTVS diretamente do navegador.
 - **Suri Calcs** – Calculadora de UpSell e DownSell com geração de orçamento.
 - **Kanban** – Quadro visual para gestão de tarefas da equipe.
-- **WorkFlow** – Editor de fluxos visuais para mapeamento de processos.
+- **Flows** – Editor de fluxos visuais para mapeamento de processos.
 - **Docs** – Este módulo de documentação centralizada.
 
 ## Como navegar

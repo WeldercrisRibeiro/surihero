@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Cable, Calculator, Workflow, ArrowRight, BookOpen } from 'lucide-react';
+import { Cable, Calculator, Workflow, ArrowRight, BookOpen, CircleDollarSign } from 'lucide-react';
 import { useTheme } from '@/hooks/use-theme';
 
 // URLs dos logos
@@ -34,11 +34,11 @@ const apps = [
   },
   {
     path: '/workflow',
-    label: 'WorkFlow',
+    label: 'Flows',
     description: 'Fluxos visuais para processos',
     icon: Workflow,
     color: 'var(--app-work)',
-    tag: 'IA',
+    tag: 'Fluxos',
   },
   {
     path: '/docs',
@@ -47,6 +47,14 @@ const apps = [
     icon: BookOpen,
     color: 'var(--app-template)',
     tag: 'Docs',
+  },
+  {
+    path: '/ca',
+    label: 'Integração Conta Azul',
+    description: 'Integração com Conta Azul',
+    icon: CircleDollarSign,
+    color: 'var(--app-template)',
+    tag: 'Financeiro',
   },
 ];
 
@@ -62,10 +70,9 @@ export const HubDashboard = () => {
         {/* Linha superior: logo + label + toggle espaçado */}
         <div className="hub-page__brand-row">
           <img src={currentLogo} alt="Logo" className="hub-page__logo" />
-          <p className="hub-page__eyebrow">Suri Tools</p>
         </div>
         <h1 className="hub-page__title">Bem vindo!</h1>
-        <p className="hub-page__subtitle">Selecione um módulo para começar</p>
+        <p className="hub-page__subtitle">Selecione um módulo abaixo:</p>
       </div>
 
     <div className="hub-grid">

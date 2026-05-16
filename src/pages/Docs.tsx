@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import {
   BookOpen, Search, ChevronRight, ChevronDown, FileText,
   X, Menu, Clock, Bookmark, BookMarked, Loader2, AlertTriangle,
-  ArrowRight, Copy, Check, AlignLeft,
+  ArrowRight, Copy, Check, AlignLeft, User
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DOCS_MANIFEST, type ManifestPage, type ManifestCategory } from '@/docs/manifest';
@@ -429,12 +429,21 @@ export default function Docs() {
 
                 {/* Article header */}
                 <header className="docs-article__header">
-                  <div className="docs-article__header-meta">
+                  <div className="docs-article__header-meta flex items-center flex-wrap gap-3 mb-2">
                     <span className="docs-article__tag"><FileText size={11} />Documento</span>
                     {activePage.updatedAt && (
-                      <span className="docs-article__updated">
+                      <span className="docs-article__updated flex items-center gap-1.5 text-xs text-muted-foreground">
                         <Clock size={11} />
                         Atualizado em {new Date(activePage.updatedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                      </span>
+                    )}
+                    {activePage.author && (
+                      <span className="docs-article__author flex items-center gap-1.5 text-xs text-muted-foreground border-l border-border pl-3">
+                        <User size={11} />
+                        Por{' '}
+                           <span className="font-medium text-foreground">
+                             {activePage.author.name}{activePage.author.role ? ` - ${activePage.author.role}` : ''}
+                           </span>
                       </span>
                     )}
                   </div>

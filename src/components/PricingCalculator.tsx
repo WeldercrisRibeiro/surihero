@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -117,6 +117,7 @@ export default function PricingCalculator() {
   const [activeTab, setActiveTab] = useState<"upsell" | "downsell">("upsell");
   const controlsRef = useRef<HTMLDivElement>(null);
   const advancedProposalRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Downsell Calculator States
   const [downsellPlanValue, setDownsellPlanValue] = useState(2640.00);
@@ -132,6 +133,12 @@ export default function PricingCalculator() {
   useEffect(() => {
     setPortalNode(document.getElementById('topbar-portal-target'));
   }, []);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     setInteractionsInput(String(interactions));
@@ -379,7 +386,7 @@ export default function PricingCalculator() {
   const advancedDiscountedTotal = interactions * applyPercentDiscount(advPrice, discountPercent);
 
   return (
-    <div className="flex-1 overflow-y-auto pt-4 pb-40 px-4 transition-colors duration-500">
+    <div ref={containerRef} className="flex-1 overflow-y-auto pt-4 pb-40 px-4 transition-colors duration-500">
       <div className="max-w-6xl mx-auto">
 
         {/* HEADER MOVED TO PORTAL */}
@@ -624,7 +631,7 @@ export default function PricingCalculator() {
       </div>
       )}
 
-            {selectedPlans.size > 0 && (
+            {activeTab === "upsell" && selectedPlans.size > 0 && (
               <div ref={controlsRef} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {/* Main Grid */}
             <div className="grid lg:grid-cols-2 gap-8 mb-8">

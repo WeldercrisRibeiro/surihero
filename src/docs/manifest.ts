@@ -33,6 +33,8 @@ export interface ManifestPage {
   title: string;
   file: string;
   updatedAt?: string;
+  /** Autor do documento */
+  author?: Author;
   /** Banner opcional exibido no topo da página */
   banner?: DocsBanner;
 }
@@ -43,6 +45,8 @@ export interface ManifestCategory {
   pages: ManifestPage[];
 }
 
+import { AUTHORS, type Author } from './authors';
+
 export const DOCS_MANIFEST: ManifestCategory[] = [
   {
     id: 'introducao',
@@ -51,8 +55,9 @@ export const DOCS_MANIFEST: ManifestCategory[] = [
       {
         id: 'bem-vindo',
         title: 'Bem-vindo ao Suri Tools',
-        file: '/docs/introducao/bem-vindo.md',
+        file: '/docs/1-introducao/bem-vindo.md',
         updatedAt: '2026-05-15',
+        author: AUTHORS.welder,
         banner: {
           type: 'gradient',
           from: '#0a1172',
@@ -60,12 +65,6 @@ export const DOCS_MANIFEST: ManifestCategory[] = [
           title: 'Suri Tools',
           subtitle: 'Plataforma interna de ferramentas do time',
         },
-      },
-      {
-        id: 'primeiros-passos',
-        title: 'Primeiros Passos',
-        file: '/docs/introducao/primeiros-passos.md',
-        updatedAt: '2026-05-15',
       },
     ],
   },
@@ -93,20 +92,8 @@ export const DOCS_MANIFEST: ManifestCategory[] = [
       },
       {
         id: 'workflow',
-        title: 'WorkFlow',
+        title: 'Flows',
         file: '/docs/modulos/workflow.md',
-        updatedAt: '2026-05-15',
-      },
-    ],
-  },
-  {
-    id: 'dev',
-    label: 'Desenvolvimento',
-    pages: [
-      {
-        id: 'guia-manutencao',
-        title: 'Guia de Manutenção',
-        file: '/docs/dev/guia-manutencao.md',
         updatedAt: '2026-05-15',
       },
     ],
