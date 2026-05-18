@@ -118,6 +118,10 @@ export default function PricingCalculator() {
   const [essUtilityPrice, setEssUtilityPrice] = useState(UTILITY_PRICE);
   const [proMarketingPrice, setProMarketingPrice] = useState(MARKETING_PRICE);
   const [proUtilityPrice, setProUtilityPrice] = useState(UTILITY_PRICE);
+  const [advReceptivePrice, setAdvReceptivePrice] = useState(0.25);
+  const [advMarketingPrice, setAdvMarketingPrice] = useState(0.25);
+  const [advUtilityPrice, setAdvUtilityPrice] = useState(0.25);
+  const [advAuthenticationPrice, setAdvAuthenticationPrice] = useState(0.25);
   const [activeTab, setActiveTab] = useState<"upsell" | "downsell">("upsell");
   const controlsRef = useRef<HTMLDivElement>(null);
   const advancedProposalRef = useRef<HTMLDivElement>(null);
@@ -220,6 +224,10 @@ export default function PricingCalculator() {
     setEssUtilityPrice(UTILITY_PRICE);
     setProMarketingPrice(MARKETING_PRICE);
     setProUtilityPrice(UTILITY_PRICE);
+    setAdvReceptivePrice(0.25);
+    setAdvMarketingPrice(0.25);
+    setAdvUtilityPrice(0.25);
+    setAdvAuthenticationPrice(0.25);
     setDiscountPercent(preset.discountPercent);
     setSetupDiscount(preset.setupDiscount);
     setExcessDiscountPercent(preset.excessDiscountPercent);
@@ -290,7 +298,8 @@ export default function PricingCalculator() {
         implantacao: calc.implantacao.final,
         implantacaoBase: calc.implantacao.base,
         implantacaoDiscount: calc.implantacao.discount,
-        marketingPrice: 0.25, utilityPrice: 0.25,
+        marketingPrice: advMarketingPrice, utilityPrice: advUtilityPrice,
+        receptivePrice: advReceptivePrice, authenticationPrice: advAuthenticationPrice,
         excessDiscountPercent, utilityDiscountPercent,
         receptiveDiscountPercent, authenticationDiscountPercent,
         suriShopCommission: ""
@@ -367,10 +376,10 @@ export default function PricingCalculator() {
       inputColor: "text-primary-600 dark:text-primary-400",
     },
     ...(selectedPlans.has("Advanced") ? [
-      { label: "Contato receptivo adicional (R$)", value: 0.25, setter: () => {}, isExcess: true, type: "receptive", readOnly: true },
-      { label: "Msg. ativa de marketing adicional (R$)", value: 0.25, setter: () => {}, isExcess: true, type: "marketing", readOnly: true },
-      { label: "Msg. ativa de utilidade adicional (R$)", value: 0.25, setter: () => {}, isExcess: true, type: "utility", readOnly: true },
-      { label: "Msg. ativa de autenticação adicional (R$)", value: 0.25, setter: () => {}, isExcess: true, type: "authentication", readOnly: true },
+      { label: "Contato receptivo adicional (R$)", value: advReceptivePrice, setter: setAdvReceptivePrice, isExcess: true, type: "receptive" },
+      { label: "Msg. ativa de marketing adicional (R$)", value: advMarketingPrice, setter: setAdvMarketingPrice, isExcess: true, type: "marketing" },
+      { label: "Msg. ativa de utilidade adicional (R$)", value: advUtilityPrice, setter: setAdvUtilityPrice, isExcess: true, type: "utility" },
+      { label: "Msg. ativa de autenticação adicional (R$)", value: advAuthenticationPrice, setter: setAdvAuthenticationPrice, isExcess: true, type: "authentication" },
     ] : selectedPlans.has("Pro") ? [
       { label: "Mensagens de Marketing (R$)", value: proMarketingPrice, setter: setProMarketingPrice, isExcess: true, type: "marketing" },
       { label: "Mensagens Excedentes (R$)", value: proUtilityPrice, setter: setProUtilityPrice, isExcess: true, type: "utility" },
@@ -383,10 +392,10 @@ export default function PricingCalculator() {
   const advancedProposalRows = [
     { label: "Implantação", value: setupPrice, discount: setupDiscount },
     { label: "Preço da interação", value: advPrice, discount: discountPercent },
-    { label: "Contato receptivo adicional", value: 0.25, discount: receptiveDiscountPercent },
-    { label: "Msg. ativa de marketing adicional", value: 0.25, discount: excessDiscountPercent },
-    { label: "Msg. ativa de utilidade adicional", value: 0.25, discount: utilityDiscountPercent },
-    { label: "Msg. ativa de autenticação adicional", value: 0.25, discount: authenticationDiscountPercent },
+    { label: "Contato receptivo adicional", value: advReceptivePrice, discount: receptiveDiscountPercent },
+    { label: "Msg. ativa de marketing adicional", value: advMarketingPrice, discount: excessDiscountPercent },
+    { label: "Msg. ativa de utilidade adicional", value: advUtilityPrice, discount: utilityDiscountPercent },
+    { label: "Msg. ativa de autenticação adicional", value: advAuthenticationPrice, discount: authenticationDiscountPercent },
   ];
 
   const advancedBaseTotal = interactions * advPrice;

@@ -37,6 +37,8 @@ export interface QuoteData {
   utilityDiscountPercent: number;
   receptiveDiscountPercent?: number;
   authenticationDiscountPercent?: number;
+  receptivePrice?: number;
+  authenticationPrice?: number;
   suriShopCommission: string;
 }
 
@@ -106,10 +108,10 @@ function AdvancedProposalSummary({ d }: { d: QuoteData }) {
   const rows = [
     { label: "Implantação", value: d.implantacaoBase, discount: setupDiscountPercent },
     { label: "Preço da interação", value: d.interactionPrice, discount: d.discountPercent },
-    { label: "Contato receptivo adicional", value: 0.25, discount: d.receptiveDiscountPercent ?? 0 },
-    { label: "Msg. ativa de marketing adicional", value: 0.25, discount: d.excessDiscountPercent },
-    { label: "Msg. ativa de utilidade adicional", value: 0.25, discount: d.utilityDiscountPercent },
-    { label: "Msg. ativa de autenticação adicional", value: 0.25, discount: d.authenticationDiscountPercent ?? 0 },
+    { label: "Contato receptivo adicional", value: d.receptivePrice ?? 0.25, discount: d.receptiveDiscountPercent ?? 0 },
+    { label: "Msg. ativa de marketing adicional", value: d.marketingPrice, discount: d.excessDiscountPercent },
+    { label: "Msg. ativa de utilidade adicional", value: d.utilityPrice, discount: d.utilityDiscountPercent },
+    { label: "Msg. ativa de autenticação adicional", value: d.authenticationPrice ?? 0.25, discount: d.authenticationDiscountPercent ?? 0 },
   ];
   const additionalRows = [
     "Contatos receptivos adicional",
