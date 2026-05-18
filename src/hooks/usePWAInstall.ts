@@ -4,6 +4,7 @@ export function usePWAInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
     // Verifica se ja esta em modo standalone (ja instalado e aberto como app)
@@ -15,6 +16,11 @@ export function usePWAInstall() {
     };
 
     checkInstalled();
+
+    // Detecta se é iOS
+    const userAgent = window.navigator.userAgent || '';
+    const ios = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
+    setIsIOS(ios);
 
     const handler = (e: any) => {
       console.log('PWA: Navegador pronto para instalar!');
@@ -41,7 +47,11 @@ export function usePWAInstall() {
 
   const installPWA = async () => {
     if (!deferredPrompt) {
-      alert("A instalação automática ainda não foi liberada pelo seu navegador.\n\nPara instalar agora:\n1. Clique nos 3 pontinhos (Menu) do navegador.\n2. Escolha Transmitir, Salvar e compartilhar, e após Instalar página como app.");
+      if (isIOS) {
+        alert("Para instalar no seu iPhone:\n\n1. Clique no botão de Compartilhar (ícone de quadrado com seta para cima na barra inferior).\n2. Role a lista para baixo e selecione 'Adicionar à Tela de Início'.\n3. Confirme clicando em 'Adicionar'.");
+      } else {
+        alert("A instalação automática ainda não foi liberada pelo seu navegador.\n\nPara instalar agora:\n1. Clique nos 3 pontinhos (Menu) do navegador.\n2. Escolha Transmitir, Salvar e compartilhar, e após Instalar página como app.");
+      }
       return;
     }
 
@@ -58,5 +68,5 @@ export function usePWAInstall() {
     }
   };
 
-  return { isInstallable, isInstalled, installPWA };
+  return { isInstallable, isInstalled, isIOS, installPWA };
 }

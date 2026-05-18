@@ -27,6 +27,18 @@ export default defineConfig({
         icons: [
           {
             src: "/identidadevisual/icons/totvs.svg",
+            sizes: "192x192",
+            type: "image/svg+xml",
+            purpose: "any",
+          },
+          {
+            src: "/identidadevisual/icons/totvs.svg",
+            sizes: "512x512",
+            type: "image/svg+xml",
+            purpose: "any",
+          },
+          {
+            src: "/identidadevisual/icons/totvs.svg",
             sizes: "any",
             type: "image/svg+xml",
             purpose: "any",
@@ -63,8 +75,7 @@ export default defineConfig({
         ],
       },
       devOptions: {
-        enabled: true,
-        type: 'module',
+        enabled: false,
       }
     }),
   ],

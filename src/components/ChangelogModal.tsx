@@ -15,12 +15,16 @@ interface ChangelogModalProps {
 
 export function ChangelogModal({ open, onOpenChange }: ChangelogModalProps) {
   const features = [
+    "Finalizada a adaptação dos preços adicionais (excedentes) separados de forma independente por plano.",
+    "Fixado os preços adicionais do plano Advanced em R$ 0,25 (receptivo, marketing, utilidade e autenticação) com suporte a descontos customizados.",
     "Nova funcionalidade de cálculo avançado de preços com descontos modulares somente para o plano ADVANCED",
     "Refatoração do layout do Hub com tema e background de marca d'água.",
     "Adicionado no modal de orçamento a opção de exportação para PDF."
   ];
 
   const fixes = [
+    "Bloqueado a edição direta de preços adicionais no plano Advanced no Ajuste de Preços, tornando-os de apenas leitura.",
+    "Correção no modal de visualização de proposta para refletir os adicionais fixos de R$ 0,25 com os descontos reais do formulário.",
     "Removido loop de redirecionamento de autenticação no dashboard.",
     "Corrigido o problema de sincronização ao alterar a quantidade de interações.",
     "Ajuste na contagem de interações nos planos PRO e Essencial."
@@ -35,7 +39,7 @@ export function ChangelogModal({ open, onOpenChange }: ChangelogModalProps) {
           </div>
           <div>
             <DialogTitle className="text-xl font-black m-0">Novidades da Versão</DialogTitle>
-            <p className="text-white/80 text-sm font-medium mt-1">v2.1.1 - Atualizações e Correções</p>
+            <p className="text-white/80 text-sm font-medium mt-1">v2.2.0 - Atualizações e Correções</p>
           </div>
         </div>
         

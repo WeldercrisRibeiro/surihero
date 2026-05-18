@@ -9,11 +9,11 @@ import { useState, useEffect } from 'react';
 export const HubLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const isDashboard = location.pathname === '/';
-  const { isInstallable, isInstalled, installPWA } = usePWAInstall();
+  const { isInstallable, isInstalled, isIOS, installPWA } = usePWAInstall();
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
 
   useEffect(() => {
-    const versionKey = 'suri_changelog_viewed_v2.1.1';
+    const versionKey = 'suri_changelog_viewed_v2.2.0';
     const hasViewed = localStorage.getItem(versionKey);
     if (!hasViewed) {
       setIsChangelogOpen(true);
@@ -50,7 +50,7 @@ export const HubLayout = ({ children }: { children: React.ReactNode }) => {
         </header>
       ) : (
         <div className="theme-toggle-dash flex items-center gap-3">
-          {!isInstalled && (
+          {(isInstallable || isIOS) && !isInstalled && (
             <button onClick={installPWA} className="pwa-install-btn-dash">
               <Download size={16} />
               <span>Instalar App</span>
@@ -72,7 +72,7 @@ export const HubLayout = ({ children }: { children: React.ReactNode }) => {
             onClick={() => setIsChangelogOpen(true)}
             title="Ver novidades"
           >
-            v2.1.1
+            v2.2.0
           </span>
           <span>•</span>
           <span>Feito por Weldercris Ribeiro</span>
