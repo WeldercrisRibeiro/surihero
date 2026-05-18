@@ -55,7 +55,7 @@ export const HubLayout = ({ children }: { children: React.ReactNode }) => {
 
       <footer className="footer-simple">
         <div className="flex items-center gap-2">
-          <span>v2.1.0</span>
+          <span>v2.1.1</span>
           <span>•</span>
           <span>Feito por Weldercris Ribeiro</span>
         </div>
