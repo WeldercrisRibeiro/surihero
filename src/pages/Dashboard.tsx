@@ -48,14 +48,14 @@ const apps = [
     color: 'var(--app-template)',
     tag: 'Docs',
   },
-  {
-    path: '/ca',
-    label: 'Integração Conta Azul',
-    description: 'Integração com Conta Azul',
-    icon: CircleDollarSign,
-    color: 'var(--app-template)',
-    tag: 'Financeiro',
-  },
+  // {
+  //   path: '/ca',
+  //   label: 'Integração Conta Azul',
+  //   description: 'Integração com Conta Azul',
+  //   icon: CircleDollarSign,
+  //   color: 'var(--app-template)',
+  //   tag: 'Financeiro',
+  // },
 ];
 
 export const HubDashboard = () => {
