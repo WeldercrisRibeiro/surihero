@@ -843,10 +843,9 @@ export default function PricingCalculator() {
                     )}
                     <Input
                       type="number" step="0.01" value={f.value}
-                      disabled={f.readOnly}
                       readOnly={f.readOnly}
                       onChange={e => !f.readOnly && f.setter(Number(e.target.value))}
-                      className={`h-8 w-24 text-right font-black text-sm border-none bg-transparent shadow-none focus-visible:ring-0 ${f.inputColor || "text-slate-900 dark:text-slate-200"} ${f.isExcess && discountToUse > 0 ? "opacity-50 line-through" : ""} ${f.readOnly ? "cursor-not-allowed select-none" : ""}`} />
+                      className={`h-8 w-24 text-right font-black text-sm border-none bg-transparent shadow-none focus-visible:ring-0 ${f.inputColor || "text-slate-900 dark:text-slate-200"} ${f.isExcess && discountToUse > 0 ? "opacity-50 line-through" : ""}`} />
                   </div>
                 </div>
               );
