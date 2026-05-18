@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import React from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -12,6 +11,7 @@ import Kanban from "./pages/Kanban";
 import WorkFlow from "./pages/WorkFlow";
 import SuriApi from "./pages/ApiSuri";
 import SuriCalc from "./pages/Calcs";
+import Docs from "./pages/Docs";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +31,7 @@ function App() {
                   <Route path="/workflow" element={<WorkFlow />} />
                   <Route path="/apisuri" element={<SuriApi />} />
                   <Route path="/calcs" element={<SuriCalc />} />
+                  <Route path="/docs" element={<Docs />} />
                 </Routes>
               </HubLayout>
             } />

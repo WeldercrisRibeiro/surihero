@@ -1,3 +1,0 @@
-Para o logotipo maior, coloque uma animação de rolagem. ele parado está com 15deg, então é pra ele vir da direita para a esquerda passando por toda a área da tela e parando nos 15deg. Seria como se estivesse em 45deg e viesse caindo em direção ao centro e parasse no 15deg. Isso somente para a versão desktop. 
-
-IMplemente um rodapé na parte debaixo bem pequeno, onde tenha o número da versão e feito por Weldercris Ribeiro.

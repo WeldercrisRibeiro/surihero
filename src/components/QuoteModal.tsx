@@ -34,6 +34,7 @@ export interface QuoteData {
   marketingPrice: number;
   utilityPrice: number;
   excessDiscountPercent: number;
+  utilityDiscountPercent: number;
   suriShopCommission: string;
 }
 
@@ -52,6 +53,17 @@ const STORES = [
 ];
 
 const PLAN_NAMES = ["Essential", "Advanced", "PRO"];
+const ADVANCED_RECEPTIVE_DISCOUNT = 65;
+const ADVANCED_AUTHENTICATION_PRICE = 0.25;
+
+function applyPercentDiscount(value: number, discount: number) {
+  return value * (1 - discount / 100);
+}
+
+function getPercentDiscount(base: number, discountAmount: number) {
+  if (!base) return 0;
+  return Math.round((discountAmount / base) * 100);
+}
 
 function StoreIntegrations() {
   return (
@@ -87,10 +99,90 @@ function StoreIntegrations() {
   );
 }
 
+function AdvancedProposalSummary({ d }: { d: QuoteData }) {
+  const setupDiscountPercent = getPercentDiscount(d.implantacaoBase, d.implantacaoDiscount);
+  const rows = [
+    { label: "Implantação", value: d.implantacaoBase, discount: setupDiscountPercent },
+    { label: "Preço da interação", value: d.interactionPrice, discount: d.discountPercent },
+    { label: "Contato receptivo adicional", value: d.interactionPrice, discount: ADVANCED_RECEPTIVE_DISCOUNT },
+    { label: "Msg. ativa de marketing adicional", value: d.marketingPrice, discount: d.excessDiscountPercent },
+    { label: "Msg. ativa de utilidade adicional", value: d.utilityPrice, discount: d.utilityDiscountPercent },
+    { label: "Msg. ativa de autenticação adicional", value: ADVANCED_AUTHENTICATION_PRICE, discount: 0 },
+  ];
+  const additionalRows = [
+    "Contatos receptivos adicional",
+    "Mensagens ativas de marketing adicional",
+    "Mensagens ativas de utilidade adicional",
+    "Mensagens ativas de autenticação adicional",
+  ];
+
+  return (
+    <div className="advanced-proposal">
+      <div className="advanced-proposal-header">
+        <div>
+          <p className="advanced-proposal-title">Proposta Plano - Advanced</p>
+          <p className="advanced-proposal-subtitle">Resumo baseado na planilha</p>
+        </div>
+        <div className="advanced-proposal-flags">
+          <span>Shop: não</span>
+          <span>Pós-pago: não</span>
+        </div>
+      </div>
+
+      <div className="advanced-proposal-body">
+        <div className="advanced-proposal-rows">
+          {rows.map((row) => {
+            const finalValue = applyPercentDiscount(row.value, row.discount);
+
+            return (
+              <div key={row.label} className="advanced-proposal-row">
+                <p>{row.label}</p>
+                <div>
+                  <strong>R$ {fmt(row.value)}</strong>
+                  <span>{row.discount}%</span>
+                  <b>R$ {fmt(finalValue)}</b>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="advanced-proposal-side">
+          <div className="advanced-proposal-total-grid">
+            <div>
+              <p>Sem desconto</p>
+              <strong>R$ {fmt(d.basePrice)}</strong>
+            </div>
+            <div className="advanced-proposal-total-highlight">
+              <p>Com desconto</p>
+              <strong>R$ {fmt(d.finalPrice)}</strong>
+            </div>
+          </div>
+
+          <div className="advanced-proposal-estimate">
+            <p>Estimativa adicional</p>
+            {additionalRows.map((label) => (
+              <div key={label}>
+                <span>{label}</span>
+                <strong>0</strong>
+              </div>
+            ))}
+            <div className="advanced-proposal-estimate-total">
+              <span>Total adicional</span>
+              <strong>R$ 0,00</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PlanCard({ d }: { d: QuoteData }) {
   const hasExcessDiscount = d.excessDiscountPercent > 0;
+  const hasUtilityDiscount = d.utilityDiscountPercent > 0;
   const mktPrice = hasExcessDiscount ? d.marketingPrice * (1 - d.excessDiscountPercent / 100) : d.marketingPrice;
-  const utlPrice = hasExcessDiscount ? d.utilityPrice * (1 - d.excessDiscountPercent / 100) : d.utilityPrice;
+  const utlPrice = hasUtilityDiscount ? d.utilityPrice * (1 - d.utilityDiscountPercent / 100) : d.utilityPrice;
 
   const items = [
     { icon: <MessageCircle style={{ width: 16, height: 16, color: CYAN }} />, label: "Interações", value: fmtN(d.interactions) },
@@ -107,7 +199,7 @@ function PlanCard({ d }: { d: QuoteData }) {
       ) : `R$ ${fmt(d.implantacao)}`
     },
     { icon: <Megaphone style={{ width: 16, height: 16, color: CYAN }} />, label: "Marketing (Excedentes)", value: hasExcessDiscount ? <><span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: 6 }}>R$ {fmt(d.marketingPrice)}</span> <span style={{ color: '#16a34a' }}>R$ {fmt(mktPrice)}</span></> : `R$ ${fmt(d.marketingPrice)}` },
-    { icon: <Settings style={{ width: 16, height: 16, color: CYAN }} />, label: "Utilidade (Excedentes)", value: hasExcessDiscount ? <><span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: 6 }}>R$ {fmt(d.utilityPrice)}</span> <span style={{ color: '#16a34a' }}>R$ {fmt(utlPrice)}</span></> : `R$ ${fmt(d.utilityPrice)}` },
+    { icon: <Settings style={{ width: 16, height: 16, color: CYAN }} />, label: "Utilidade (Excedentes)", value: hasUtilityDiscount ? <><span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: 6 }}>R$ {fmt(d.utilityPrice)}</span> <span style={{ color: '#16a34a' }}>R$ {fmt(utlPrice)}</span></> : `R$ ${fmt(d.utilityPrice)}` },
     {
       icon: <ShoppingBag style={{ width: 16, height: 16, color: CYAN }} />,
       label: "Suri Shop Assistant",
@@ -159,11 +251,13 @@ function PlanCard({ d }: { d: QuoteData }) {
       </div>
 
       {/* Excedentes com Desconto em Evidência */}
-      {d.excessDiscountPercent > 0 && (
+      {(d.excessDiscountPercent > 0 || d.utilityDiscountPercent > 0) && (
         <div style={{ padding: "8px 20px", backgroundColor: "#f0fdf4", borderTop: "1px dashed #bbf7d0", borderBottom: "1px dashed #bbf7d0", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
           <Zap style={{ width: 14, height: 14, color: "#16a34a" }} />
           <span style={{ fontSize: 10, fontWeight: 800, color: "#16a34a", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            {d.excessDiscountPercent}% de desconto em mensagens excedentes!
+            {d.excessDiscountPercent > 0 ? `${d.excessDiscountPercent}% de desconto em Marketing` : ''}
+            {d.excessDiscountPercent > 0 && d.utilityDiscountPercent > 0 ? ' e ' : ''}
+            {d.utilityDiscountPercent > 0 ? `${d.utilityDiscountPercent}% em Utilidades` : ''} excedentes!
           </span>
         </div>
       )}
@@ -205,6 +299,7 @@ export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProp
   if (!plans.length) return null;
 
   const today = new Date().toLocaleDateString("pt-BR");
+  const advancedPlan = plans.find((p) => p.plan.toUpperCase() === "ADVANCED");
 
   const handlePrint = () => {
     const content = printRef.current;
@@ -328,6 +423,35 @@ export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProp
                     @media (min-width: 640px) { .plan-grid-mobile { grid-template-columns: 1fr 1fr; } }
                     .pill { background-color: #f1f5f9; border-radius: 100px; padding: 8px 20px; text-align: center; }
                     .pill p { font-size: 10px; font-weight: 700; color: #94a3b8; margin: 0; }
+                    .advanced-proposal { margin-top: 18px; border: 1px solid #e2e8f0; border-radius: 22px; background: #ffffff; overflow: hidden; }
+                    .advanced-proposal-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; }
+                    .advanced-proposal-title { margin: 0; font-size: 10px; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; }
+                    .advanced-proposal-subtitle { margin: 2px 0 0; font-size: 10px; font-weight: 700; color: #475569; }
+                    .advanced-proposal-flags { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+                    .advanced-proposal-flags span { border: 1px solid #e2e8f0; border-radius: 999px; background: #ffffff; color: #64748b; font-size: 9px; font-weight: 900; padding: 5px 8px; text-transform: uppercase; }
+                    .advanced-proposal-body { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 12px; padding: 12px; }
+                    .advanced-proposal-rows { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+                    .advanced-proposal-row { border: 1px solid #e2e8f0; border-radius: 14px; background: #f8fafc; padding: 9px 10px; min-width: 0; }
+                    .advanced-proposal-row p { margin: 0 0 7px; color: #475569; font-size: 10px; font-weight: 800; line-height: 1.2; }
+                    .advanced-proposal-row div { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+                    .advanced-proposal-row strong { color: #0f172a; font-size: 10px; font-weight: 900; white-space: nowrap; }
+                    .advanced-proposal-row span { color: #4a54ff; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 999px; padding: 3px 6px; font-size: 9px; font-weight: 900; white-space: nowrap; }
+                    .advanced-proposal-row b { color: #16a34a; font-size: 10px; font-weight: 900; white-space: nowrap; }
+                    .advanced-proposal-side { display: grid; gap: 8px; align-content: start; }
+                    .advanced-proposal-total-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+                    .advanced-proposal-total-grid div, .advanced-proposal-estimate { border: 1px solid #e2e8f0; border-radius: 14px; background: #f8fafc; padding: 10px; }
+                    .advanced-proposal-total-grid p, .advanced-proposal-estimate > p { margin: 0 0 5px; color: #94a3b8; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
+                    .advanced-proposal-total-grid strong { color: #0f172a; font-size: 16px; font-weight: 900; }
+                    .advanced-proposal-total-highlight { background: #f0fdf4 !important; border-color: #bbf7d0 !important; }
+                    .advanced-proposal-total-highlight p, .advanced-proposal-total-highlight strong { color: #16a34a; }
+                    .advanced-proposal-estimate div { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; color: #64748b; font-size: 9px; font-weight: 700; }
+                    .advanced-proposal-estimate-total { margin-top: 5px; border-top: 1px solid #e2e8f0; padding-top: 7px !important; color: #0f172a !important; }
+                    @media (max-width: 760px) {
+                      .advanced-proposal-header, .advanced-proposal-body { display: block; }
+                      .advanced-proposal-flags { justify-content: flex-start; margin-top: 8px; }
+                      .advanced-proposal-rows, .advanced-proposal-total-grid { grid-template-columns: 1fr; }
+                      .advanced-proposal-side { margin-top: 8px; }
+                    }
                   `}</style>
                 {/* Document Header */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
@@ -363,6 +487,7 @@ export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProp
                       <PlanCard key={p.plan} d={p} />
                     ))}
                   </div>
+                  {advancedPlan && <AdvancedProposalSummary d={advancedPlan} />}
                 </div>
 
                 {/* Section 2: Info & Conditionally Integrations */}

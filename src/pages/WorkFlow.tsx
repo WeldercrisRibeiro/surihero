@@ -37,6 +37,7 @@ import { toast } from "sonner";
 import { useTheme } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 import { toPng } from "html-to-image";
+import { Loader2 } from "lucide-react";
 
 interface SavedFlow {
   id: string;
@@ -105,6 +106,7 @@ export default function WorkFlow() {
 function FlowsContent() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  const [loading, setLoading] = useState(false);
   const [nodes, setNodes, onNodesChange] = useNodesState(defaultNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(defaultEdges);
   const [nodeCount, setNodeCount] = useState(defaultNodes.length);
@@ -124,6 +126,7 @@ function FlowsContent() {
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const edgeReconnectSuccessful = useRef(true);
+
 
   const [portalNode, setPortalNode] = useState<HTMLElement | null>(null);
   useEffect(() => {
@@ -409,6 +412,17 @@ function FlowsContent() {
       minute: "2-digit",
     });
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-12 w-12 animate-spin text-cyan-500" />
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground animate-pulse">Carregando Workflow...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
