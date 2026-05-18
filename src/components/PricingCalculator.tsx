@@ -307,18 +307,15 @@ export default function PricingCalculator() {
   };
 
   const calc = useMemo(() => {
-    // Cada plano tem base com suas próprias interações fixas.
-    // MAS O ADVANCED usa as interações configuradas pelo usuário (estado interactions)
-    // Isso resolve o problema de mudar a quantidade no control card.
-    
-    const essFixedInt = PLAN_FIXED_INTERACTIONS.Essential;
-    const proFixedInt = PLAN_FIXED_INTERACTIONS.Pro;
+    const isEssSelected = selectedPlans.has("Essential");
+    const isProSelected = selectedPlans.has("Pro");
     const isAdvSelected = selectedPlans.has("Advanced");
+
+    const essFixedInt = isEssSelected ? interactions : PLAN_FIXED_INTERACTIONS.Essential;
+    const proFixedInt = isProSelected ? interactions : PLAN_FIXED_INTERACTIONS.Pro;
     const advFixedInt = isAdvSelected ? interactions : PLAN_FIXED_INTERACTIONS.Advanced;
 
     // Plano selecionado usa o desconto configurado, os demais mostram preço cheio
-    const isEssSelected = selectedPlans.has("Essential");
-    const isProSelected = selectedPlans.has("Pro");
 
     const essBase = essFixedInt * essPrice;
     const proBase = proFixedInt * proPrice;
@@ -466,7 +463,7 @@ export default function PricingCalculator() {
                 </div>
               </div>
               <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-1">Essential</h2>
-              <span className="inline-flex items-center gap-1 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full mb-2"><Zap className="w-3 h-3" />1.000 interações</span>
+              <span className="inline-flex items-center gap-1 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full mb-2"><Zap className="w-3 h-3" />{selectedPlans.has("Essential") ? fmtN(interactions) : "1.000"} interações</span>
               <p className="text-slate-400 dark:text-slate-500 text-xs font-medium mb-8 uppercase tracking-widest">Ideal para começar</p>
 
               <div className="items-baseline flex gap-1 mb-8">
@@ -576,7 +573,7 @@ export default function PricingCalculator() {
                 </div>
               </div>
               <h2 className="text-2xl font-black text-white dark:text-slate-900 mb-1">Pro</h2>
-              <span className="inline-flex items-center gap-1 bg-white/20 dark:bg-primary-50 text-white dark:text-primary-600 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full mb-2"><Zap className="w-3 h-3" />1.000 interações</span>
+              <span className="inline-flex items-center gap-1 bg-white/20 dark:bg-primary-50 text-white dark:text-primary-600 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full mb-2"><Zap className="w-3 h-3" />{selectedPlans.has("Pro") ? fmtN(interactions) : "1.000"} interações</span>
               <p className="text-xs font-medium mb-8 uppercase tracking-widest text-slate-400">Para alta performance</p>
 
               <div className="items-baseline flex gap-1 mb-8">
