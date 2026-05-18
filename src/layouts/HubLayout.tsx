@@ -3,11 +3,23 @@ import { Link, useLocation } from 'react-router-dom';
 import { ChevronLeft, Download } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
+import { ChangelogModal } from '@/components/ChangelogModal';
+import { useState, useEffect } from 'react';
 
 export const HubLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const isDashboard = location.pathname === '/';
   const { isInstallable, isInstalled, installPWA } = usePWAInstall();
+  const [isChangelogOpen, setIsChangelogOpen] = useState(false);
+
+  useEffect(() => {
+    const versionKey = 'suri_changelog_viewed_v2.1.1';
+    const hasViewed = localStorage.getItem(versionKey);
+    if (!hasViewed) {
+      setIsChangelogOpen(true);
+      localStorage.setItem(versionKey, 'true');
+    }
+  }, []);
 
   return (
     <div className="app-container-simple">
@@ -55,11 +67,19 @@ export const HubLayout = ({ children }: { children: React.ReactNode }) => {
 
       <footer className="footer-simple">
         <div className="flex items-center gap-2">
-          <span>v2.1.1</span>
+          <span 
+            className="cursor-pointer hover:text-[#4a54ff] hover:underline font-semibold transition-colors"
+            onClick={() => setIsChangelogOpen(true)}
+            title="Ver novidades"
+          >
+            v2.1.1
+          </span>
           <span>•</span>
           <span>Feito por Weldercris Ribeiro</span>
         </div>
       </footer>
+
+      <ChangelogModal open={isChangelogOpen} onOpenChange={setIsChangelogOpen} />
     </div>
   );
 };
