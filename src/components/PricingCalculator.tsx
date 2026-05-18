@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Toaster } from "sonner";
 import {
   Minus, Plus, FileText,
-  Lightbulb, Zap, Calculator, Megaphone, Settings, AlertTriangle, Shield
+  Lightbulb, Zap, Calculator, Megaphone, Settings, AlertTriangle, Shield, Send
 } from "lucide-react";
 import QuoteModal, { type QuoteData } from "./QuoteModal";
 import DownsellModal from "./DownsellModal";
@@ -122,7 +122,7 @@ export default function PricingCalculator() {
   const [advMarketingPrice, setAdvMarketingPrice] = useState(0.25);
   const [advUtilityPrice, setAdvUtilityPrice] = useState(0.25);
   const [advAuthenticationPrice, setAdvAuthenticationPrice] = useState(0.25);
-  const [activeTab, setActiveTab] = useState<"upsell" | "downsell">("upsell");
+  const [activeTab, setActiveTab] = useState<"nova-venda" | "upsell" | "downsell">("nova-venda");
   const controlsRef = useRef<HTMLDivElement>(null);
   const advancedProposalRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -142,10 +142,125 @@ export default function PricingCalculator() {
     setPortalNode(document.getElementById('topbar-portal-target'));
   }, []);
 
+  const tabContainerRef = useRef<HTMLDivElement>(null);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDraggingTabs, setIsDraggingTabs] = useState(false);
+  const dragStartX = useRef(0);
+  const tabWidth = useRef(0);
+
+  const handleTabTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    setIsDraggingTabs(true);
+    dragStartX.current = e.touches[0].clientX;
+    if (tabContainerRef.current) {
+      tabWidth.current = tabContainerRef.current.getBoundingClientRect().width;
+    }
+  };
+
+  const handleTabTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isDraggingTabs) return;
+    const currentX = e.touches[0].clientX;
+    const diffX = currentX - dragStartX.current;
+    
+    const maxOffset = tabWidth.current * 0.6666;
+    const minOffset = -tabWidth.current * 0.6666;
+    
+    let clampedDiffX = diffX;
+    if (activeTab === "nova-venda") {
+      clampedDiffX = Math.max(0, diffX);
+    } else if (activeTab === "downsell") {
+      clampedDiffX = Math.min(0, diffX);
+    }
+    
+    setDragOffset(Math.max(minOffset, Math.min(maxOffset, clampedDiffX)));
+  };
+
+  const handleTabTouchEnd = () => {
+    if (!isDraggingTabs) return;
+    setIsDraggingTabs(false);
+    
+    const threshold = tabWidth.current * 0.15;
+    if (Math.abs(dragOffset) > threshold) {
+      if (dragOffset > 0) {
+        // Dragged right -> transition to next tab (Nova Venda -> Upsell -> Downsell)
+        if (activeTab === "nova-venda") setActiveTab("upsell");
+        else if (activeTab === "upsell") setActiveTab("downsell");
+      } else {
+        // Dragged left -> transition to previous tab (Downsell -> Upsell -> Nova Venda)
+        if (activeTab === "downsell") setActiveTab("upsell");
+        else if (activeTab === "upsell") setActiveTab("nova-venda");
+      }
+    }
+    setDragOffset(0);
+  };
+
+  const handleTabMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    setIsDraggingTabs(true);
+    dragStartX.current = e.clientX;
+    if (tabContainerRef.current) {
+      tabWidth.current = tabContainerRef.current.getBoundingClientRect().width;
+    }
+    
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const diffX = moveEvent.clientX - dragStartX.current;
+      const maxOffset = tabWidth.current * 0.6666;
+      const minOffset = -tabWidth.current * 0.6666;
+      
+      let clampedDiffX = diffX;
+      if (activeTab === "nova-venda") {
+        clampedDiffX = Math.max(0, diffX);
+      } else if (activeTab === "downsell") {
+        clampedDiffX = Math.min(0, diffX);
+      }
+      
+      setDragOffset(Math.max(minOffset, Math.min(maxOffset, clampedDiffX)));
+    };
+    
+    const handleMouseUp = (upEvent: MouseEvent) => {
+      setIsDraggingTabs(false);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      
+      const finalDiffX = upEvent.clientX - dragStartX.current;
+      const threshold = tabWidth.current * 0.15;
+      
+      let clampedDiffX = finalDiffX;
+      if (activeTab === "nova-venda") {
+        clampedDiffX = Math.max(0, finalDiffX);
+      } else if (activeTab === "downsell") {
+        clampedDiffX = Math.min(0, finalDiffX);
+      }
+      
+      if (Math.abs(clampedDiffX) > threshold) {
+        if (clampedDiffX > 0) {
+          // Dragged right -> transition to next tab (Nova Venda -> Upsell -> Downsell)
+          if (activeTab === "nova-venda") setActiveTab("upsell");
+          else if (activeTab === "upsell") setActiveTab("downsell");
+        } else {
+          // Dragged left -> transition to previous tab (Downsell -> Upsell -> Nova Venda)
+          if (activeTab === "downsell") setActiveTab("upsell");
+          else if (activeTab === "upsell") setActiveTab("nova-venda");
+        }
+      }
+      setDragOffset(0);
+    };
+    
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+  };
+
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    setSelectedPlans(new Set());
+    setInteractions(MIN_INTERACTIONS);
+    setInteractionsInput(String(MIN_INTERACTIONS));
+    setDiscountPercent(0);
+    setSetupDiscount(100);
+    setExcessDiscountPercent(0);
+    setUtilityDiscountPercent(0);
+    setReceptiveDiscountPercent(0);
+    setAuthenticationDiscountPercent(0);
   }, [activeTab]);
 
   useEffect(() => {
@@ -243,26 +358,14 @@ export default function PricingCalculator() {
     return null;
   };
 
-  // COMPARAÇÃO DE PLANOS REMOVIDA — Seleção única apenas
-  // const togglePlanMulti = (plan: PlanName) => {
-  //   const next = new Set(selectedPlans);
-  //   const isSelected = next.has(plan);
-  //   if (isSelected) { next.delete(plan); }
-  //   else { next.add(plan); if (plan === "Advanced" || !next.has("Advanced")) { applyPlanPreset(plan); } }
-  //   if (isSelected) { const fallbackPlan = getFallbackPresetPlan(next); if (fallbackPlan) applyPlanPreset(fallbackPlan); }
-  //   setSelectedPlans(next);
-  // };
-
   const togglePlan = (plan: PlanName) => {
     const isSelected = selectedPlans.has(plan) && selectedPlans.size === 1;
 
     if (isSelected) {
-      // Deselect
       setSelectedPlans(new Set());
       return;
     }
 
-    // Single-select: replace current selection
     const next = new Set<string>([plan]);
     applyPlanPreset(plan);
     setSelectedPlans(next);
@@ -330,8 +433,6 @@ export default function PricingCalculator() {
     const essFixedInt = isEssSelected ? interactions : PLAN_FIXED_INTERACTIONS.Essential;
     const proFixedInt = isProSelected ? interactions : PLAN_FIXED_INTERACTIONS.Pro;
     const advFixedInt = isAdvSelected ? interactions : PLAN_FIXED_INTERACTIONS.Advanced;
-
-    // Plano selecionado usa o desconto configurado, os demais mostram preço cheio
 
     const essBase = essFixedInt * essPrice;
     const proBase = proFixedInt * proPrice;
@@ -401,74 +502,33 @@ export default function PricingCalculator() {
   const advancedBaseTotal = interactions * advPrice;
   const advancedDiscountedTotal = interactions * applyPercentDiscount(advPrice, discountPercent);
 
-  return (
-    <div ref={containerRef} className="flex-1 overflow-y-auto pt-4 pb-40 px-4 transition-colors duration-500">
-      <div className="max-w-6xl mx-auto">
+  const renderVendaUpsellFlow = (flowType: "nova-venda" | "upsell") => {
+    const isCurrentActive = activeTab === flowType;
+    const hasSelection = isCurrentActive && selectedPlans.size > 0;
 
-        {/* HEADER MOVED TO PORTAL */}
-        {portalNode && createPortal(
-          <div className="flex w-full items-center justify-between gap-2 min-w-0">
-            {/* Título — oculto em mobile, visível em sm+ */}
-            <div className="hidden sm:flex items-center gap-2 shrink-0">
-              <div className="w-7 h-7 bg-white dark:bg-slate-900 rounded-lg shadow-sm flex items-center justify-center border border-slate-100 dark:border-slate-800">
-                <Calculator className="w-3.5 h-3.5 text-primary-600" />
-              </div>
-              <h1 className="text-sm font-black italic tracking-tighter text-primary-900 dark:text-primary-400 whitespace-nowrap">
-                Suri Calcs
-              </h1>
-            </div>
+    return (
+      <div className="space-y-8 pb-32">
+        <div className="text-center mb-10 mt-6 animate-in zoom-in-95 duration-500">
+          <div className="inline-flex flex-col items-center bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl px-8 py-5 rounded-3xl">
+            <h2 className="text-3xl font-black mb-2 text-slate-900 dark:text-white">
+              {flowType === "nova-venda" ? "Nova Venda" : "Upsell"}
+            </h2>
+            <p className="text-slate-600 dark:text-slate-400 font-medium text-sm">
+              {flowType === "nova-venda" 
+                ? "Selecione um plano para fazer a simulação de preços para o seu novo cliente." 
+                : "Selecione o novo plano do cliente para calcular a alteração e o orçamento de Upsell."}
+            </p>
+          </div>
+        </div>
 
-            {/* Tabs — labels curtos em mobile, completos em sm+ */}
-            <div className="bg-slate-100 dark:bg-slate-800/50 p-0.5 rounded-full flex gap-0.5 border border-slate-200 dark:border-slate-700 ml-auto">
-              <button
-                onClick={() => setActiveTab("upsell")}
-                className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
-                  activeTab === "upsell"
-                    ? "bg-white dark:bg-slate-900 text-primary-600 shadow-sm"
-                    : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                }`}
-              >
-                <span className="sm:hidden">Upsell</span>
-                <span className="hidden sm:inline">Upsell</span>
-              </button>
-              <button
-                onClick={() => setActiveTab("downsell")}
-                className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
-                  activeTab === "downsell"
-                    ? "bg-white dark:bg-slate-900 text-primary-600 shadow-sm"
-                    : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                }`}
-              >
-                <span className="sm:hidden">Downsell</span>
-                <span className="hidden sm:inline">Downsell / Multa</span>
-              </button>
-            </div>
-          </div>,
-          portalNode
-        )}
-
-        {activeTab === "upsell" && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="text-center mb-10 mt-6 animate-in zoom-in-95 duration-500">
-              <div className="inline-flex flex-col items-center bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl px-8 py-5 rounded-3xl">
-                <h2 className="text-3xl font-black mb-2 text-slate-900 dark:text-white">
-                  Escolha o Plano
-                </h2>
-                <p className="text-slate-600 dark:text-slate-400 font-medium">
-                  Selecione um plano para configurar as interações e preços.
-                </p>
-              </div>
-            </div>
-
-            {/* Lower Row: Plan Cards */}
+        {/* Seletor de Planos */}
         <div className="grid lg:grid-cols-3 gap-8 mb-8 items-stretch">
-
           {/* Essential Plan Card */}
-            <Card
-            onClick={() => togglePlan("Essential")}
+          <Card
+            onClick={() => isCurrentActive && togglePlan("Essential")}
             className={`group h-full p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[22rem]
               bg-white dark:bg-[#000f9b] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_50px_-12px_rgba(0,15,155,0.4)]
-              ${selectedPlans.has("Essential") ? "border-primary-500 ring-4 ring-primary-500/20 dark:ring-primary-500/50" : "border-transparent"}
+              ${isCurrentActive && selectedPlans.has("Essential") ? "border-primary-500 ring-4 ring-primary-500/20 dark:ring-primary-500/50" : "border-transparent"}
               hover:scale-[1.02] active:scale-95 duration-300
             `}
           >
@@ -477,12 +537,12 @@ export default function PricingCalculator() {
                 <div className="w-12 h-12 bg-primary-50 dark:bg-primary-500/20 rounded-2xl flex items-center justify-center text-primary-600 dark:text-primary-400">
                   <Zap className="w-6 h-6 fill-current" />
                 </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Essential") ? "border-primary bg-primary" : "border-slate-200 dark:border-white/20"}`}>
-                  {selectedPlans.has("Essential") && <div className="w-2 h-2 rounded-full bg-white" />}
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isCurrentActive && selectedPlans.has("Essential") ? "border-primary bg-primary" : "border-slate-200 dark:border-white/20"}`}>
+                  {isCurrentActive && selectedPlans.has("Essential") && <div className="w-2 h-2 rounded-full bg-white" />}
                 </div>
               </div>
               <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-1">Essential</h2>
-              <span className="inline-flex items-center gap-1 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full mb-2"><Zap className="w-3 h-3" />{selectedPlans.has("Essential") ? fmtN(interactions) : "1.000"} interações</span>
+              <span className="inline-flex items-center gap-1 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full mb-2"><Zap className="w-3 h-3" />{isCurrentActive && selectedPlans.has("Essential") ? fmtN(interactions) : "1.000"} interações</span>
               <p className="text-slate-400 dark:text-slate-500 text-xs font-medium mb-8 uppercase tracking-widest">Ideal para começar</p>
 
               <div className="items-baseline flex gap-1 mb-8">
@@ -520,10 +580,10 @@ export default function PricingCalculator() {
 
           {/* Advanced Plan Card */}
           <Card
-            onClick={() => togglePlan("Advanced")}
+            onClick={() => isCurrentActive && togglePlan("Advanced")}
             className={`group h-full p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[22rem]
               bg-[#020519] shadow-[0_20px_50px_-12px_rgba(2,5,25,0.4)]
-              ${selectedPlans.has("Advanced") ? "border-white ring-4 ring-white/20" : "border-white/10"}
+              ${isCurrentActive && selectedPlans.has("Advanced") ? "border-white ring-4 ring-white/20" : "border-white/10"}
               hover:scale-[1.02] active:scale-95 duration-300
             `}
           >
@@ -532,12 +592,12 @@ export default function PricingCalculator() {
                 <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-white">
                   <Zap className="w-6 h-6 fill-current" />
                 </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Advanced") ? "border-white bg-white" : "border-white/40"}`}>
-                  {selectedPlans.has("Advanced") && <div className="w-2 h-2 rounded-full bg-[#020519]" />}
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isCurrentActive && selectedPlans.has("Advanced") ? "border-white bg-white" : "border-white/40"}`}>
+                  {isCurrentActive && selectedPlans.has("Advanced") && <div className="w-2 h-2 rounded-full bg-[#020519]" />}
                 </div>
               </div>
               <h2 className="text-2xl font-black text-white mb-1">Advanced</h2>
-              <span className="inline-flex items-center gap-1 bg-white/20 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full mb-2"><Zap className="w-3 h-3" />{selectedPlans.has("Advanced") ? fmtN(interactions) : "5.000"} interações</span>
+              <span className="inline-flex items-center gap-1 bg-white/20 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full mb-2"><Zap className="w-3 h-3" />{isCurrentActive && selectedPlans.has("Advanced") ? fmtN(interactions) : "5.000"} interações</span>
               <p className="text-white/40 text-xs font-medium mb-8 uppercase tracking-widest">O mais adaptado para sua empresa</p>
 
               <div className="items-baseline flex gap-1 mb-8">
@@ -575,10 +635,10 @@ export default function PricingCalculator() {
 
           {/* Pro Plan Card */}
           <Card
-            onClick={() => togglePlan("Pro")}
+            onClick={() => isCurrentActive && togglePlan("Pro")}
             className={`group h-full p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between duration-500 min-h-[22rem]
               bg-[#000f9b] dark:bg-white border-transparent shadow-[0_20px_50px_-12px_rgba(0,15,155,0.4)] dark:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.05)]
-              ${selectedPlans.has("Pro") ? "border-primary-500 ring-4 ring-primary-500/50 dark:ring-primary-500/20" : "border-transparent"}
+              ${isCurrentActive && selectedPlans.has("Pro") ? "border-primary-500 ring-4 ring-primary-500/50 dark:ring-primary-500/20" : "border-transparent"}
               hover:scale-[1.02] active:scale-95
             `}
           >
@@ -587,12 +647,12 @@ export default function PricingCalculator() {
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/20 dark:bg-[#000f9b] text-white dark:text-white">
                   <Zap className="w-6 h-6 fill-current" />
                 </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedPlans.has("Pro") ? 'border-white dark:border-primary bg-white dark:bg-primary' : 'border-white/20 dark:border-slate-200'}`}>
-                  {selectedPlans.has("Pro") && <div className="w-2 h-2 rounded-full bg-[#000f9b] dark:bg-white" />}
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isCurrentActive && selectedPlans.has("Pro") ? 'border-white dark:border-primary bg-white dark:bg-primary' : 'border-white/20 dark:border-slate-200'}`}>
+                  {isCurrentActive && selectedPlans.has("Pro") && <div className="w-2 h-2 rounded-full bg-[#000f9b] dark:bg-white" />}
                 </div>
               </div>
               <h2 className="text-2xl font-black text-white dark:text-slate-900 mb-1">Pro</h2>
-              <span className="inline-flex items-center gap-1 bg-white/20 dark:bg-primary-50 text-white dark:text-primary-600 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full mb-2"><Zap className="w-3 h-3" />{selectedPlans.has("Pro") ? fmtN(interactions) : "1.000"} interações</span>
+              <span className="inline-flex items-center gap-1 bg-white/20 dark:bg-primary-50 text-white dark:text-primary-600 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full mb-2"><Zap className="w-3 h-3" />{isCurrentActive && selectedPlans.has("Pro") ? fmtN(interactions) : "1.000"} interações</span>
               <p className="text-xs font-medium mb-8 uppercase tracking-widest text-slate-400">Para alta performance</p>
 
               <div className="items-baseline flex gap-1 mb-8">
@@ -629,511 +689,606 @@ export default function PricingCalculator() {
           </Card>
         </div>
 
-            {/* Aviso de Fidelidade */}
-            <div className="mb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-2xl p-4">
-                <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0 mt-0.5">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-black text-amber-800 dark:text-amber-300 uppercase tracking-wider mb-1">Plano de Fidelidade de 12 Meses</h4>
-                  <p className="text-[11px] text-amber-700 dark:text-amber-400/80 font-medium leading-relaxed">
-                    Todos os planos possuem fidelidade de <span className="font-black">12 meses</span>. Esta condição se aplica tanto para <span className="font-black">novos contratos</span> quanto para <span className="font-black">mudanças de plano</span> em contratos vigentes.
-                  </p>
-                </div>
-              </div>
+        {/* Aviso de Fidelidade */}
+        <div className="mb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+          <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-2xl p-4">
+            <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0 mt-0.5">
+              <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
             </div>
+            <div>
+              <h4 className="text-xs font-black text-amber-800 dark:text-amber-300 uppercase tracking-wider mb-1">Plano de Fidelidade de 12 Meses</h4>
+              <p className="text-[11px] text-amber-700 dark:text-amber-400/80 font-medium leading-relaxed">
+                Todos os planos possuem fidelidade de <span className="font-black">12 meses</span>. Esta condição se aplica tanto para <span className="font-black">novos contratos</span> quanto para <span className="font-black">mudanças de plano</span> em contratos vigentes.
+              </p>
+            </div>
+          </div>
+        </div>
 
-      </div>
-      )}
-
-            {activeTab === "upsell" && selectedPlans.size > 0 && (
-              <div ref={controlsRef} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                {/* Main Grid */}
+        {/* Controls block */}
+        {hasSelection && (
+          <div ref={controlsRef} className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
             <div className="grid lg:grid-cols-2 gap-8 mb-8">
-
-          {/* Interaction Control Card */}
-          <Card className="h-full p-8 rounded-[2.5rem] border-none glass-card dark:bg-slate-900/40 relative overflow-hidden">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
-                <Zap className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-800 dark:text-slate-200">Interações / Mês</h3>
-                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Configure o volume de conversas</p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between gap-4 mb-4">
-              <button
-                onClick={() => changeInteractionsByStep(-1)}
-                className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-all border border-primary-100/50 dark:border-primary-500/20"
-              >
-                <Minus className="w-6 h-6" />
-              </button>
-
-              <div className="flex-1 bg-white dark:bg-slate-800/50 rounded-2xl h-14 flex items-center justify-center border border-slate-100 dark:border-slate-700 shadow-inner px-4">
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={MAX_INTERACTION_DIGITS}
-                  value={interactionsInput}
-                  onChange={(e) => handleInteractionsInputChange(e.target.value)}
-                  onBlur={() => commitInteractionsInput()}
-                  onFocus={(e) => e.currentTarget.select()}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") e.currentTarget.blur();
-                  }}
-                  className="border-none bg-transparent text-center text-xl sm:text-2xl font-black tabular-nums text-slate-900 dark:text-white focus-visible:ring-0 shadow-none h-full w-full min-w-0 font-sans [appearance:textfield]" />
-              </div>
-
-              <button
-                onClick={() => changeInteractionsByStep(1)}
-                className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-all border border-primary-100/50 dark:border-primary-500/20"
-              >
-                <Plus className="w-6 h-6" />
-              </button>
-            </div>
-            <p className="text-center text-[10px] text-slate-400 font-bold mb-10 italic">
-              Mínimo: 1.000 • Incrementos de 500
-            </p>
-
-            <div className={`grid grid-cols-1 gap-4 ${selectedPlans.has("Advanced") ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
-              <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
-                    <Lightbulb className="w-4 h-4 text-primary-500" />
+              {/* Interaction Control Card */}
+              <Card className="h-full p-8 rounded-[2.5rem] border-none glass-card dark:bg-slate-900/40 relative overflow-hidden">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+                    <Zap className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                   </div>
-                  <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Mensal (%)</Label>
-                </div>
-                <div className="relative">
-                  <Select value={String(discountPercent)} onValueChange={(v) => setDiscountPercent(Number(v))}>
-                    <SelectTrigger className="h-10 border-none bg-primary-50/30 dark:bg-slate-900/40 font-black text-slate-700 dark:text-white rounded-xl">
-                      <SelectValue placeholder="0%" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[0, 5, 10, 15, 20, 25].map(v => (
-                        <SelectItem key={v} value={String(v)}>{v}%</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
-                    <Zap className="w-4 h-4 text-primary-500" />
-                  </div>
-                  <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Implantação (%)</Label>
-                </div>
-                <div className="relative">
-                  <Input
-                    type="number" min={0} max={100} value={setupDiscount || ""} placeholder="0"
-                    onChange={(e) => setSetupDiscount(Math.min(100, Math.max(0, Number(e.target.value))))}
-                    className="h-10 border-none bg-primary-50/30 dark:bg-slate-900/40 font-black text-primary-600 dark:text-primary-400 rounded-xl text-center" />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-primary-300 text-xs font-black">%</div>
-                </div>
-              </div>
-
-              <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-lg bg-green-50 dark:bg-green-900/30 flex items-center justify-center">
-                    <Megaphone className="w-4 h-4 text-green-500" />
-                  </div>
-                  <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">{selectedPlans.has("Advanced") ? "Desc. Exc. Marketing (%)" : "Desc. Excedentes (%)"}</Label>
-                </div>
-                <div className="relative">
-                  <Select value={String(excessDiscountPercent)} onValueChange={(v) => setExcessDiscountPercent(Number(v))}>
-                    <SelectTrigger className="h-10 border-none bg-green-50/30 dark:bg-green-900/20 font-black text-green-600 dark:text-green-400 rounded-xl">
-                      <SelectValue placeholder="0%" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[0, 5, 10, 15, 20, 25].map(v => (
-                        <SelectItem key={v} value={String(v)}>{v}%</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-
-              {selectedPlans.has("Advanced") && (
-                <>
-                <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700 animate-in zoom-in-95 duration-300">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 rounded-lg bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center">
-                      <Zap className="w-4 h-4 text-orange-500" />
-                    </div>
-                    <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Receptivo (%)</Label>
-                  </div>
-                  <div className="relative">
-                    <Select value={String(receptiveDiscountPercent)} onValueChange={(v) => setReceptiveDiscountPercent(Number(v))}>
-                      <SelectTrigger className="h-10 border-none bg-orange-50/30 dark:bg-orange-900/20 font-black text-orange-600 dark:text-orange-400 rounded-xl">
-                        <SelectValue placeholder="0%" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[0, 5, 10, 15, 20, 25, 30, 40, 50, 65].map(v => (
-                          <SelectItem key={v} value={String(v)}>{v}%</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700 animate-in zoom-in-95 duration-300">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
-                      <Settings className="w-4 h-4 text-blue-500" />
-                    </div>
-                    <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Exc. Utilidades (%)</Label>
-                  </div>
-                  <div className="relative">
-                    <Select value={String(utilityDiscountPercent)} onValueChange={(v) => setUtilityDiscountPercent(Number(v))}>
-                      <SelectTrigger className="h-10 border-none bg-blue-50/30 dark:bg-blue-900/20 font-black text-blue-600 dark:text-blue-400 rounded-xl">
-                        <SelectValue placeholder="0%" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[0, 5, 10, 15, 20, 25, 80].map(v => (
-                          <SelectItem key={v} value={String(v)}>{v}%</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700 animate-in zoom-in-95 duration-300">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 rounded-lg bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center">
-                      <Shield className="w-4 h-4 text-purple-500" />
-                    </div>
-                    <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Autentic. (%)</Label>
-                  </div>
-                  <div className="relative">
-                    <Select value={String(authenticationDiscountPercent)} onValueChange={(v) => setAuthenticationDiscountPercent(Number(v))}>
-                      <SelectTrigger className="h-10 border-none bg-purple-50/30 dark:bg-purple-900/20 font-black text-purple-600 dark:text-purple-400 rounded-xl">
-                        <SelectValue placeholder="0%" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[0, 5, 10, 15, 20, 25].map(v => (
-                          <SelectItem key={v} value={String(v)}>{v}%</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                </>
-              )}
-            </div>
-          </Card>
-
-          {/* Pricing Adjust Table Card */}
-          <Card className="h-full p-8 rounded-[2.5rem] border-none glass-card dark:bg-slate-900/40">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                <span className="text-slate-600 dark:text-slate-400 font-black">$</span>
-              </div>
-              <h3 className="font-bold text-slate-800 dark:text-slate-200">Ajuste de Preços</h3>
-              <span className="ml-auto text-slate-300 dark:text-white/10"><Calculator className="w-12 h-12" /></span>
-            </div>
-
-            <div className="space-y-2">
-              {pricingAdjustFields.map((f: any, i: number) => {
-                const discountToUse = f.type === "utility" ? utilityDiscountPercent : f.type === "receptive" ? receptiveDiscountPercent : f.type === "authentication" ? authenticationDiscountPercent : excessDiscountPercent;
-                return (
-                <div key={i} className={`flex items-center justify-between p-4 rounded-2xl ${f.color || "bg-slate-50/70 dark:bg-slate-800/40"} border border-transparent transition-all hover:border-slate-200 dark:hover:border-slate-700`}>
-                  <Label className="text-xs font-bold text-slate-600 dark:text-slate-400">{f.label}</Label>
-                  <div className="flex items-center gap-2">
-                    {f.isExcess && discountToUse > 0 && (
-                      <span className="text-xs font-bold text-green-500 mr-2 bg-green-100 dark:bg-green-900/40 px-2 py-1 rounded-md">
-                        R$ {fmt(f.value * (1 - discountToUse / 100))}
-                      </span>
-                    )}
-                    <Input
-                      type="number" step="0.01" value={f.value}
-                      readOnly={f.readOnly}
-                      onChange={e => !f.readOnly && f.setter(Number(e.target.value))}
-                      className={`h-8 w-24 text-right font-black text-sm border-none bg-transparent shadow-none focus-visible:ring-0 ${f.inputColor || "text-slate-900 dark:text-slate-200"} ${f.isExcess && discountToUse > 0 ? "opacity-50 line-through" : ""}`} />
-                  </div>
-                </div>
-              );
-              })}
-            </div>
-
-          </Card>
-
-          {selectedPlans.has("Advanced") && (
-            <div ref={advancedProposalRef} className="lg:col-span-2">
-            <Card className="p-4 rounded-[2rem] border-none glass-card dark:bg-slate-900/40 overflow-hidden animate-in fade-in zoom-in-95 duration-300">
-              <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)] lg:items-start mb-3">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between min-w-0">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Proposta Plano - Advanced</p>
-                    <p className="text-[11px] font-bold text-slate-600 dark:text-slate-300">Resumo baseado na planilha</p>
-                  </div>
-                  <div className="flex gap-2 text-[9px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 shrink-0">
-                    <span className="rounded-full bg-white dark:bg-slate-900 px-2 py-1 border border-slate-100 dark:border-slate-700">Shop: não</span>
-                    <span className="rounded-full bg-white dark:bg-slate-900 px-2 py-1 border border-slate-100 dark:border-slate-700">Pós-pago: não</span>
+                    <h3 className="font-bold text-slate-800 dark:text-slate-200">Interações / Mês</h3>
+                    <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Configure o volume de conversas</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="rounded-2xl bg-white/75 dark:bg-slate-800/60 p-3 border border-slate-100 dark:border-slate-700">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Sem desconto</p>
-                    <p className="text-base font-black text-slate-900 dark:text-white">R$ {fmt(advancedBaseTotal)}</p>
+                <div className="flex items-center justify-between gap-4 mb-4">
+                  <button
+                    onClick={() => changeInteractionsByStep(-1)}
+                    className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-all border border-primary-100/50 dark:border-primary-500/20"
+                  >
+                    <Minus className="w-6 h-6" />
+                  </button>
+
+                  <div className="flex-1 bg-white dark:bg-slate-800/50 rounded-2xl h-14 flex items-center justify-center border border-slate-100 dark:border-slate-700 shadow-inner px-4">
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={MAX_INTERACTION_DIGITS}
+                      value={interactionsInput}
+                      onChange={(e) => handleInteractionsInputChange(e.target.value)}
+                      onBlur={() => commitInteractionsInput()}
+                      onFocus={(e) => e.currentTarget.select()}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") e.currentTarget.blur();
+                      }}
+                      className="border-none bg-transparent text-center text-xl sm:text-2xl font-black tabular-nums text-slate-900 dark:text-white focus-visible:ring-0 shadow-none h-full w-full min-w-0 font-sans [appearance:textfield]" />
                   </div>
-                  <div className="rounded-2xl bg-green-50 dark:bg-green-900/20 p-3 border border-green-100 dark:border-green-900/40">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-green-600 dark:text-green-400 mb-1">Com desconto</p>
-                    <p className="text-base font-black text-green-600 dark:text-green-400">R$ {fmt(advancedDiscountedTotal)}</p>
-                  </div>
+
+                  <button
+                    onClick={() => changeInteractionsByStep(1)}
+                    className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-all border border-primary-100/50 dark:border-primary-500/20"
+                  >
+                    <Plus className="w-6 h-6" />
+                  </button>
                 </div>
-              </div>
+                <p className="text-center text-[10px] text-slate-400 font-bold mb-10 italic">
+                  Mínimo: 1.000 • Incrementos de 500
+                </p>
 
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-                {advancedProposalRows.map((row) => {
-                  const finalValue = applyPercentDiscount(row.value, row.discount);
+                <div className={`grid grid-cols-1 gap-4 ${selectedPlans.has("Advanced") ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
+                  <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+                        <Lightbulb className="w-4 h-4 text-primary-500" />
+                      </div>
+                      <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Mensal (%)</Label>
+                    </div>
+                    <div className="relative">
+                      <Select value={String(discountPercent)} onValueChange={(v) => setDiscountPercent(Number(v))}>
+                        <SelectTrigger className="h-10 border-none bg-primary-50/30 dark:bg-slate-900/40 font-black text-slate-700 dark:text-white rounded-xl">
+                          <SelectValue placeholder="0%" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[0, 5, 10, 15, 20, 25].map(v => (
+                            <SelectItem key={v} value={String(v)}>{v}%</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
 
-                  return (
-                    <div key={row.label} className="rounded-2xl bg-white/75 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700 px-3 py-2.5 min-w-0">
-                      <p className="min-h-8 text-[9px] font-black text-slate-500 dark:text-slate-300 leading-tight">{row.label}</p>
-                      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                        <span className="text-[10px] font-black text-slate-900 dark:text-slate-100">R$ {fmt(row.value)}</span>
-                        <span className="rounded-lg bg-slate-50 dark:bg-slate-900 px-1.5 py-0.5 text-[9px] font-black text-primary-600 dark:text-primary-400 border border-slate-100 dark:border-slate-700">{row.discount}%</span>
-                        <span className="text-[10px] font-black text-green-600 dark:text-green-400">R$ {fmt(finalValue)}</span>
+                  <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+                        <Zap className="w-4 h-4 text-primary-500" />
+                      </div>
+                      <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Implantação (%)</Label>
+                    </div>
+                    <div className="relative">
+                      <Input
+                        type="number" min={0} max={100} value={setupDiscount || ""} placeholder="0"
+                        onChange={(e) => setSetupDiscount(Math.min(100, Math.max(0, Number(e.target.value))))}
+                        className="h-10 border-none bg-primary-50/30 dark:bg-slate-900/40 font-black text-primary-600 dark:text-primary-400 rounded-xl text-center" />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-primary-300 text-xs font-black">%</div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-lg bg-green-50 dark:bg-green-900/30 flex items-center justify-center">
+                        <Send className="w-4 h-4 text-green-500" />
+                      </div>
+                      <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">{selectedPlans.has("Advanced") ? "Desc. Exc. Marketing (%)" : "Desc. Excedentes (%)"}</Label>
+                    </div>
+                    <div className="relative">
+                      <Select value={String(excessDiscountPercent)} onValueChange={(v) => setExcessDiscountPercent(Number(v))}>
+                        <SelectTrigger className="h-10 border-none bg-green-50/30 dark:bg-green-900/20 font-black text-green-600 dark:text-green-400 rounded-xl">
+                          <SelectValue placeholder="0%" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[0, 5, 10, 15, 20, 25].map(v => (
+                            <SelectItem key={v} value={String(v)}>{v}%</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {selectedPlans.has("Advanced") && (
+                    <>
+                      <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700 animate-in zoom-in-95 duration-300">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-7 h-7 rounded-lg bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center">
+                            <Zap className="w-4 h-4 text-orange-500" />
+                          </div>
+                          <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Receptivo (%)</Label>
+                        </div>
+                        <div className="relative">
+                          <Select value={String(receptiveDiscountPercent)} onValueChange={(v) => setReceptiveDiscountPercent(Number(v))}>
+                            <SelectTrigger className="h-10 border-none bg-orange-50/30 dark:bg-orange-900/20 font-black text-orange-600 dark:text-orange-400 rounded-xl">
+                              <SelectValue placeholder="0%" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[0, 5, 10, 15, 20, 25, 30, 40, 50, 65].map(v => (
+                                <SelectItem key={v} value={String(v)}>{v}%</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700 animate-in zoom-in-95 duration-300">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+                            <Send className="w-4 h-4 text-blue-500" />
+                          </div>
+                          <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Exc. Utilidades (%)</Label>
+                        </div>
+                        <div className="relative">
+                          <Select value={String(utilityDiscountPercent)} onValueChange={(v) => setUtilityDiscountPercent(Number(v))}>
+                            <SelectTrigger className="h-10 border-none bg-blue-50/30 dark:bg-blue-900/20 font-black text-blue-600 dark:text-blue-400 rounded-xl">
+                              <SelectValue placeholder="0%" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[0, 5, 10, 15, 20, 25, 80].map(v => (
+                                <SelectItem key={v} value={String(v)}>{v}%</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="p-4 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700 animate-in zoom-in-95 duration-300">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-7 h-7 rounded-lg bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center">
+                            <Shield className="w-4 h-4 text-purple-500" />
+                          </div>
+                          <Label className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase leading-none">Desc. Autentic. (%)</Label>
+                        </div>
+                        <div className="relative">
+                          <Select value={String(authenticationDiscountPercent)} onValueChange={(v) => setAuthenticationDiscountPercent(Number(v))}>
+                            <SelectTrigger className="h-10 border-none bg-purple-50/30 dark:bg-purple-900/20 font-black text-purple-600 dark:text-purple-400 rounded-xl">
+                              <SelectValue placeholder="0%" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[0, 5, 10, 15, 20, 25].map(v => (
+                                <SelectItem key={v} value={String(v)}>{v}%</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </Card>
+
+              {/* Pricing Adjust Table Card */}
+              <Card className="h-full p-8 rounded-[2.5rem] border-none glass-card dark:bg-slate-900/40">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                    <span className="text-slate-600 dark:text-slate-400 font-black">$</span>
+                  </div>
+                  <h3 className="font-bold text-slate-800 dark:text-slate-200">Ajuste de Preços</h3>
+                  <span className="ml-auto text-slate-300 dark:text-white/10"><Calculator className="w-12 h-12" /></span>
+                </div>
+
+                <div className="space-y-2">
+                  {pricingAdjustFields.map((f: any, i: number) => {
+                    const discountToUse = f.type === "utility" ? utilityDiscountPercent : f.type === "receptive" ? receptiveDiscountPercent : f.type === "authentication" ? authenticationDiscountPercent : excessDiscountPercent;
+                    return (
+                      <div key={i} className={`flex items-center justify-between p-4 rounded-2xl ${f.color || "bg-slate-50/70 dark:bg-slate-800/40"} border border-transparent transition-all hover:border-slate-200 dark:hover:border-slate-700`}>
+                        <Label className="text-xs font-bold text-slate-600 dark:text-slate-400">{f.label}</Label>
+                        <div className="flex items-center gap-2">
+                          {f.isExcess && discountToUse > 0 && (
+                            <span className="text-xs font-bold text-green-500 mr-2 bg-green-100 dark:bg-green-900/40 px-2 py-1 rounded-md">
+                              R$ {fmt(f.value * (1 - discountToUse / 100))}
+                            </span>
+                          )}
+                          <Input
+                            type="number" step="0.01" value={f.value}
+                            readOnly={f.readOnly}
+                            onChange={e => !f.readOnly && f.setter(Number(e.target.value))}
+                            className={`h-8 w-24 text-right font-black text-sm border-none bg-transparent shadow-none focus-visible:ring-0 ${f.inputColor || "text-slate-900 dark:text-slate-200"} ${f.isExcess && discountToUse > 0 ? "opacity-50 line-through" : ""}`} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            </div>
+
+            {/* Advanced Commercial Proposal */}
+            {selectedPlans.has("Advanced") && (
+              <div ref={advancedProposalRef} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <Card className="p-8 rounded-[2.5rem] border-none glass-card dark:bg-slate-900/40">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                      <Calculator className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-800 dark:text-slate-200">Proposta Comercial Advanced</h3>
+                      <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Detalhamento dos custos contratados</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-6 p-4 rounded-3xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-700 flex flex-wrap gap-4 items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Volume de Interações base</p>
+                      <p className="text-lg font-black text-primary-600 dark:text-primary-400">{fmtN(interactions)} interações</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="rounded-2xl bg-white/75 dark:bg-slate-800/60 p-3 border border-slate-100 dark:border-slate-700">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Sem desconto</p>
+                        <p className="text-base font-black text-slate-900 dark:text-white">R$ {fmt(advancedBaseTotal)}</p>
+                      </div>
+                      <div className="rounded-2xl bg-green-50 dark:bg-green-900/20 p-3 border border-green-100 dark:border-green-900/40">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-green-600 dark:text-green-400 mb-1">Com desconto</p>
+                        <p className="text-base font-black text-green-600 dark:text-green-400">R$ {fmt(advancedDiscountedTotal)}</p>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            </Card>
-            </div>
-          )}
-        </div>
+                  </div>
 
-        
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                    {advancedProposalRows.map((row) => {
+                      const finalValue = applyPercentDiscount(row.value, row.discount);
+
+                      return (
+                        <div key={row.label} className="rounded-2xl bg-white/75 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700 px-3 py-2.5 min-w-0">
+                          <p className="min-h-8 text-[9px] font-black text-slate-500 dark:text-slate-300 leading-tight">{row.label}</p>
+                          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                            <span className="text-[10px] font-black text-slate-900 dark:text-slate-100">R$ {fmt(row.value)}</span>
+                            <span className="rounded-lg bg-slate-50 dark:bg-slate-900 px-1.5 py-0.5 text-[9px] font-black text-primary-600 dark:text-primary-400 border border-slate-100 dark:border-slate-700">{row.discount}%</span>
+                            <span className="text-[10px] font-black text-green-600 dark:text-green-400">R$ {fmt(finalValue)}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
               </div>
             )}
+          </div>
+        )}
+      </div>
+    );
+  };
 
+  return (
+    <div ref={containerRef} className="flex-1 overflow-y-auto pt-4 pb-40 px-4 transition-colors duration-500">
+      <div className="max-w-6xl mx-auto">
 
-        {activeTab === "downsell" && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Downsell / Penalty Calculator */}
-            <div className="max-w-4xl mx-auto mb-12">
-          <Card className="p-8 rounded-[2.5rem] border-none glass-card bg-white dark:bg-white/5 relative overflow-hidden">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
-                <Calculator className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+        {/* HEADER MOVED TO PORTAL */}
+        {portalNode && createPortal(
+          <div className="flex w-full items-center justify-between gap-2 min-w-0">
+            {/* Título — oculto em mobile, visível em sm+ */}
+            <div className="hidden sm:flex items-center gap-2 shrink-0">
+              <div className="w-7 h-7 bg-white dark:bg-slate-900 rounded-lg shadow-sm flex items-center justify-center border border-slate-100 dark:border-slate-800">
+                <Calculator className="w-3.5 h-3.5 text-primary-600" />
               </div>
-              <div>
-                <h3 className="font-bold text-slate-800 dark:text-slate-200">Calculadora de Downsell / Multa</h3>
-                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Simule o cancelamento ou downsell antes de 12 meses</p>
-              </div>
+              <h1 className="text-sm font-black italic tracking-tighter text-primary-900 dark:text-primary-400 whitespace-nowrap">
+                Suri Calcs
+              </h1>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
-              {/* Entradas */}
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Valor mensal (R$)</Label>
-                    <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
-                      <Input
-                        type="number"
-                        value={downsellPlanValue}
-                        onChange={(e) => setDownsellPlanValue(Number(e.target.value))}
-                        className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Vigência (meses)</Label>
-                    <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
-                      <Input
-                        type="number"
-                        value={contractDuration}
-                        onChange={(e) => setContractDuration(Number(e.target.value))}
-                        className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg"
-                      />
-                    </div>
-                  </div>
-                </div>
+            {/* Submódulos Selector */}
+            <div 
+              ref={tabContainerRef}
+              onTouchStart={handleTabTouchStart}
+              onTouchMove={handleTabTouchMove}
+              onTouchEnd={handleTabTouchEnd}
+              onMouseDown={handleTabMouseDown}
+              className="relative flex items-center bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-full shadow-inner border border-slate-200/50 dark:border-slate-700/50 select-none cursor-pointer overflow-hidden w-[280px] xs:w-[310px] sm:w-[390px] h-9"
+            >
+              {/* Sliding Pill */}
+              <div 
+                className="absolute top-0.5 bottom-0.5 rounded-full bg-white dark:bg-slate-900 shadow-sm"
+                style={{
+                  left: `calc(${(activeTab === "nova-venda" ? 0 : activeTab === "upsell" ? 1 : 2) * 33.3333}% + 2px)`,
+                  width: 'calc(33.3333% - 4px)',
+                  transition: isDraggingTabs ? 'none' : 'left 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                  transform: isDraggingTabs ? `translate3d(${dragOffset}px, 0, 0)` : 'none'
+                }}
+              />
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Meses Utilizados</Label>
-                    <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
-                      <Input
-                        type="number"
-                        value={monthsUsed}
-                        onChange={(e) => setMonthsUsed(Number(e.target.value))}
-                        className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Multa (%)</Label>
-                    <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
-                      <Input
-                        type="number"
-                        value={penaltyPercent}
-                        onChange={(e) => setPenaltyPercent(Number(e.target.value))}
-                        className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg text-primary-600 dark:text-primary-400"
-                      />
-                    </div>
-                  </div>
-                </div>
+              <button
+                onClick={() => !isDraggingTabs && setActiveTab("nova-venda")}
+                className={`relative z-10 w-1/3 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-tight transition-all whitespace-nowrap text-center ${
+                  activeTab === "nova-venda"
+                    ? "text-primary-600 dark:text-primary-400 font-extrabold"
+                    : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-bold"
+                }`}
+              >
+                Nova Venda
+              </button>
+              <button
+                onClick={() => !isDraggingTabs && setActiveTab("upsell")}
+                className={`relative z-10 w-1/3 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-tight transition-all whitespace-nowrap text-center ${
+                  activeTab === "upsell"
+                    ? "text-primary-600 dark:text-primary-400 font-extrabold"
+                    : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-bold"
+                }`}
+              >
+                Upsell
+              </button>
+              <button
+                onClick={() => !isDraggingTabs && setActiveTab("downsell")}
+                className={`relative z-10 w-1/3 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-tight transition-all whitespace-nowrap text-center ${
+                  activeTab === "downsell"
+                    ? "text-primary-600 dark:text-primary-400 font-extrabold"
+                    : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-bold"
+                }`}
+              >
+                <span className="sm:hidden">Downsell</span>
+                <span className="hidden sm:inline">Downsell / Multa</span>
+              </button>
+            </div>
+          </div>,
+          portalNode
+        )}
 
-                <Separator className="my-2 opacity-50" />
+        <div 
+          className="w-full overflow-hidden"
+        >
+          <div 
+            className="flex transition-transform duration-500 ease-out items-start" 
+            style={{ 
+              transform: `translate3d(-${activeTab === "nova-venda" ? 0 : activeTab === "upsell" ? 33.3333 : 66.6666}%, 0, 0)`,
+              width: '300%'
+            }}
+          >
+            {/* Slide 1: Nova Venda */}
+            <div className="w-1/3 shrink-0 px-2">
+              {renderVendaUpsellFlow("nova-venda")}
+            </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Início Contrato</Label>
-                    <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
-                      <Input
-                        type="date"
-                        value={contractStart}
-                        onChange={(e) => setContractStart(e.target.value)}
-                        className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Data Cancelamento</Label>
-                    <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
-                      <Input
-                        type="date"
-                        value={downsellDate}
-                        onChange={(e) => setDownsellDate(e.target.value)}
-                        className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0"
-                      />
-                    </div>
-                  </div>
-                </div>
+            {/* Slide 2: Upsell */}
+            <div className="w-1/3 shrink-0 px-2">
+              {renderVendaUpsellFlow("upsell")}
+            </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Fatura em Aberto (R$)</Label>
-                    <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
-                      <Input
-                        type="number"
-                        value={overdueInvoices}
-                        onChange={(e) => setOverdueInvoices(Number(e.target.value))}
-                        className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg"
-                      />
+            {/* Slide 3: Downsell / Multa */}
+            <div className="w-1/3 shrink-0 px-2">
+              <div className="animate-in fade-in duration-500">
+                {/* Downsell / Penalty Calculator */}
+                <div className="max-w-4xl mx-auto mb-12">
+                  <Card className="p-8 rounded-[2.5rem] border-none glass-card bg-white dark:bg-white/5 relative overflow-hidden">
+                    <div className="flex items-center gap-3 mb-8">
+                      <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+                        <Calculator className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-slate-800 dark:text-slate-200">Calculadora de Downsell / Multa</h3>
+                        <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Simule o cancelamento ou downsell antes de 12 meses</p>
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Vencimento Fatura</Label>
-                    <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
-                      <Input
-                        type="date"
-                        value={overdueDueDate}
-                        onChange={(e) => setOverdueDueDate(e.target.value)}
-                        className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
 
-              {/* Resultados */}
-              <div className="bg-primary-50 dark:bg-primary-900/10 rounded-3xl p-6 border border-primary-100 dark:border-primary-800/50 flex flex-col justify-center">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Valor total do contrato</span>
-                    <span className="text-base font-bold text-slate-800 dark:text-slate-200">R$ {fmt(contractTotal)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Valor utilizado</span>
-                    <span className="text-base font-bold text-slate-800 dark:text-slate-200">R$ {fmt(valueUsed)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Saldo remanescente</span>
-                    <span className="text-base font-bold text-slate-800 dark:text-slate-200">R$ {fmt(remainingBalance)}</span>
-                  </div>
-                  <div className="flex justify-between items-center bg-rose-50 dark:bg-rose-900/20 p-2 rounded-xl border border-rose-100 dark:border-rose-900/40">
-                    <span className="text-sm font-bold text-rose-600 dark:text-rose-400">Multa rescisória ({penaltyPercent}%)</span>
-                    <span className="text-base font-black text-rose-600 dark:text-rose-400">
-                      {monthsUsed >= contractDuration ? "SEM MULTA" : `R$ ${fmt(penaltyAmount)}`}
-                    </span>
-                  </div>
-                  <div className="pt-4 border-t border-primary-200 dark:border-primary-800/50 flex justify-between items-center">
-                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest">Total devido</span>
-                    <span className="text-2xl font-black text-primary-600 dark:text-primary-400">R$ {fmt(totalDue)}</span>
-                  </div>
+                    <div className="grid md:grid-cols-2 gap-8">
+                      {/* Entradas */}
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Valor mensal (R$)</Label>
+                            <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
+                              <Input
+                                type="number"
+                                value={downsellPlanValue}
+                                onChange={(e) => setDownsellPlanValue(Number(e.target.value))}
+                                className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Vigência (meses)</Label>
+                            <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
+                              <Input
+                                type="number"
+                                value={contractDuration}
+                                onChange={(e) => setContractDuration(Number(e.target.value))}
+                                className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Meses Utilizados</Label>
+                            <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
+                              <Input
+                                type="number"
+                                value={monthsUsed}
+                                onChange={(e) => setMonthsUsed(Number(e.target.value))}
+                                className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Multa (%)</Label>
+                            <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
+                              <Input
+                                type="number"
+                                value={penaltyPercent}
+                                onChange={(e) => setPenaltyPercent(Number(e.target.value))}
+                                className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg text-primary-600 dark:text-primary-400"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <Separator className="my-2 opacity-50" />
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Início Contrato</Label>
+                            <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
+                              <Input
+                                type="date"
+                                value={contractStart}
+                                onChange={(e) => setContractStart(e.target.value)}
+                                className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Data Cancelamento</Label>
+                            <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
+                              <Input
+                                type="date"
+                                value={downsellDate}
+                                onChange={(e) => setDownsellDate(e.target.value)}
+                                className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Fatura em Aberto (R$)</Label>
+                            <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
+                              <Input
+                                type="number"
+                                value={overdueInvoices}
+                                onChange={(e) => setOverdueInvoices(Number(e.target.value))}
+                                className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0 text-lg"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Vencimento Fatura</Label>
+                            <div className="flex bg-white dark:bg-white/10 rounded-2xl h-12 items-center border border-slate-100 dark:border-white/5 px-4">
+                              <Input
+                                type="date"
+                                value={overdueDueDate}
+                                onChange={(e) => setOverdueDueDate(e.target.value)}
+                                className="bg-transparent border-0 text-slate-900 dark:text-white font-bold h-full focus-visible:ring-0 p-0"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Resultados */}
+                      <div className="bg-primary-50 dark:bg-primary-900/10 rounded-3xl p-6 border border-primary-100 dark:border-primary-800/50 flex flex-col justify-center">
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Valor total do contrato</span>
+                            <span className="text-base font-bold text-slate-800 dark:text-slate-200">R$ {fmt(contractTotal)}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Valor utilizado</span>
+                            <span className="text-base font-bold text-slate-800 dark:text-slate-200">R$ {fmt(valueUsed)}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Saldo remanescente</span>
+                            <span className="text-base font-bold text-slate-800 dark:text-slate-200">R$ {fmt(remainingBalance)}</span>
+                          </div>
+                          <div className="flex justify-between items-center bg-rose-50 dark:bg-rose-900/20 p-2 rounded-xl border border-rose-100 dark:border-rose-900/40">
+                            <span className="text-sm font-bold text-rose-600 dark:text-rose-400">Multa rescisória ({penaltyPercent}%)</span>
+                            <span className="text-base font-black text-rose-600 dark:text-rose-400">
+                              {monthsUsed >= contractDuration ? "SEM MULTA" : `R$ ${fmt(penaltyAmount)}`}
+                            </span>
+                          </div>
+                          <div className="pt-4 border-t border-primary-200 dark:border-primary-800/50 flex justify-between items-center">
+                            <span className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest">Total devido</span>
+                            <span className="text-2xl font-black text-primary-600 dark:text-primary-400">R$ {fmt(totalDue)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Texto Cliente Block */}
+                    <div className="mt-8 p-6 bg-slate-50 dark:bg-slate-800/40 rounded-3xl border border-slate-100 dark:border-slate-700 relative group">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Texto Sugerido para o Cliente</h4>
+                        <Button 
+                          variant="ghost" size="sm" 
+                          className="h-8 rounded-lg text-[10px] font-black uppercase tracking-wider text-primary-600 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20"
+                          onClick={() => {
+                            const text = `Conforme contrato vigente, o pedido de cancelamento realizado em ${new Date(downsellDate).toLocaleDateString('pt-BR')} está sujeito à multa rescisória de ${penaltyPercent}% sobre o saldo contratual remanescente, além da quitação das faturas já emitidas.\n\nDessa forma, temos:\n\nMulta rescisória: R$ ${fmt(penaltyAmount)}\nFatura em aberto (venc. ${new Date(overdueDueDate).toLocaleDateString('pt-BR')}): R$ ${fmt(overdueInvoices)}\n👉 Total devido: R$ ${fmt(totalDue)}`;
+                            navigator.clipboard.writeText(text);
+                            toast("Texto copiado para a área de transferência!");
+                          }}
+                        >
+                          Copiar Texto
+                        </Button>
+                      </div>
+                      <div className="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed whitespace-pre-line">
+                        Conforme contrato vigente, o pedido de cancelamento realizado em <span className="font-bold text-slate-900 dark:text-slate-200">{new Date(downsellDate).toLocaleDateString('pt-BR')}</span> está sujeito à multa rescisória de <span className="font-bold text-slate-900 dark:text-slate-200">{penaltyPercent}%</span> sobre o saldo contratual remanescente, além da quitação das faturas já emitidas.
+                        {"\n\n"}
+                        Dessa forma, temos:
+                        {"\n\n"}
+                        Multa rescisória: <span className="font-bold text-slate-900 dark:text-slate-200">R$ {fmt(penaltyAmount)}</span>
+                        {"\n"}
+                        Fatura em aberto (venc. <span className="font-bold text-slate-900 dark:text-slate-200">{new Date(overdueDueDate).toLocaleDateString('pt-BR')}</span>): <span className="font-bold text-slate-900 dark:text-slate-200">R$ {fmt(overdueInvoices)}</span>
+                        {"\n"}
+                        <span className="text-sm">👉</span> <span className="text-sm font-black text-primary-600 dark:text-primary-400">Total devido: R$ {fmt(totalDue)}</span>
+                      </div>
+                    </div>
+                  </Card>
                 </div>
               </div>
             </div>
-
-            {/* Texto Cliente Block */}
-            <div className="mt-8 p-6 bg-slate-50 dark:bg-slate-800/40 rounded-3xl border border-slate-100 dark:border-slate-700 relative group">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Texto Sugerido para o Cliente</h4>
-                <Button 
-                  variant="ghost" size="sm" 
-                  className="h-8 rounded-lg text-[10px] font-black uppercase tracking-wider text-primary-600 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20"
-                  onClick={() => {
-                    const text = `Conforme contrato vigente, o pedido de cancelamento realizado em ${new Date(downsellDate).toLocaleDateString('pt-BR')} está sujeito à multa rescisória de ${penaltyPercent}% sobre o saldo contratual remanescente, além da quitação das faturas já emitidas.\n\nDessa forma, temos:\n\nMulta rescisória: R$ ${fmt(penaltyAmount)}\nFatura em aberto (venc. ${new Date(overdueDueDate).toLocaleDateString('pt-BR')}): R$ ${fmt(overdueInvoices)}\n👉 Total devido: R$ ${fmt(totalDue)}`;
-                    navigator.clipboard.writeText(text);
-                    toast("Texto copiado para a área de transferência!");
-                  }}
-                >
-                  Copiar Texto
-                </Button>
-              </div>
-              <div className="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed whitespace-pre-line">
-                Conforme contrato vigente, o pedido de cancelamento realizado em <span className="font-bold text-slate-900 dark:text-slate-200">{new Date(downsellDate).toLocaleDateString('pt-BR')}</span> está sujeito à multa rescisória de <span className="font-bold text-slate-900 dark:text-slate-200">{penaltyPercent}%</span> sobre o saldo contratual remanescente, além da quitação das faturas já emitidas.
-                {"\n\n"}
-                Dessa forma, temos:
-                {"\n\n"}
-                Multa rescisória: <span className="font-bold text-slate-900 dark:text-slate-200">R$ {fmt(penaltyAmount)}</span>
-                {"\n"}
-                Fatura em aberto (venc. <span className="font-bold text-slate-900 dark:text-slate-200">{new Date(overdueDueDate).toLocaleDateString('pt-BR')}</span>): <span className="font-bold text-slate-900 dark:text-slate-200">R$ {fmt(overdueInvoices)}</span>
-                {"\n"}
-                <span className="text-sm">👉</span> <span className="text-sm font-black text-primary-600 dark:text-primary-400">Total devido: R$ {fmt(totalDue)}</span>
-              </div>
-            </div>
-          </Card>
+          </div>
         </div>
       </div>
+
+      {/* Sticky Action (Upsell) */}
+      {(activeTab === "nova-venda" || activeTab === "upsell") && selectedPlans.size > 0 && (
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50">
+          <Button
+            onClick={() => {
+              if (isTotalZero) {
+                toast.error("O valor total do orçamento não pode ser R$ 0,00");
+                return;
+              }
+              setQuoteOpen(true);
+            }}
+            disabled={isTotalZero}
+            className={`${isTotalZero ? 'opacity-50 cursor-not-allowed grayscale' : ''} bg-primary text-white font-black px-10 h-16 rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(74,84,255,0.5)] gap-3 border-4 border-white/20 backdrop-blur-md group animate-in fade-in slide-in-from-bottom-5 duration-500`}
+          >
+            <FileText className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            GERAR ORÇAMENTO
+          </Button>
+        </div>
       )}
 
-        {/* Sticky Action (Upsell) */}
-        {activeTab === "upsell" && selectedPlans.size > 0 && (
-          <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50">
-            <Button
-              onClick={() => {
-                if (isTotalZero) {
-                  toast.error("O valor total do orçamento não pode ser R$ 0,00");
-                  return;
-                }
-                setQuoteOpen(true);
-              }}
-              disabled={isTotalZero}
-              className={`${isTotalZero ? 'opacity-50 cursor-not-allowed grayscale' : ''} bg-primary text-white font-black px-10 h-16 rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(74,84,255,0.5)] gap-3 border-4 border-white/20 backdrop-blur-md group animate-in fade-in slide-in-from-bottom-5 duration-500`}
-            >
-              <FileText className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              GERAR ORÇAMENTO
-            </Button>
-          </div>
-        )}
+      {/* Sticky Action (Downsell) */}
+      {activeTab === "downsell" && (
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50">
+          <Button
+            onClick={() => setDownsellModalOpen(true)}
+            className="bg-primary text-white font-black px-10 h-16 rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(74,84,255,0.5)] gap-3 border-4 border-white/20 backdrop-blur-md group animate-in fade-in slide-in-from-bottom-5 duration-500"
+          >
+            <FileText className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            GERAR EXTRATO DE DOWNSELL
+          </Button>
+        </div>
+      )}
 
-        {/* Sticky Action (Downsell) */}
-        {activeTab === "downsell" && (
-          <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50">
-            <Button
-              onClick={() => setDownsellModalOpen(true)}
-              className="bg-primary text-white font-black px-10 h-16 rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(74,84,255,0.5)] gap-3 border-4 border-white/20 backdrop-blur-md group animate-in fade-in slide-in-from-bottom-5 duration-500"
-            >
-              <FileText className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              GERAR EXTRATO DE DOWNSELL
-            </Button>
-          </div>
-        )}
-      </div>
-
-      <QuoteModal open={quoteOpen} onOpenChange={setQuoteOpen} plans={getQuotePlans()} />
+      <QuoteModal open={quoteOpen} onOpenChange={setQuoteOpen} plans={getQuotePlans()} type={activeTab === "nova-venda" ? "nova-venda" : "upsell"} />
       <DownsellModal open={downsellModalOpen} onOpenChange={setDownsellModalOpen} data={{
         downsellPlanValue, contractStart, downsellDate, monthsUsed, contractDuration,
         contractTotal, valueUsed, remainingBalance, penaltyAmount, overdueInvoices, totalDue, penaltyPercent, overdueDueDate

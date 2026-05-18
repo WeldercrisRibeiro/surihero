@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Check, Clock, Wallet, ArrowUpRight, Megaphone, Settings, MessageCircle, FileText, Building2, User, Phone, ExternalLink, UserCheck, Layout, Download, Zap, Mail, ShoppingBag } from "lucide-react";
+import { Check, Clock, Wallet, ArrowUpRight, Megaphone, Settings, MessageCircle, FileText, Building2, User, Phone, ExternalLink, UserCheck, Layout, Download, Zap, Mail, ShoppingBag, Send } from "lucide-react";
 import PricingInfo from "./PricingInfo";
 
 function fmt(v: number) {
@@ -17,6 +17,12 @@ function fmt(v: number) {
 }
 function fmtN(v: number) {
   return v.toLocaleString("pt-BR");
+}
+
+function formatDate(dateStr: string) {
+  if (!dateStr) return "—";
+  const [y, m, d] = dateStr.split("-");
+  return `${d}/${m}/${y}`;
 }
 
 export interface QuoteData {
@@ -46,6 +52,7 @@ interface QuoteModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   plans: QuoteData[];
+  type?: "nova-venda" | "upsell";
 }
 
 const ACCENT = "#4a54ff";
@@ -202,8 +209,8 @@ function PlanCard({ d }: { d: QuoteData }) {
         </>
       ) : `R$ ${fmt(d.implantacao)}`
     },
-    { icon: <Megaphone style={{ width: 16, height: 16, color: CYAN }} />, label: "Marketing (Excedentes)", value: hasExcessDiscount ? <><span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: 6 }}>R$ {fmt(d.marketingPrice)}</span> <span style={{ color: '#16a34a' }}>R$ {fmt(mktPrice)}</span></> : `R$ ${fmt(d.marketingPrice)}` },
-    { icon: <Settings style={{ width: 16, height: 16, color: CYAN }} />, label: "Utilidade (Excedentes)", value: hasUtilityDiscount ? <><span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: 6 }}>R$ {fmt(d.utilityPrice)}</span> <span style={{ color: '#16a34a' }}>R$ {fmt(utlPrice)}</span></> : `R$ ${fmt(d.utilityPrice)}` },
+    { icon: <Send style={{ width: 16, height: 16, color: CYAN }} />, label: "Marketing (Excedentes)", value: hasExcessDiscount ? <><span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: 6 }}>R$ {fmt(d.marketingPrice)}</span> <span style={{ color: '#16a34a' }}>R$ {fmt(mktPrice)}</span></> : `R$ ${fmt(d.marketingPrice)}` },
+    { icon: <Send style={{ width: 16, height: 16, color: CYAN }} />, label: "Utilidade (Excedentes)", value: hasUtilityDiscount ? <><span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: 6 }}>R$ {fmt(d.utilityPrice)}</span> <span style={{ color: '#16a34a' }}>R$ {fmt(utlPrice)}</span></> : `R$ ${fmt(d.utilityPrice)}` },
     {
       icon: <ShoppingBag style={{ width: 16, height: 16, color: CYAN }} />,
       label: "Suri Shop Assistant",
@@ -293,11 +300,11 @@ function PlanCard({ d }: { d: QuoteData }) {
   );
 }
 
-export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProps) {
+export default function QuoteModal({ open, onOpenChange, plans, type = "upsell" }: QuoteModalProps) {
   const printRef = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<'edit' | 'preview'>('edit');
   const [client, setClient] = useState({
-    empresa: "", responsavel: "", email: "", telefone: "", negociador: "",
+    empresa: "", responsavel: "", email: "", telefone: "", negociador: "", dataExpiracao: "",
   });
 
   if (!plans.length) return null;
@@ -323,7 +330,7 @@ export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProp
     if (!doc) return;
 
     doc.write(`<!DOCTYPE html><html><head>
-      <title>Orçamento - Suri</title>
+      <title>${type === "nova-venda" ? "Orçamento Suri - Nova Venda" : "Orçamento Suri"}</title>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
       <style>
         * { margin:0; padding:0; box-sizing:border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -413,6 +420,12 @@ export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProp
                     </Label>
                     <Input placeholder="(99) 99999-9999" value={client.telefone} onChange={e => setClient(c => ({ ...c, telefone: e.target.value }))} className="h-12 rounded-2xl border-slate-100 dark:border-slate-800 dark:bg-slate-800/50" />
                   </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-2 ml-1">
+                      <Clock className="w-4 h-4 opacity-40" /> Data de Expiração
+                    </Label>
+                    <Input type="date" value={client.dataExpiracao} onChange={e => setClient(c => ({ ...c, dataExpiracao: e.target.value }))} className="h-12 rounded-2xl border-slate-100 dark:border-slate-800 dark:bg-slate-800/50" />
+                  </div>
                 </div>
               </div>
             )}
@@ -464,7 +477,9 @@ export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProp
                       <img src={`${window.location.origin}/identidadevisual/icons/suri-blue.svg`} alt="Logo" style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#ffffff", padding: 6 }} />
                     </div>
                     <div>
-                      <p style={{ fontSize: 18, fontWeight: 900, color: "#4a54ff", letterSpacing: "-0.04em" }}>Orçamento Suri</p>
+                      <p style={{ fontSize: 18, fontWeight: 900, color: "#4a54ff", letterSpacing: "-0.04em" }}>
+                        {type === "nova-venda" ? "Orçamento Suri - Nova Venda" : "Orçamento Suri"}
+                      </p>
                       <p style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700 }}>
                         Responsável: {client.responsavel || "—"} • {client.empresa || "—"}
                       </p>
@@ -479,7 +494,8 @@ export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProp
                   </div>
                   <div style={{ textAlign: "right" }}>
                     <p style={{ fontSize: 13, color: "#1e293b", fontWeight: 700 }}>{today}</p>
-                    {client.negociador && <p style={{ fontSize: 10, color: "#94a3b8", fontWeight: 800, textTransform: "uppercase" }}>Por: {client.negociador}</p>}
+                    {client.dataExpiracao && <p style={{ fontSize: 10, color: "#ef4444", fontWeight: 800, textTransform: "uppercase", marginTop: 2 }}>Válido até: {formatDate(client.dataExpiracao)}</p>}
+                    {client.negociador && <p style={{ fontSize: 10, color: "#94a3b8", fontWeight: 800, textTransform: "uppercase", marginTop: 2 }}>Por: {client.negociador}</p>}
                   </div>
                 </div>
 
@@ -502,7 +518,7 @@ export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProp
                     return (
                       <div style={{ display: "flex", gap: 24, alignItems: "flex-start", marginTop: 8 }}>
                         <div style={{ flex: 1.3 }}>
-                          <PricingInfo variant="print" />
+                          <PricingInfo variant="print" type={type} />
                         </div>
                         <div style={{ flex: 1 }}>
                           <p style={{ fontSize: 10, fontWeight: 900, color: "#4a54ff", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8, marginTop: 16 }}>Integração Disponível</p>
@@ -519,7 +535,7 @@ export default function QuoteModal({ open, onOpenChange, plans }: QuoteModalProp
 
                   return (
                     <div style={{ marginTop: 8 }}>
-                      <PricingInfo variant="print" />
+                      <PricingInfo variant="print" type={type} />
                     </div>
                   );
                 })()}

@@ -134,7 +134,7 @@ export default function DownsellModal({ open, onOpenChange, data }: DownsellModa
                 <div className="grid grid-cols-3 gap-6 px-2">
                   <div className="space-y-2">
                     <Label className="text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-2 ml-1">
-                      <UserCheck className="w-4 h-4 opacity-40" /> Negociador
+                      <UserCheck className="w-4 h-4 opacity-40" /> Responsável pela Retenção
                     </Label>
                     <Input placeholder="Maria Lima" value={client.negociador} onChange={e => setClient(c => ({ ...c, negociador: e.target.value }))} className="h-12 rounded-2xl border-slate-100 dark:border-slate-800 bg-indigo-50/30 dark:bg-slate-800/50" />
                   </div>
@@ -193,7 +193,7 @@ export default function DownsellModal({ open, onOpenChange, data }: DownsellModa
                   </div>
                   <div style={{ textAlign: "right" }}>
                     <p style={{ fontSize: 13, color: "#1e293b", fontWeight: 700 }}>{today}</p>
-                    {client.negociador && <p style={{ fontSize: 10, color: "#94a3b8", fontWeight: 800, textTransform: "uppercase" }}>Por: {client.negociador}</p>}
+                    {client.negociador && <p style={{ fontSize: 10, color: "#94a3b8", fontWeight: 800, textTransform: "uppercase" }}>Responsável Retenção: {client.negociador}</p>}
                   </div>
                 </div>
 

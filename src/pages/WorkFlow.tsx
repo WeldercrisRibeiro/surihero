@@ -110,7 +110,13 @@ function FlowsContent() {
   const [nodes, setNodes, onNodesChange] = useNodesState(defaultNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(defaultEdges);
   const [nodeCount, setNodeCount] = useState(defaultNodes.length);
-  const [savedFlows, setSavedFlows] = useState<SavedFlow[]>([]);
+  const [savedFlows, setSavedFlows] = useState<SavedFlow[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem("suri-saved-flows");
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
   const [editingFlow, setEditingFlow] = useState<SavedFlow | null>(null);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saveTitle, setSaveTitle] = useState("");
@@ -127,6 +133,9 @@ function FlowsContent() {
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const edgeReconnectSuccessful = useRef(true);
 
+  useEffect(() => {
+    localStorage.setItem("suri-saved-flows", JSON.stringify(savedFlows));
+  }, [savedFlows]);
 
   const [portalNode, setPortalNode] = useState<HTMLElement | null>(null);
   useEffect(() => {

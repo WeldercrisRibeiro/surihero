@@ -2,20 +2,30 @@ import { Info, MessageCircle, Send, Zap, ShoppingBag, AlertTriangle } from "luci
 
 interface PricingInfoProps {
   variant?: "dashboard" | "print";
+  type?: "nova-venda" | "upsell";
 }
 
-export default function PricingInfo({ variant = "dashboard" }: PricingInfoProps) {
+export default function PricingInfo({ variant = "dashboard", type = "upsell" }: PricingInfoProps) {
   const ACCENT = "#4a54ff";
   const SURI_BLUE = "#4a54ff";
   const content = {
     title: "Informativos",
     items: [
-      {
-        icon: <AlertTriangle style={{ width: 20, height: 20 }} />,
-        label: "IMPORTANTE",
-        description: "Toda solicitação de alteração de plano (Upsell) realizada após o dia 1º de cada mês será aplicada somente no segundo mês seguinte à solicitação. Exemplo prático: Solicitação: 17/04 (Abril) | Plano refletido em: Junho",
-        highlight: true
-      },
+      ...(type === "nova-venda" ? [
+        {
+          icon: <AlertTriangle style={{ width: 20, height: 20 }} />,
+          label: "CONTRATO DE ADESÃO",
+          description: "Todos os planos possuem fidelidade de 12 meses. Esta condição se aplica tanto para novos contratos quanto para mudanças de plano em contratos vigentes.",
+          highlight: true
+        }
+      ] : [
+        {
+          icon: <AlertTriangle style={{ width: 20, height: 20 }} />,
+          label: "IMPORTANTE",
+          description: "Toda solicitação de alteração de plano (Upsell) realizada após o dia 1º de cada mês será aplicada somente no segundo mês seguinte à solicitação. Exemplo prático: Solicitação: 17/04 (Abril) | Plano refletido em: Junho",
+          highlight: true
+        }
+      ]),
       {
         icon: <MessageCircle style={{ width: 20, height: 20, color: SURI_BLUE }} />,
         label: "CONTATO RECEPTIVO",
