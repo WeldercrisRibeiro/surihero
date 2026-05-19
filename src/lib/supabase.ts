@@ -68,6 +68,8 @@ export const supabase = isValidUrl(supabaseUrl) && supabaseUrl !== 'your-project
 export type Profile = {
   id: string;
   email: string;
+  name: string;
+  token: string;
   role: 'user' | 'admin';
   created_at: string;
   require_password_change?: boolean;

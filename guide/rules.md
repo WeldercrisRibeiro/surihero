@@ -51,11 +51,47 @@ O painel de tarefas segue o framework ágil de controle de demandas e bugs.
 
 ### 2.3 Relação e Propriedade de Dados (RLS)
 *   Qualquer ação de leitura, inserção ou atualização no Kanban exige validação de propriedade baseada no ID do usuário autenticado (`user_id`).
-*   Usuários padrão só podem ver/modificar suas próprias colunas e cartões. Admins têm visão consolidada em painéis analíticos específicos.
+*   Usuários padrão só podem ver/modificar suas próprias colunas e cartões. Admins têm permissão para acessar e ver os quadros de Kanban dos respectivos membros da equipe para supervisão do fluxo de trabalho.
 
 ---
 
-## ⚡ 3. Regras de Integração e Testes (Suri API)
+## 🔑 3. Regras de Autenticação via Telegram (OTP Flow)
 
-*   **Autenticação**: O sandbox de API respeita os tokens de acesso gerados para a conta do usuário. Em caso de token inválido, a resposta retorna `401 Unauthorized` e impede requisições automáticas subsequentes.
-*   **Throttling**: Para simular cenários de produção, requisições disparadas consecutivamente no sandbox têm intervalo mínimo de **200ms**, evitando sobrecarga do gateway Suri.
+O acesso à plataforma é protegido por autenticação integrada em tempo real via Telegram Bot.
+
+### 3.1 Login e Registro Automático
+*   **Acesso por Telefone**: O usuário informa Nome e Telefone na tela de Login. Se o telefone não for cadastrado, o sistema cria o perfil com papel padrão `'user'` e prossegue com o fluxo.
+*   **Entrega do OTP via Bot**: O sistema gera um código numérico de 6 dígitos aleatório e o envia para o Telegram do usuário. O usuário descobre o seu Chat ID/Token de envio ao interagir com o bot usando os comandos `/start` ou `/token`.
+
+### 3.2 Cooldown de Envio (Anti-Spam)
+*   Para evitar chamadas redundantes e sobrecarga de serviços de mensageria, o botão de "Re-enviar código" entra em resfriamento obrigatório por **60 segundos** após cada acionamento.
+
+### 3.3 Expiração de Sessão e Logout
+*   Uma sessão autenticada é registrada no `localStorage` sob a chave `suri_session` com um token ativo.
+*   A validade padrão de cada login é de **7 dias**. Passado este período, a sessão é considerada inválida e o usuário é redirecionado à tela de autenticação.
+*   Ao acionar o botão de Logout ("Sair"), todas as chaves do `localStorage` são apagadas e o acesso é encerrado.
+
+---
+
+## 🌟 4. Regras de Administração e Controle de Acesso (RBAC)
+
+O ecossistema implementa controle hierárquico com base nos papéis de usuários.
+
+### 4.1 Níveis de Acesso
+*   **`admin` (Tech Lead / Gestor)**:
+    *   Acesso visual e operacional aos botões e menus de gestão de equipe (indicados com ícones de `Shield`).
+    *   Privilégio total para criar, editar e excluir artigos na engine de documentos (`Docs`).
+    *   Habilidade de alternar papéis de usuários e remover membros inativos no painel admin.
+*   **`user` (Membro do Time)**:
+    *   Visualização focada das ferramentas e documentações, sem acesso a menus de administração.
+    *   Isolamento e controle estrito sobre seus próprios quadros do Kanban.
+
+---
+
+## 📑 5. Regras de Gestão Dinâmica de Documentos (Docs)
+
+A central de documentação é baseada em registros vivos salvos no banco.
+
+### 5.1 Edição e Criação
+*   O visualizador permite que administradores criem novas páginas preenchendo Título, Categoria, Banner (estilo e gradiente hexadecimal) e corpo do texto em Markdown.
+*   A exclusão de registros do banco exige confirmação expressa do usuário via caixa de diálogo para evitar deleção acidental de dados críticos do projeto.

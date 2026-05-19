@@ -5,12 +5,12 @@ services:
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
-      POSTGRES_DB: ${DB_NAME:-suri_tools}
+      POSTGRES_DB: ${DB_NAME:-tools}
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "${DB_PORT:-5438}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - ./database/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     networks:
       - suri-network
 
@@ -20,7 +20,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      PGRST_DB_URI: postgres://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-suri_tools}
+      PGRST_DB_URI: postgres://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-tools}
       PGRST_DB_SCHEMA: public
       PGRST_DB_ANON_ROLE: postgres
       PGRST_JWT_SECRET: "safe_and_long_enough_secret_for_local_dev_32_chars"

@@ -3,10 +3,12 @@ import { createPortal } from 'react-dom';
 import {
   BookOpen, Search, ChevronRight, ChevronDown, FileText,
   X, Menu, Clock, Bookmark, BookMarked, Loader2, AlertTriangle,
-  ArrowRight, Copy, Check, AlignLeft, User
+  ArrowRight, Copy, Check, AlignLeft, User, Plus, Edit, Save, Trash
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DOCS_MANIFEST, type ManifestPage, type ManifestCategory } from '@/docs/manifest';
+import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 
 // ─── Markdown → HTML parser ───────────────────────────────────────────────────
 
@@ -142,7 +144,6 @@ function allPages(manifest: ManifestCategory[]): ManifestPage[] {
   return manifest.flatMap((c) => c.pages);
 }
 
-/** Extrai headings h2/h3/h4 do markdown para o sumário lateral */
 function makeHeadingId(text: string): string {
   const raw = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
   return /^\d/.test(raw) ? `h-${raw}` : raw;
@@ -160,10 +161,35 @@ function extractHeadings(md: string) {
   return result;
 }
 
+const DEFAULT_UUIDS: Record<string, string> = {
+  'bem-vindo': '00000000-0000-0000-0000-000000000010',
+  'suri-api': '00000000-0000-0000-0000-000000000020',
+  'suri-calcs': '00000000-0000-0000-0000-000000000030',
+  'kanban': '00000000-0000-0000-0000-000000000040',
+  'workflow': '00000000-0000-0000-0000-000000000050'
+};
+
+function generateUUID() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Docs() {
-  const [activePage, setActivePage] = useState<ManifestPage>(DOCS_MANIFEST[0].pages[0]);
+  const sessionStr = localStorage.getItem('suri_session');
+  const user = sessionStr ? JSON.parse(sessionStr) : null;
+  const isAdmin = user?.role === 'admin';
+
+  const [categories, setCategories] = useState<ManifestCategory[]>([]);
+  const [dynamicPages, setDynamicPages] = useState<any[]>([]);
+
+  const [activePage, setActivePage] = useState<ManifestPage>({ id: '', title: '', file: '' });
   const [markdownContent, setMarkdownContent] = useState('');
   const [renderedHtml, setRenderedHtml] = useState('');
   const [pageTitle, setPageTitle] = useState('');
@@ -181,11 +207,22 @@ export default function Docs() {
   const [indexReady, setIndexReady] = useState(false);
 
   // Sidebar / bookmarks
-  const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>(
-    Object.fromEntries(DOCS_MANIFEST.map((c) => [c.id, true]))
-  );
+  const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>({});
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
+
+  // Editor states
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editCategory, setEditCategory] = useState('');
+  const [editAuthorName, setEditAuthorName] = useState('');
+  const [editAuthorRole, setEditAuthorRole] = useState('');
+  const [editBannerFrom, setEditBannerFrom] = useState('');
+  const [editBannerTo, setEditBannerTo] = useState('');
+  const [editBannerTitle, setEditBannerTitle] = useState('');
+  const [editBannerSubtitle, setEditBannerSubtitle] = useState('');
+  const [editContent, setEditContent] = useState('');
 
   const contentRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -194,36 +231,227 @@ export default function Docs() {
 
   useEffect(() => { setPortalNode(document.getElementById('topbar-portal-target')); }, []);
 
+  // ── Helper to rebuild categories from page list ─────────────────────────────
+  const rebuildFromPages = (pagesList: any[]) => {
+    const categoriesMap: Record<string, ManifestPage[]> = {};
+    pagesList.forEach((p) => {
+      const catLabel = p.category || 'Geral';
+      if (!categoriesMap[catLabel]) {
+        categoriesMap[catLabel] = [];
+      }
+      categoriesMap[catLabel].push({
+        id: p.id,
+        title: p.title,
+        file: '', // Dynamically provided content
+        updatedAt: p.updated_at || p.updatedAt,
+        author: p.author_name ? { name: p.author_name, role: p.author_role } : undefined,
+        banner: p.banner_from ? {
+          type: 'gradient',
+          from: p.banner_from,
+          to: p.banner_to,
+          title: p.banner_title,
+          subtitle: p.banner_subtitle
+        } : undefined,
+        content: p.content
+      } as any);
+    });
+
+    const cats = Object.entries(categoriesMap).map(([label, pages]) => ({
+      id: label.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\s-]/g, '').replace(/\s+/g, '-'),
+      label,
+      pages
+    }));
+    
+    setCategories(cats);
+
+    // Expand categories by default
+    setExpandedCats((prev) => {
+      const next = { ...prev };
+      cats.forEach((c) => {
+        if (next[c.id] === undefined) next[c.id] = true;
+      });
+      return next;
+    });
+
+    // Also build the index for search
+    const entries = pagesList.map((p) => {
+      const catLabel = p.category || 'Geral';
+      const pageObj = {
+        id: p.id,
+        title: p.title,
+        file: '',
+        updatedAt: p.updated_at,
+        author: p.author_name ? { name: p.author_name, role: p.author_role } : undefined,
+        banner: p.banner_from ? {
+          type: 'gradient',
+          from: p.banner_from,
+          to: p.banner_to,
+          title: p.banner_title,
+          subtitle: p.banner_subtitle
+        } : undefined,
+        content: p.content
+      };
+      const catObj = {
+        id: catLabel.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\s-]/g, '').replace(/\s+/g, '-'),
+        label: catLabel,
+        pages: [pageObj]
+      };
+      return {
+        page: pageObj as any,
+        category: catObj as any,
+        plainText: stripMarkdown(p.content)
+      };
+    });
+
+    setIndex(entries);
+    setIndexReady(true);
+  };
+
+  // ── Bootstrap from static files to database ─────────────────────────────
+  const bootstrapDocs = async () => {
+    const seededPages: any[] = [];
+    for (const cat of DOCS_MANIFEST) {
+      for (const page of cat.pages) {
+        try {
+          const response = await fetch(page.file);
+          const mdText = await response.text();
+          const stableId = DEFAULT_UUIDS[page.id] || generateUUID();
+          const docObj = {
+            id: stableId,
+            slug: page.id,
+            title: page.title,
+            category: cat.label,
+            content: mdText,
+            updated_at: page.updatedAt ? new Date(page.updatedAt).toISOString() : new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            author_name: page.author?.name || '',
+            author_role: page.author?.role || '',
+            banner_from: page.banner?.from || '',
+            banner_to: page.banner?.to || '',
+            banner_title: page.banner?.title || '',
+            banner_subtitle: page.banner?.subtitle || ''
+          };
+          seededPages.push(docObj);
+        } catch (err) {
+          console.error('Error seeding document', page.title, err);
+        }
+      }
+    }
+
+    try {
+      await supabase.from('documents').insert(seededPages);
+    } catch (err) {
+      console.error('Failed to seed Supabase database documents:', err);
+    }
+
+    localStorage.setItem('suri_docs_v1', JSON.stringify(seededPages));
+    return seededPages;
+  };
+
+  // ── Load documents from Supabase/localStorage ───────────────────────────
+  const loadDocuments = async () => {
+    setLoadState('loading');
+    try {
+      const { data, error } = await supabase.from('documents').select('*').order('created_at', { ascending: true });
+      if (error) {
+        throw new Error(error.message);
+      }
+      if (data && data.length > 0) {
+        setDynamicPages(data);
+        rebuildFromPages(data);
+        setLoadState('idle');
+        return data;
+      }
+      
+      const local = localStorage.getItem('suri_docs_v1');
+      if (local) {
+        const parsed = JSON.parse(local);
+        const hasInvalidId = parsed.some((p: any) => !p.id || p.id.length < 15);
+        if (hasInvalidId) {
+          localStorage.removeItem('suri_docs_v1');
+        } else {
+          setDynamicPages(parsed);
+          rebuildFromPages(parsed);
+          setLoadState('idle');
+          return parsed;
+        }
+      }
+
+      const seeded = await bootstrapDocs();
+      setDynamicPages(seeded);
+      rebuildFromPages(seeded);
+      setLoadState('idle');
+      return seeded;
+    } catch (err) {
+      console.error('Error loading documents:', err);
+      const local = localStorage.getItem('suri_docs_v1');
+      if (local) {
+        const parsed = JSON.parse(local);
+        const hasInvalidId = parsed.some((p: any) => !p.id || p.id.length < 15);
+        if (!hasInvalidId) {
+          setDynamicPages(parsed);
+          rebuildFromPages(parsed);
+          setLoadState('idle');
+          return parsed;
+        }
+      }
+      setLoadState('error');
+    }
+  };
+
   // ── Build search index on mount ──────────────────────────────────────────
   useEffect(() => {
-    const entries: IndexEntry[] = [];
-    const promises = DOCS_MANIFEST.flatMap((cat) =>
-      cat.pages.map((page) =>
-        fetch(page.file)
-          .then((r) => r.text())
-          .then((md) => entries.push({ page, category: cat, plainText: stripMarkdown(md) }))
-          .catch(() => {})
-      )
-    );
-    Promise.all(promises).then(() => { setIndex(entries); setIndexReady(true); });
+    loadDocuments().then((pages) => {
+      if (pages && pages.length > 0) {
+        const first = pages[0];
+        const mappedPage = {
+          id: first.id,
+          title: first.title,
+          file: '',
+          updatedAt: first.updated_at,
+          author: first.author_name ? { name: first.author_name, role: first.author_role } : undefined,
+          banner: first.banner_from ? {
+            type: 'gradient' as const,
+            from: first.banner_from,
+            to: first.banner_to,
+            title: first.banner_title,
+            subtitle: first.banner_subtitle
+          } : undefined,
+          content: first.content
+        };
+        setActivePage(mappedPage as any);
+      }
+    });
   }, []);
 
   // ── Fetch page markdown ──────────────────────────────────────────────────
   useEffect(() => {
-    setLoadState('loading');
-    setMarkdownContent(''); setRenderedHtml('');
-    if (contentRef.current) contentRef.current.scrollTop = 0;
-    fetch(activePage.file)
-      .then((r) => { if (!r.ok) throw new Error(); return r.text(); })
-      .then((md) => {
-        setMarkdownContent(md);
-        setRenderedHtml(parseMarkdown(md));
-        setPageTitle(extractTitle(md) || activePage.title);
-        setTocHeadings(extractHeadings(md));
-        setActiveHeadingId('');
-        setLoadState('idle');
-      })
-      .catch(() => setLoadState('error'));
+    if (!activePage.id) return;
+    
+    if (activePage.content !== undefined) {
+      setMarkdownContent(activePage.content);
+      setRenderedHtml(parseMarkdown(activePage.content));
+      setPageTitle(activePage.title);
+      setTocHeadings(extractHeadings(activePage.content));
+      setActiveHeadingId('');
+      setLoadState('idle');
+      if (contentRef.current) contentRef.current.scrollTop = 0;
+    } else if (activePage.file) {
+      setLoadState('loading');
+      setMarkdownContent(''); setRenderedHtml('');
+      if (contentRef.current) contentRef.current.scrollTop = 0;
+      fetch(activePage.file)
+        .then((r) => { if (!r.ok) throw new Error(); return r.text(); })
+        .then((md) => {
+          setMarkdownContent(md);
+          setRenderedHtml(parseMarkdown(md));
+          setPageTitle(extractTitle(md) || activePage.title);
+          setTocHeadings(extractHeadings(md));
+          setActiveHeadingId('');
+          setLoadState('idle');
+        })
+        .catch(() => setLoadState('error'));
+    }
   }, [activePage]);
 
   // ── Run search ───────────────────────────────────────────────────────────
@@ -312,11 +540,153 @@ export default function Docs() {
   const toggleCat = (id: string) => setExpandedCats((p) => ({ ...p, [id]: !p[id] }));
   const toggleBookmark = (id: string) => setBookmarks((p) => p.includes(id) ? p.filter((b) => b !== id) : [...p, id]);
 
-  const all = allPages(DOCS_MANIFEST);
+  const all = allPages(categories);
   const currentIdx = all.findIndex((p) => p.id === activePage.id);
   const prevPage = currentIdx > 0 ? all[currentIdx - 1] : null;
   const nextPage = currentIdx < all.length - 1 ? all[currentIdx + 1] : null;
   const isBookmarked = bookmarks.includes(activePage.id);
+
+  // ── CRUD Actions ─────────────────────────────────────────────────────────
+
+  const openCreate = () => {
+    setEditId(null);
+    setEditTitle('');
+    setEditCategory('');
+    setEditAuthorName(user?.name || '');
+    setEditAuthorRole('Admin');
+    setEditBannerFrom('#0a1172');
+    setEditBannerTo('#3a0ca3');
+    setEditBannerTitle('');
+    setEditBannerSubtitle('');
+    setEditContent('# Novo Documento\n\nEscreva seu conteúdo em markdown aqui...');
+    setIsEditing(true);
+  };
+
+  const openEdit = () => {
+    setEditId(activePage.id);
+    setEditTitle(activePage.title);
+    
+    const cat = categories.find((c) => c.pages.some((p) => p.id === activePage.id));
+    setEditCategory(cat ? cat.label : 'Geral');
+    
+    setEditAuthorName(activePage.author?.name || user?.name || '');
+    setEditAuthorRole(activePage.author?.role || '');
+    setEditBannerFrom(activePage.banner?.from || '#0a1172');
+    setEditBannerTo(activePage.banner?.to || '#3a0ca3');
+    setEditBannerTitle(activePage.banner?.title || '');
+    setEditBannerSubtitle(activePage.banner?.subtitle || '');
+    setEditContent(activePage.content || '');
+    setIsEditing(true);
+  };
+
+  const handleSaveDocument = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editTitle.trim() || !editCategory.trim() || !editContent.trim()) {
+      toast.error('Título, Categoria e Conteúdo são obrigatórios!');
+      return;
+    }
+
+    const docId = editId || generateUUID();
+    const slug = editTitle.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+    
+    const payload = {
+      id: docId,
+      slug,
+      title: editTitle.trim(),
+      category: editCategory.trim(),
+      content: editContent,
+      author_name: editAuthorName.trim() || null,
+      author_role: editAuthorRole.trim() || null,
+      banner_from: editBannerFrom.trim() || null,
+      banner_to: editBannerTo.trim() || null,
+      banner_title: editBannerTitle.trim() || null,
+      banner_subtitle: editBannerSubtitle.trim() || null,
+      updated_at: new Date().toISOString()
+    };
+
+    try {
+      const { error } = await supabase.from('documents').upsert([payload]);
+      if (error) {
+        throw new Error(error.message);
+      }
+    } catch (err) {
+      console.error('Database save error, using local fallback:', err);
+    }
+
+    const updatedPages = editId
+      ? dynamicPages.map((p) => p.id === editId ? { ...p, ...payload } : p)
+      : [...dynamicPages, { ...payload, created_at: new Date().toISOString() }];
+      
+    setDynamicPages(updatedPages);
+    localStorage.setItem('suri_docs_v1', JSON.stringify(updatedPages));
+    rebuildFromPages(updatedPages);
+    
+    const savedPage = {
+      id: docId,
+      title: editTitle.trim(),
+      file: '',
+      updatedAt: payload.updated_at,
+      author: payload.author_name ? { name: payload.author_name, role: payload.author_role } : undefined,
+      banner: payload.banner_from ? {
+        type: 'gradient' as const,
+        from: payload.banner_from,
+        to: payload.banner_to,
+        title: payload.banner_title,
+        subtitle: payload.banner_subtitle
+      } : undefined,
+      content: editContent
+    };
+    setActivePage(savedPage as any);
+
+    setIsEditing(false);
+    toast.success('Documento salvo com sucesso!');
+  };
+
+  const handleDeleteDocument = async (docId: string) => {
+    if (!confirm('Tem certeza de que deseja excluir este documento?')) return;
+
+    try {
+      const { error } = await supabase.from('documents').delete().eq('id', docId);
+      if (error) {
+        throw new Error(error.message);
+      }
+    } catch (err) {
+      console.error('Database delete error, using local fallback:', err);
+    }
+
+    const updatedPages = dynamicPages.filter((p) => p.id !== docId);
+    setDynamicPages(updatedPages);
+    localStorage.setItem('suri_docs_v1', JSON.stringify(updatedPages));
+    
+    if (updatedPages.length > 0) {
+      rebuildFromPages(updatedPages);
+      const firstPage = updatedPages[0];
+      const mappedPage = {
+        id: firstPage.id,
+        title: firstPage.title,
+        file: '',
+        updatedAt: firstPage.updated_at,
+        author: firstPage.author_name ? { name: firstPage.author_name, role: firstPage.author_role } : undefined,
+        banner: firstPage.banner_from ? {
+          type: 'gradient' as const,
+          from: firstPage.banner_from,
+          to: firstPage.banner_to,
+          title: firstPage.banner_title,
+          subtitle: firstPage.banner_subtitle
+        } : undefined,
+        content: firstPage.content
+      };
+      setActivePage(mappedPage as any);
+    } else {
+      setCategories([]);
+      setActivePage({ id: '', title: '', file: '' });
+      setMarkdownContent('');
+      setRenderedHtml('');
+    }
+
+    setIsEditing(false);
+    toast.success('Documento excluído com sucesso!');
+  };
 
   return (
     <div className="docs-root">
@@ -346,6 +716,28 @@ export default function Docs() {
 
           {/* Actions — right */}
           <div className="docs-topbar-portal__side docs-topbar-portal__side--right">
+            {isAdmin && (
+              <>
+                <button 
+                  onClick={openCreate} 
+                  className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-cyan-500 text-white hover:bg-cyan-600 text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm h-8"
+                  title="Criar Documento"
+                >
+                  <Plus size={13} />
+                  <span className="hidden sm:inline">Criar</span>
+                </button>
+                {activePage && activePage.id && (
+                  <button 
+                    onClick={openEdit} 
+                    className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-bold uppercase tracking-wider transition-all border border-slate-200 dark:border-slate-700 h-8"
+                    title="Editar Documento"
+                  >
+                    <Edit size={13} />
+                    <span className="hidden sm:inline">Editar</span>
+                  </button>
+                )}
+              </>
+            )}
             <button onClick={() => toggleBookmark(activePage.id)} className={cn('flex items-center gap-1 px-2 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all h-8', isBookmarked ? 'bg-primary/10 text-primary' : 'text-foreground/70 hover:bg-accent hover:text-foreground')}>
               {isBookmarked ? <BookMarked className="w-3.5 h-3.5" /> : <Bookmark className="w-3.5 h-3.5" />}
               <span className="hidden sm:inline">{isBookmarked ? 'Salvo' : 'Salvar'}</span>
@@ -362,11 +754,9 @@ export default function Docs() {
       {/* ── Sidebar ── */}
       {sidebarOpen && (
         <aside className="docs-sidebar">
-
-
           {/* Nav tree */}
           <nav className="docs-sidebar__nav">
-            {DOCS_MANIFEST.map((cat) => (
+            {categories.map((cat) => (
               <div key={cat.id} className="docs-sidebar__category">
                 <button onClick={() => toggleCat(cat.id)} className="docs-sidebar__cat-btn">
                   <span className="docs-sidebar__cat-label">{cat.label}</span>
@@ -392,123 +782,298 @@ export default function Docs() {
       )}
 
       {/* ── Content + ToC wrapper ── */}
-      <main className="docs-content" ref={contentRef}>
-        <div className="docs-layout">
-          <article className="docs-article">
-            {loadState === 'loading' && (
-              <div className="flex items-center justify-center py-32 text-muted-foreground gap-3">
-                <Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Carregando...</span>
+      {isEditing ? (
+        <main className="docs-content overflow-y-auto p-4 sm:p-8">
+          <div className="max-w-4xl mx-auto bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+            <div className="flex items-center justify-between border-b border-border pb-4">
+              <div>
+                <h2 className="text-xl font-extrabold text-foreground">{editId ? 'Editar Documento' : 'Novo Documento'}</h2>
+                <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Editor Premium de Markdown</p>
               </div>
-            )}
-            {loadState === 'error' && (
-              <div className="flex flex-col items-center justify-center py-32 text-center gap-3">
-                <AlertTriangle className="w-8 h-8 text-destructive opacity-60" />
-                <p className="text-sm font-semibold">Não foi possível carregar o documento.</p>
-                <p className="text-xs text-muted-foreground">Arquivo: <code className="bg-muted px-1 rounded text-xs">{activePage.file}</code></p>
+              <button 
+                type="button" 
+                onClick={() => setIsEditing(false)}
+                className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveDocument} className="space-y-6 text-left">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block">Título do Documento *</label>
+                  <input 
+                    className="kb-input"
+                    type="text"
+                    required
+                    placeholder="Ex: Introdução ao CRM"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block">Categoria *</label>
+                  <input 
+                    className="kb-input"
+                    type="text"
+                    required
+                    placeholder="Ex: Módulos, Integração, Geral"
+                    value={editCategory}
+                    onChange={(e) => setEditCategory(e.target.value)}
+                    list="categories-list"
+                  />
+                  <datalist id="categories-list">
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.label} />
+                    ))}
+                  </datalist>
+                </div>
               </div>
-            )}
-            {loadState === 'idle' && markdownContent && (
-              <>
-                {/* Banner */}
-                {activePage.banner && activePage.banner.type === 'gradient' && (
-                  <div
-                    className="docs-banner"
-                    style={{ background: `linear-gradient(135deg, ${activePage.banner.from}, ${activePage.banner.to})` }}
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block">Nome do Autor</label>
+                <input 
+                  className="kb-input"
+                  type="text"
+                  placeholder="Ex: Weldercris Ribeiro"
+                  value={editAuthorName}
+                  onChange={(e) => setEditAuthorName(e.target.value)}
+                />
+              </div>
+
+              <div className="border border-border/60 rounded-2xl p-4 bg-slate-50/50 dark:bg-slate-800/20 space-y-4">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-foreground/80">Banner do Topo (Opcional)</h4>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Cor Inicial (Gradient From)</label>
+                    <div className="flex gap-2">
+                      <input 
+                        className="w-10 h-10 rounded-xl border border-border cursor-pointer shrink-0"
+                        type="color"
+                        value={editBannerFrom.startsWith('#') && editBannerFrom.length === 7 ? editBannerFrom : '#0a1172'}
+                        onChange={(e) => setEditBannerFrom(e.target.value)}
+                      />
+                      <input 
+                        className="kb-input flex-1"
+                        type="text"
+                        placeholder="Ex: #0a1172"
+                        value={editBannerFrom}
+                        onChange={(e) => setEditBannerFrom(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Cor Final (Gradient To)</label>
+                    <div className="flex gap-2">
+                      <input 
+                        className="w-10 h-10 rounded-xl border border-border cursor-pointer shrink-0"
+                        type="color"
+                        value={editBannerTo.startsWith('#') && editBannerTo.length === 7 ? editBannerTo : '#3a0ca3'}
+                        onChange={(e) => setEditBannerTo(e.target.value)}
+                      />
+                      <input 
+                        className="kb-input flex-1"
+                        type="text"
+                        placeholder="Ex: #3a0ca3"
+                        value={editBannerTo}
+                        onChange={(e) => setEditBannerTo(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Título do Banner</label>
+                    <input 
+                      className="kb-input"
+                      type="text"
+                      placeholder="Deixe em branco para usar o título principal"
+                      value={editBannerTitle}
+                      onChange={(e) => setEditBannerTitle(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Subtítulo do Banner</label>
+                    <input 
+                      className="kb-input"
+                      type="text"
+                      placeholder="Subtítulo chamativo no banner"
+                      value={editBannerSubtitle}
+                      onChange={(e) => setEditBannerSubtitle(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block">Conteúdo (Markdown) *</label>
+                  <span className="text-[10px] text-muted-foreground">Suporta títulos, listas, blocos de código e alertas</span>
+                </div>
+                <textarea 
+                  className="kb-input min-h-[300px] font-mono text-sm leading-relaxed"
+                  placeholder="# Título Principal&#10;&#10;Use o formato padrão do markdown para escrever..."
+                  required
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                />
+              </div>
+
+              <div className="pt-4 border-t border-border flex items-center justify-between gap-4">
+                <div className="flex gap-2">
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      if (confirm('Deseja descartar as alterações?')) {
+                        setIsEditing(false);
+                      }
+                    }} 
+                    className="px-5 py-2.5 rounded-2xl border border-slate-200 text-sm font-bold text-slate-500 hover:bg-slate-50 transition-all"
                   >
-                    {activePage.banner.title && (
-                      <div className="docs-banner__text">
-                        <span className="docs-banner__title">{activePage.banner.title}</span>
-                        {activePage.banner.subtitle && (
-                          <span className="docs-banner__subtitle">{activePage.banner.subtitle}</span>
-                        )}
-                      </div>
-                    )}
-                    <div className="docs-banner__glow" />
-                  </div>
-                )}
-
-                {/* Article header */}
-                <header className="docs-article__header">
-                  <div className="docs-article__header-meta flex items-center flex-wrap gap-3 mb-2">
-                    <span className="docs-article__tag"><FileText size={11} />Documento</span>
-                    {activePage.updatedAt && (
-                      <span className="docs-article__updated flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Clock size={11} />
-                        Atualizado em {new Date(activePage.updatedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
-                      </span>
-                    )}
-                    {activePage.author && (
-                      <span className="docs-article__author flex items-center gap-1.5 text-xs text-muted-foreground border-l border-border pl-3">
-                        <User size={11} />
-                        Por{' '}
-                           <span className="font-medium text-foreground">
-                             {activePage.author.name}{activePage.author.role ? ` - ${activePage.author.role}` : ''}
-                           </span>
-                      </span>
-                    )}
-                  </div>
-                  <h1 className="docs-article__title">{pageTitle || activePage.title}</h1>
-                  <hr className="docs-article__separator" />
-                </header>
-
-                <div className="docs-article__body" dangerouslySetInnerHTML={{ __html: renderedHtml }} />
-
-                <footer className="docs-article__footer">
-                  <div className="docs-nav-arrows">
-                    {prevPage ? (
-                      <button onClick={() => navigate(prevPage)} className="docs-nav-arrow docs-nav-arrow--prev">
-                        <ChevronRight size={14} className="rotate-180 shrink-0" />
-                        <div><span className="docs-nav-arrow__label">Anterior</span><span className="docs-nav-arrow__title">{prevPage.title}</span></div>
-                      </button>
-                    ) : <span />}
-                    {nextPage ? (
-                      <button onClick={() => navigate(nextPage)} className="docs-nav-arrow docs-nav-arrow--next">
-                        <div><span className="docs-nav-arrow__label">Próximo</span><span className="docs-nav-arrow__title">{nextPage.title}</span></div>
-                        <ChevronRight size={14} className="shrink-0" />
-                      </button>
-                    ) : <span />}
-                  </div>
-                </footer>
-              </>
-            )}
-          </article>
-
-          {/* ToC — sumário lateral direito */}
-          {tocHeadings.length > 0 && loadState === 'idle' && (
-            <aside className="docs-toc">
-              <div className="docs-toc__inner">
-                <p className="docs-toc__label">
-                  <AlignLeft size={12} />
-                  Nesta página
-                </p>
-                <ul className="docs-toc__list">
-                  {tocHeadings.map(({ id, text, level }) => (
-                    <li key={id}>
-                      <a
-                        href={`#${id}`}
-                        className={cn(
-                          'docs-toc__link',
-                          level === 3 && 'docs-toc__link--h3',
-                          level === 4 && 'docs-toc__link--h4',
-                          activeHeadingId === id && 'docs-toc__link--active'
-                        )}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          const el = contentRef.current?.querySelector(`#${id}`);
-                          el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          setActiveHeadingId(id);
-                        }}
-                      >
-                        {text}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
+                    Cancelar
+                  </button>
+                  {editId && (
+                    <button 
+                      type="button" 
+                      onClick={() => handleDeleteDocument(editId)}
+                      className="px-5 py-2.5 rounded-2xl border border-red-200 text-sm font-bold text-red-500 hover:bg-red-50 transition-all flex items-center gap-1.5"
+                    >
+                      <Trash size={14} /> Excluir
+                    </button>
+                  )}
+                </div>
+                <button 
+                  type="submit" 
+                  className="px-6 py-2.5 rounded-2xl bg-cyan-500 text-white text-sm font-bold hover:bg-cyan-600 transition-all shadow-lg shadow-cyan-500/20 flex items-center gap-1.5"
+                >
+                  <Save size={14} /> Salvar Documento
+                </button>
               </div>
-            </aside>
-          )}
-        </div>
-      </main>
+            </form>
+          </div>
+        </main>
+      ) : (
+        <main className="docs-content" ref={contentRef}>
+          <div className="docs-layout">
+            <article className="docs-article text-left">
+              {loadState === 'loading' && (
+                <div className="flex items-center justify-center py-32 text-muted-foreground gap-3">
+                  <Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Carregando...</span>
+                </div>
+              )}
+              {loadState === 'error' && (
+                <div className="flex flex-col items-center justify-center py-32 text-center gap-3">
+                  <AlertTriangle className="w-8 h-8 text-destructive opacity-60" />
+                  <p className="text-sm font-semibold">Não foi possível carregar o documento.</p>
+                  <p className="text-xs text-muted-foreground">Arquivo ou ID de documento não sincronizado.</p>
+                </div>
+              )}
+              {loadState === 'idle' && markdownContent && (
+                <>
+                  {/* Banner */}
+                  {activePage.banner && activePage.banner.type === 'gradient' && (
+                    <div
+                      className="docs-banner"
+                      style={{ background: `linear-gradient(135deg, ${activePage.banner.from}, ${activePage.banner.to})` }}
+                    >
+                      {activePage.banner.title && (
+                        <div className="docs-banner__text">
+                          <span className="docs-banner__title">{activePage.banner.title}</span>
+                          {activePage.banner.subtitle && (
+                            <span className="docs-banner__subtitle">{activePage.banner.subtitle}</span>
+                          )}
+                        </div>
+                      )}
+                      <div className="docs-banner__glow" />
+                    </div>
+                  )}
+
+                  {/* Article header */}
+                  <header className="docs-article__header">
+                    <div className="docs-article__header-meta flex items-center flex-wrap gap-3 mb-2">
+                      <span className="docs-article__tag"><FileText size={11} />Documento</span>
+                      {activePage.updatedAt && (
+                        <span className="docs-article__updated flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <Clock size={11} />
+                          Atualizado em {new Date(activePage.updatedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                        </span>
+                      )}
+                      {activePage.author && (
+                        <span className="docs-article__author flex items-center gap-1.5 text-xs text-muted-foreground border-l border-border pl-3">
+                          <User size={11} />
+                          Por{' '}
+                          <span className="font-medium text-foreground">
+                            {activePage.author.name}{activePage.author.role ? ` - ${activePage.author.role}` : ''}
+                          </span>
+                        </span>
+                      )}
+                    </div>
+                    <h1 className="docs-article__title">{pageTitle || activePage.title}</h1>
+                    <hr className="docs-article__separator" />
+                  </header>
+
+                  <div className="docs-article__body text-left" dangerouslySetInnerHTML={{ __html: renderedHtml }} />
+
+                  <footer className="docs-article__footer">
+                    <div className="docs-nav-arrows">
+                      {prevPage ? (
+                        <button onClick={() => navigate(prevPage)} className="docs-nav-arrow docs-nav-arrow--prev">
+                          <ChevronRight size={14} className="rotate-180 shrink-0" />
+                          <div className="text-left"><span className="docs-nav-arrow__label">Anterior</span><span className="docs-nav-arrow__title">{prevPage.title}</span></div>
+                        </button>
+                      ) : <span />}
+                      {nextPage ? (
+                        <button onClick={() => navigate(nextPage)} className="docs-nav-arrow docs-nav-arrow--next">
+                          <div className="text-right"><span className="docs-nav-arrow__label">Próximo</span><span className="docs-nav-arrow__title">{nextPage.title}</span></div>
+                          <ChevronRight size={14} className="shrink-0" />
+                        </button>
+                      ) : <span />}
+                    </div>
+                  </footer>
+                </>
+              )}
+            </article>
+
+            {/* ToC — sumário lateral direito */}
+            {tocHeadings.length > 0 && loadState === 'idle' && (
+              <aside className="docs-toc">
+                <div className="docs-toc__inner text-left">
+                  <p className="docs-toc__label">
+                    <AlignLeft size={12} />
+                    Nesta página
+                  </p>
+                  <ul className="docs-toc__list">
+                    {tocHeadings.map(({ id, text, level }) => (
+                      <li key={id}>
+                        <a
+                          href={`#${id}`}
+                          className={cn(
+                            'docs-toc__link',
+                            level === 3 && 'docs-toc__link--h3',
+                            level === 4 && 'docs-toc__link--h4',
+                            activeHeadingId === id && 'docs-toc__link--active'
+                          )}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            const el = contentRef.current?.querySelector(`#${id}`);
+                            el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            setActiveHeadingId(id);
+                          }}
+                        >
+                          {text}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </aside>
+            )}
+          </div>
+        </main>
+      )}
 
       {/* ── Search overlay ── */}
       {searchOpen && (
@@ -534,7 +1099,7 @@ export default function Docs() {
             </div>
 
             {/* Results */}
-            <div className="docs-search-modal__results">
+            <div className="docs-search-modal__results text-left">
               {!indexReady && (
                 <div className="docs-search-modal__empty"><Loader2 className="w-4 h-4 animate-spin opacity-50" /><span>Indexando documentos...</span></div>
               )}

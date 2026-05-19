@@ -7,8 +7,20 @@ CREATE TYPE user_role AS ENUM ('user', 'admin');
 -- Tabela de Perfis (complementa o Auth do Supabase ou gerencia localmente)
 CREATE TABLE IF NOT EXISTS profiles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    email TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE,
+    name TEXT NOT NULL,
+    phone TEXT UNIQUE NOT NULL,
+    telegram_token TEXT,
     role user_role DEFAULT 'user',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabela de Sessões de Login
+CREATE TABLE IF NOT EXISTS login_sessions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    token TEXT NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -36,14 +48,31 @@ CREATE TABLE IF NOT EXISTS kanban_cards (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tabela de Documentos (Docs)
+CREATE TABLE IF NOT EXISTS documents (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    slug TEXT UNIQUE NOT NULL,
+    title TEXT NOT NULL,
+    category TEXT NOT NULL,
+    content TEXT NOT NULL,
+    author_name TEXT,
+    author_role TEXT,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    banner_from TEXT,
+    banner_to TEXT,
+    banner_title TEXT,
+    banner_subtitle TEXT
+);
+
 -- RLS (Row Level Security) - Simulado para Postgres puro, mas essencial no Supabase
 -- No Supabase, usaríamos:
 -- ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 -- CREATE POLICY "Users can view their own profile" ON profiles FOR SELECT USING (auth.uid() = id);
 
 -- Inserir usuário Admin inicial para testes
-INSERT INTO profiles (id, email, role) VALUES ('00000000-0000-0000-0000-000000000001', 'admin@suri.com', 'admin') ON CONFLICT (email) DO NOTHING;
-INSERT INTO profiles (id, email, role) VALUES ('00000000-0000-0000-0000-000000000002', 'user@suri.com', 'user') ON CONFLICT (email) DO NOTHING;
+INSERT INTO profiles (id, email, name, phone, role) VALUES ('00000000-0000-0000-0000-000000000001', 'admin@suri.com', 'Admin Suri', '11999999999', 'admin') ON CONFLICT (email) DO NOTHING;
+INSERT INTO profiles (id, email, name, phone, role) VALUES ('00000000-0000-0000-0000-000000000002', 'user@suri.com', 'Usuário Suri', '11888888888', 'user') ON CONFLICT (email) DO NOTHING;
 
 -- Trigger para criar perfil automaticamente no Supabase Auth (Opcional, para produção)
 -- CREATE OR REPLACE FUNCTION public.handle_new_user()

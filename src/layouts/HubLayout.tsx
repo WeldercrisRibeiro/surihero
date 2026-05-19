@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronLeft, Download } from 'lucide-react';
+import { ChevronLeft, Download, Shield } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { ChangelogModal, changelogs } from '@/components/ChangelogModal';
 import { useState, useEffect } from 'react';
+import { UserAvatar } from '@/lib/telegram-avatar';
+import { AdminUsersModal } from '@/components/AdminUsersModal';
 
 export const HubLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -13,6 +15,24 @@ export const HubLayout = ({ children }: { children: React.ReactNode }) => {
   
   const latestVersion = changelogs[0]?.version || '3.0.1';
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+
+  const sessionStr = localStorage.getItem('suri_session');
+  const user = sessionStr ? JSON.parse(sessionStr) : null;
+
+  const userProfileInfo = user ? (
+    <div className="flex items-center gap-2 mr-2 border-r border-border pr-3">
+      <UserAvatar token={user.token} name={user.name} size={32} />
+      <div className="hidden sm:flex flex-col text-left">
+        <span className="text-xs font-semibold leading-tight text-foreground truncate max-w-[120px]">{user.name}</span>
+        {user.role === 'admin' && (
+          <span className="text-[10px] text-muted-foreground leading-tight uppercase font-medium tracking-wide">
+            🌟 Admin
+          </span>
+        )}
+      </div>
+    </div>
+  ) : null;
 
   useEffect(() => {
     const versionKey = `suri_changelog_viewed_v${latestVersion}`;
@@ -49,16 +69,40 @@ export const HubLayout = ({ children }: { children: React.ReactNode }) => {
 
           {/* Theme toggle disabled for now */}
           {/* <ThemeToggle /> */}
+          <div className="flex items-center">
+            {userProfileInfo}
+            {user?.role === 'admin' && (
+              <button 
+                onClick={() => setIsAdminModalOpen(true)} 
+                className="mr-2 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors flex items-center justify-center border border-border bg-card shadow-sm"
+                title="Gestão de Usuários"
+              >
+                <Shield size={14} />
+              </button>
+            )}
+            <button onClick={() => { localStorage.removeItem('suri_session'); window.location.href='/login'; }} className="text-sm font-medium hover:underline text-destructive px-2">Sair</button>
+          </div>
         </header>
       ) : (
-        <div className="theme-toggle-dash flex items-center gap-3">
+        <div className="theme-toggle-dash flex items-center gap-1 bg-card/60 backdrop-blur-md border border-border p-1.5 rounded-2xl shadow-sm">
+          {userProfileInfo}
+          {user?.role === 'admin' && (
+            <button 
+              onClick={() => setIsAdminModalOpen(true)} 
+              className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors flex items-center justify-center border border-border bg-card shadow-sm mr-1"
+              title="Gestão de Usuários"
+            >
+              <Shield size={14} />
+            </button>
+          )}
           {(isInstallable || isIOS) && !isInstalled && (
-            <button onClick={installPWA} className="pwa-install-btn-dash">
+            <button onClick={installPWA} className="pwa-install-btn-dash mr-2">
               <Download size={16} />
-              <span>Instalar App</span>
+              <span className="hidden sm:inline">Instalar App</span>
             </button>
           )}
           {/* <ThemeToggle /> */}
+          <button onClick={() => { localStorage.removeItem('suri_session'); window.location.href='/login'; }} className="text-sm font-medium hover:bg-destructive/10 text-destructive px-3 py-1.5 rounded-xl transition-colors">Sair</button>
         </div>
       )}
 
@@ -82,6 +126,9 @@ export const HubLayout = ({ children }: { children: React.ReactNode }) => {
       </footer>
 
       <ChangelogModal open={isChangelogOpen} onOpenChange={setIsChangelogOpen} />
+      {isAdminModalOpen && (
+        <AdminUsersModal onClose={() => setIsAdminModalOpen(false)} onUsersUpdated={() => {}} />
+      )}
     </div>
   );
 };
