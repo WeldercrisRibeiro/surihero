@@ -3,23 +3,25 @@ import { Link, useLocation } from 'react-router-dom';
 import { ChevronLeft, Download } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
-import { ChangelogModal } from '@/components/ChangelogModal';
+import { ChangelogModal, changelogs } from '@/components/ChangelogModal';
 import { useState, useEffect } from 'react';
 
 export const HubLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const isDashboard = location.pathname === '/';
   const { isInstallable, isInstalled, isIOS, installPWA } = usePWAInstall();
+  
+  const latestVersion = changelogs[0]?.version || '3.0.1';
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
 
   useEffect(() => {
-    const versionKey = 'suri_changelog_viewed_v2.2.0';
+    const versionKey = `suri_changelog_viewed_v${latestVersion}`;
     const hasViewed = localStorage.getItem(versionKey);
     if (!hasViewed) {
       setIsChangelogOpen(true);
       localStorage.setItem(versionKey, 'true');
     }
-  }, []);
+  }, [latestVersion]);
 
   return (
     <div className="app-container-simple">
@@ -72,7 +74,7 @@ export const HubLayout = ({ children }: { children: React.ReactNode }) => {
             onClick={() => setIsChangelogOpen(true)}
             title="Ver novidades"
           >
-            v2.2.0
+            v{latestVersion}
           </span>
           <span>•</span>
           <span>Feito por Weldercris Ribeiro</span>
