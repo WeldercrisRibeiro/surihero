@@ -7,16 +7,10 @@ Todos os registros de alterações relevantes e correções deste projeto serão
 ## [3.1.0] - 2026-05-19
 
 ### Adicionado
-- **Autenticação Segura via Telegram (OTP)**: Login utilizando nome e telefone, enviando um token de 6 dígitos em tempo real via bot oficial do Telegram.
-- **Sessões de 7 Dias**: Validação automática de sessão armazenada localmente em cache seguro, reduzindo fricção de login.
-- **Painel Admin de Usuários**: Dashboard dedicado para gerenciamento de perfis e alteração de papéis/roles (Admin e User).
-- **Editor Dinâmico de Docs**: Nova interface administrativa integrada no módulo de Docs, permitindo a criação, edição e exclusão de artigos de suporte diretamente no banco de dados.
-- **Indicador Visual de Usuário**: HubLayout atualizado com foto de perfil puxada em tempo real da API oficial do Telegram (Avatar) e badge de privilégio administrativo.
-- **Integração Completa Local (Docker)**: Banco Postgres com tabelas estruturadas para perfis, sessões de login, Kanban e documentos.
+- **Changelog Dinâmico**: O rodapé e o popover de novidades agora leem de forma totalmente assíncrona os arquivos markdown das versões.
 
 ### Alterado
-- **Controle de Kanban Multiusuário**: Modificações no Kanban para exibição e gestão integrada de múltiplos quadros por proprietários.
-- **Changelog Dinâmico**: O rodapé e o popover de novidades agora leem de forma totalmente assíncrona os arquivos markdown das versões.
+- **Melhorias Internas**: Refatorações no código para otimização de performance e simplificação do gerenciamento de estado local.
 
 ---
 

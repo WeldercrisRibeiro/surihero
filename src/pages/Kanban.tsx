@@ -2,13 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import {
   Plus, Search, Trash2, Tag, Calendar,
-  GripVertical, GripHorizontal, X, ChevronDown, LayoutGrid, Shield
+  GripVertical, GripHorizontal, X, ChevronDown, LayoutGrid,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
-import { KanbanService } from '@/lib/kanban-service';
-import { AdminUsersModal } from '@/components/AdminUsersModal';
 
 const STORAGE_KEY = 'suri-kanban-columns';
 
@@ -76,90 +73,6 @@ function saveToStorage(cols: KanbanColumn[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cols));
   } catch { /* ignore */ }
-}
-
-async function getOrCreateProfile(sessionUser: { name: string; phone: string; token: string; role: string }): Promise<string> {
-  // 1. Busca por telegram_token
-  let { data: profile } = await supabase
-    .from('profiles')
-    .select('id, role')
-    .eq('telegram_token', sessionUser.token)
-    .maybeSingle();
-
-  // 2. Busca por telefone (caso já exista perfil sem token associado)
-  if (!profile) {
-    const { data: profileByPhone } = await supabase
-      .from('profiles')
-      .select('id, role')
-      .eq('phone', sessionUser.phone)
-      .maybeSingle();
-
-    if (profileByPhone) {
-      // Associa o telegram_token ao perfil existente
-      await supabase
-        .from('profiles')
-        .update({ telegram_token: sessionUser.token })
-        .eq('id', profileByPhone.id);
-      profile = profileByPhone;
-    }
-  }
-
-  if (profile) {
-    const expectedRole = sessionUser.role === 'admin' ? 'admin' : 'user';
-    if (profile.role !== expectedRole) {
-      await supabase
-        .from('profiles')
-        .update({ role: expectedRole })
-        .eq('id', profile.id);
-    }
-    return profile.id;
-  }
-
-  // 3. Se não existe sob nenhuma chave, insere um novo perfil
-  const newProfile = {
-    name: sessionUser.name,
-    phone: sessionUser.phone,
-    telegram_token: sessionUser.token,
-    role: sessionUser.role === 'admin' ? 'admin' : 'user'
-  };
-
-  const { data: inserted, error: insertError } = await supabase
-    .from('profiles')
-    .insert([newProfile])
-    .select('id')
-    .single();
-
-  if (insertError) {
-    console.error('Error creating profile:', insertError);
-    throw insertError;
-  }
-
-  return inserted.id;
-}
-
-async function initializeDefaultColumns(dbUserId: string) {
-  const defaults = [
-    { title: 'BACKLOG', color: '#9ca3af', position: 1 },
-    { title: 'A FAZER', color: '#3b82f6', position: 2 },
-    { title: 'FAZENDO', color: '#4a54ff', position: 3 },
-    { title: 'PENDENTE', color: '#f97316', position: 4 },
-    { title: 'CONCLUÍDO', color: '#00b914', position: 5 },
-  ];
-
-  const columnsToInsert = defaults.map(col => ({
-    user_id: dbUserId,
-    title: col.title,
-    color: col.color,
-    position: col.position
-  }));
-
-  const { error } = await supabase
-    .from('kanban_columns')
-    .insert(columnsToInsert);
-
-  if (error) {
-    console.error('Error initializing default columns:', error);
-  }
 }
 
 // ──────────────────────────── Sub-components ────────────────────────────
@@ -392,79 +305,10 @@ const ColModal = ({ onClose, onAdd, initialData }: ColModalProps) => {
 // ──────────────────────────── Main KanbanBoard ────────────────────────────
 
 export const KanbanBoard = () => {
-  const [columns, setColumns] = useState<KanbanColumn[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [dbUserId, setDbUserId] = useState<string | null>(null);
-  const [activeUserId, setActiveUserId] = useState<string | null>(null);
-  const [allUsers, setAllUsers] = useState<any[]>([]);
-  const [isAdminUsersOpen, setIsAdminUsersOpen] = useState(false);
+  const [columns, setColumns] = useState<KanbanColumn[]>(loadFromStorage);
 
-  const sessionStr = localStorage.getItem('suri_session');
-  const sessionUser = sessionStr ? JSON.parse(sessionStr) : null;
-
-  // Load session and synchronize profile
-  useEffect(() => {
-    const initAuthAndBoard = async () => {
-      if (!sessionUser) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        // 1. Sync or retrieve profile ID from Postgres
-        const userId = await getOrCreateProfile(sessionUser);
-        setDbUserId(userId);
-        setActiveUserId(userId);
-
-        // 2. If admin, load all users for the selector dropdown
-        if (sessionUser.role === 'admin') {
-          const { data: profiles } = await supabase
-            .from('profiles')
-            .select('*')
-            .order('name');
-          if (profiles) {
-            setAllUsers(profiles);
-          }
-        }
-      } catch (err: any) {
-        console.error('Failed to initialize session profile:', err);
-        toast.error(`Erro ao sincronizar perfil com o banco: ${err?.message || JSON.stringify(err)}`);
-        // Fallback to local storage
-        setColumns(loadFromStorage());
-        setLoading(false);
-      }
-    };
-
-    initAuthAndBoard();
-  }, []);
-
-  // Fetch board whenever activeUserId changes
-  useEffect(() => {
-    if (!activeUserId) return;
-
-    const fetchBoard = async () => {
-      setLoading(true);
-      try {
-        let board = await KanbanService.getBoard(activeUserId);
-        
-        // If board is empty (no columns), initialize default columns and fetch again!
-        if (board.length === 0) {
-          await initializeDefaultColumns(activeUserId);
-          board = await KanbanService.getBoard(activeUserId);
-        }
-        
-        setColumns(board);
-      } catch (err) {
-        console.error('Failed to fetch board:', err);
-        toast.error('Erro ao conectar ao banco. Usando armazenamento local.');
-        setColumns(loadFromStorage());
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBoard();
-  }, [activeUserId]);
+  // Persist whenever columns change
+  useEffect(() => { saveToStorage(columns); }, [columns]);
 
   const [search, setSearch] = useState('');
   const [taskModal, setTaskModal] = useState<{ isOpen: boolean; colId: string; card?: KanbanCard }>({ isOpen: false, colId: '' });
@@ -484,10 +328,7 @@ export const KanbanBoard = () => {
 
   // ── Actions ──
 
-  const saveCard = async (colId: string, card: KanbanCard) => {
-    if (!activeUserId) return;
-
-    // Local update
+  const saveCard = (colId: string, card: KanbanCard) => {
     setColumns((prev) => {
       const originalCol = prev.find((c) => c.cards.some((k) => k.id === card.id));
       let updated = prev;
@@ -501,107 +342,27 @@ export const KanbanBoard = () => {
         return { ...col, cards: [...col.cards, card] };
       });
     });
-
-    // Sync database
-    try {
-      const targetCol = columns.find(c => c.id === colId);
-      const position = targetCol ? targetCol.cards.length : 0;
-
-      const savedCard = await KanbanService.saveCard(activeUserId, colId, {
-        id: card.id,
-        title: card.title,
-        description: card.description,
-        priority: card.priority,
-        tags: card.tags,
-        dueDate: card.dueDate,
-        position: position
-      });
-
-      if (savedCard && savedCard.id && savedCard.id !== card.id) {
-        setColumns((prev) =>
-          prev.map((col) => {
-            if (col.id !== colId) return col;
-            return {
-              ...col,
-              cards: col.cards.map((c) => (c.id === card.id ? { ...c, id: savedCard.id } : c))
-            };
-          })
-        );
-      }
-
-      toast.success('Tarefa salva');
-    } catch (err) {
-      console.error(err);
-      toast.error('Erro ao sincronizar com o banco.');
-    }
+    toast.success('Tarefa salva');
   };
 
-  const deleteCard = async (colId: string, cardId: string) => {
+  const deleteCard = (colId: string, cardId: string) => {
     if (!confirm('Excluir esta tarefa?')) return;
-    
-    // Local update
     setColumns((prev) => prev.map((col) => col.id === colId ? { ...col, cards: col.cards.filter((k) => k.id !== cardId) } : col));
-    
-    // Sync database
-    if (activeUserId) {
-      try {
-        await KanbanService.deleteCard(cardId);
-        toast.success('Tarefa excluída');
-      } catch (err) {
-        console.error(err);
-        toast.error('Erro ao sincronizar exclusão.');
-      }
-    }
+    toast.success('Tarefa excluída');
   };
 
-  const deleteColumn = async (colId: string) => {
+  const deleteColumn = (colId: string) => {
     if (!confirm('Excluir esta coluna e todas as suas tarefas?')) return;
-    
-    // Local update
     setColumns((prev) => prev.filter((col) => col.id !== colId));
-    
-    // Sync database
-    if (activeUserId) {
-      try {
-        await KanbanService.deleteColumn(colId);
-        toast.success('Coluna excluída');
-      } catch (err) {
-        console.error(err);
-        toast.error('Erro ao sincronizar exclusão da coluna.');
-      }
-    }
+    toast.success('Coluna excluída');
   };
 
-  const saveColumn = async (title: string, color: string, colId?: string) => {
-    let tempId = colId || generateId();
-    
-    // Local update
+  const saveColumn = (title: string, color: string, colId?: string) => {
     setColumns((prev) => {
       if (colId) return prev.map((col) => col.id === colId ? { ...col, title, color } : col);
-      return [...prev, { id: tempId, title, color, cards: [] }];
+      return [...prev, { id: generateId(), title, color, cards: [] }];
     });
-
-    // Sync database
-    if (activeUserId) {
-      try {
-        const position = columns.length + 1;
-        const savedCol = await KanbanService.saveColumn(activeUserId, {
-          id: colId,
-          title,
-          color,
-          position
-        });
-        
-        if (!colId && savedCol) {
-          setColumns((prev) => prev.map(c => c.id === tempId ? { ...c, id: savedCol.id } : c));
-        }
-        
-        toast.success('Coluna salva');
-      } catch (err) {
-        console.error(err);
-        toast.error('Erro ao salvar no banco.');
-      }
-    }
+    toast.success('Coluna salva');
   };
 
   // ── Drag & Drop (cards) ──
@@ -631,12 +392,10 @@ export const KanbanBoard = () => {
     setDragOverCardId(cardId);
   };
 
-  const handleDrop = async (e: React.DragEvent, toColId: string, toCardId?: string) => {
+  const handleDrop = (e: React.DragEvent, toColId: string, toCardId?: string) => {
     e.preventDefault();
     if (!draggingCard.current) return;
     const { cardId, fromColId } = draggingCard.current;
-
-    let updatedColumns: KanbanColumn[] = [];
 
     setColumns((prev) => {
       const fromCol = prev.find((c) => c.id === fromColId);
@@ -645,7 +404,7 @@ export const KanbanBoard = () => {
       const card = fromCol.cards.find((c) => c.id === cardId);
       if (!card) return prev;
       let next = prev.map((c) => c.id === fromColId ? { ...c, cards: c.cards.filter((k) => k.id !== cardId) } : c);
-      updatedColumns = next.map((c) => {
+      return next.map((c) => {
         if (c.id !== toColId) return c;
         const cards = [...c.cards];
         if (toCardId) {
@@ -656,41 +415,11 @@ export const KanbanBoard = () => {
         }
         return { ...c, cards };
       });
-      return updatedColumns;
     });
 
     setDragOverColId(null);
     setDragOverCardId(null);
     draggingCard.current = null;
-
-    // Sync database
-    if (activeUserId && updatedColumns.length > 0) {
-      try {
-        const targetCol = updatedColumns.find(c => c.id === toColId);
-        if (targetCol) {
-          for (let i = 0; i < targetCol.cards.length; i++) {
-            await supabase
-              .from('kanban_cards')
-              .update({ position: i, column_id: toColId })
-              .eq('id', targetCol.cards[i].id);
-          }
-        }
-        
-        if (fromColId !== toColId) {
-          const sourceCol = updatedColumns.find(c => c.id === fromColId);
-          if (sourceCol) {
-            for (let i = 0; i < sourceCol.cards.length; i++) {
-              await supabase
-                .from('kanban_cards')
-                .update({ position: i })
-                .eq('id', sourceCol.cards[i].id);
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Error updating dropped card positions:', err);
-      }
-    }
   };
 
   // ── Drag & Drop (columns) ──
@@ -707,7 +436,7 @@ export const KanbanBoard = () => {
     if (draggingCol.current && draggingCol.current !== colId) setDragOverColForReorder(colId);
   };
 
-  const handleColDrop = async (e: React.DragEvent, toColId: string) => {
+  const handleColDrop = (e: React.DragEvent, toColId: string) => {
     e.preventDefault();
     e.stopPropagation();
     if (!draggingCol.current || draggingCol.current === toColId) {
@@ -716,9 +445,6 @@ export const KanbanBoard = () => {
       return;
     }
     const fromColId = draggingCol.current;
-    
-    let updatedColumns: KanbanColumn[] = [];
-
     setColumns((prev) => {
       const fromIdx = prev.findIndex((c) => c.id === fromColId);
       const toIdx   = prev.findIndex((c) => c.id === toColId);
@@ -726,26 +452,10 @@ export const KanbanBoard = () => {
       const next = [...prev];
       const [moved] = next.splice(fromIdx, 1);
       next.splice(toIdx, 0, moved);
-      updatedColumns = next;
       return next;
     });
-    
     draggingCol.current = null;
     setDragOverColForReorder(null);
-
-    // Sync database
-    if (activeUserId && updatedColumns.length > 0) {
-      try {
-        for (let i = 0; i < updatedColumns.length; i++) {
-          await supabase
-            .from('kanban_columns')
-            .update({ position: i })
-            .eq('id', updatedColumns[i].id);
-        }
-      } catch (err) {
-        console.error('Error updating column positions:', err);
-      }
-    }
   };
 
   const handleColDragEnd = () => {
@@ -778,24 +488,6 @@ export const KanbanBoard = () => {
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
-            {/* Selector de quadros (somente para Admin) */}
-            {sessionUser?.role === 'admin' && allUsers.length > 0 && (
-              <div className="flex items-center gap-1.5 sm:gap-2 mr-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden md:inline">Quadro:</span>
-                <select 
-                  className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-1 text-xs font-semibold text-foreground h-8 focus:outline-none focus:ring-1 focus:ring-cyan-500 max-w-[130px] sm:max-w-[170px]"
-                  value={activeUserId || ''}
-                  onChange={(e) => setActiveUserId(e.target.value)}
-                >
-                  {allUsers.map((user) => (
-                    <option key={user.id} value={user.id}>
-                      {user.name || user.phone || 'Usuário'} {user.id === dbUserId ? '(Meu)' : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
             {/* Busca desktop */}
             <div className="kb-search-box h-8 hidden sm:flex">
               <Search size={13} />
@@ -811,16 +503,14 @@ export const KanbanBoard = () => {
             </button>
 
             {/* Nova Coluna */}
-            {sessionUser?.role === 'admin' && (
-              <button
-                className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-bold uppercase tracking-wider transition-all border border-slate-200 dark:border-slate-700 h-8"
-                onClick={() => setColModal({ isOpen: true })}
-                title="Nova Coluna"
-              >
-                <Plus size={13} />
-                <span className="hidden sm:inline">Coluna</span>
-              </button>
-            )}
+            <button
+              className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-bold uppercase tracking-wider transition-all border border-slate-200 dark:border-slate-700 h-8"
+              onClick={() => setColModal({ isOpen: true })}
+              title="Nova Coluna"
+            >
+              <Plus size={13} />
+              <span className="hidden sm:inline">Coluna</span>
+            </button>
 
             {/* Nova Tarefa */}
             <button
@@ -868,16 +558,12 @@ export const KanbanBoard = () => {
                 <button className="kb-icon-btn" title="Adicionar tarefa" onClick={() => openNewTask(col.id)}>
                   <Plus size={14} />
                 </button>
-                {sessionUser?.role === 'admin' && (
-                  <>
-                    <button className="kb-icon-btn" title="Editar coluna" onClick={() => openEditCol(col)}>
-                      <ChevronDown size={14} />
-                    </button>
-                    <button className="kb-icon-btn kb-delete-btn" title="Excluir coluna" onClick={() => deleteColumn(col.id)}>
-                      <Trash2 size={13} />
-                    </button>
-                  </>
-                )}
+                <button className="kb-icon-btn" title="Editar coluna" onClick={() => openEditCol(col)}>
+                  <ChevronDown size={14} />
+                </button>
+                <button className="kb-icon-btn kb-delete-btn" title="Excluir coluna" onClick={() => deleteColumn(col.id)}>
+                  <Trash2 size={13} />
+                </button>
               </div>
             </div>
 
@@ -913,14 +599,12 @@ export const KanbanBoard = () => {
             </div>
             <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300">Nenhuma coluna encontrada</h3>
             <p className="text-sm opacity-60 mb-6">Crie sua primeira coluna para começar.</p>
-            {sessionUser?.role === 'admin' && (
-              <button
-                onClick={() => setColModal({ isOpen: true })}
-                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-cyan-500 text-white font-bold hover:bg-cyan-600 transition-all shadow-lg shadow-cyan-500/20"
-              >
-                <Plus size={18} /> Nova Coluna
-              </button>
-            )}
+            <button
+              onClick={() => setColModal({ isOpen: true })}
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-cyan-500 text-white font-bold hover:bg-cyan-600 transition-all shadow-lg shadow-cyan-500/20"
+            >
+              <Plus size={18} /> Nova Coluna
+            </button>
           </div>
         )}
       </div>

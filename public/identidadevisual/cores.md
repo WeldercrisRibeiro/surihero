@@ -4,4 +4,4 @@ Strong Blue	RGB #2e1de8
 Suri Blue	RGB #4a54ff
 WhatsApp Green	RGB #00b914
 WhatsApp Apple	RGB #25d366
-Snow Blue	RGB #ffffff
+Snow Blue	RGB #e6f4ff
