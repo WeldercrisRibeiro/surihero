@@ -68,18 +68,21 @@ CREATE TABLE IF NOT EXISTS documents (
 -- RLS (Row Level Security) - Simulado para Postgres puro, mas essencial no Supabase
 -- No Supabase, usaríamos:
 -- ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
--- CREATE POLICY "Users can view their own profile" ON profiles FOR SELECT USING (auth.uid() = id);
+-- CREATE POLICY "Qualquer um pode ler perfis públicos" ON profiles FOR SELECT USING (true);
+-- CREATE POLICY "Usuários modificam seu próprio perfil" ON profiles FOR UPDATE USING (true);
+-- CREATE POLICY "Qualquer um pode criar perfis" ON profiles FOR INSERT WITH CHECK (true);
+
 
 -- Inserir usuário Admin inicial para testes
-INSERT INTO profiles (id, email, name, phone, role) VALUES ('00000000-0000-0000-0000-000000000001', 'admin@suri.com', 'Admin Suri', '11999999999', 'admin') ON CONFLICT (email) DO NOTHING;
-INSERT INTO profiles (id, email, name, phone, role) VALUES ('00000000-0000-0000-0000-000000000002', 'user@suri.com', 'Usuário Suri', '11888888888', 'user') ON CONFLICT (email) DO NOTHING;
+INSERT INTO profiles (id, name, phone, role) VALUES ('00000000-0000-0000-0000-000000000001', 'Admin Suri', '11999999999', 'admin') ON CONFLICT (phone) DO NOTHING;
+INSERT INTO profiles (id, name, phone, role) VALUES ('00000000-0000-0000-0000-000000000002', 'Usuário Suri', '11888888888', 'user') ON CONFLICT (phone) DO NOTHING;
 
 -- Trigger para criar perfil automaticamente no Supabase Auth (Opcional, para produção)
 -- CREATE OR REPLACE FUNCTION public.handle_new_user()
 -- RETURNS trigger AS $$
 -- BEGIN
---   INSERT INTO public.profiles (id, email, role)
---   VALUES (new.id, new.email, 'user');
+--   INSERT INTO public.profiles (id, role)
+--   VALUES (new.id, 'user');
 --   RETURN new;
 -- END;
 -- $$ LANGUAGE plpgsql SECURITY DEFINER;

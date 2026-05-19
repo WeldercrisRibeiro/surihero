@@ -10,7 +10,6 @@ Este documento mapeia e descreve com detalhes toda a estrutura do banco de dados
 erDiagram
     PROFILES {
         uuid id PK
-        text email UK
         text name
         text phone UK
         text telegram_token
@@ -79,9 +78,8 @@ Esta tabela complementa a autenticação nativa do Telegram/Supabase para gerenc
 | Nome da Coluna | Tipo SQL | Chave | Default / Constraints | Descrição |
 | :--- | :--- | :---: | :--- | :--- |
 | `id` | `UUID` | **PK** | `uuid_generate_v4()` | Identificador único do usuário / perfil. |
-| `email` | `TEXT` | **UK** | `UNIQUE`, `NULL` | E-mail opcional de acesso do usuário. |
 | `name` | `TEXT` | - | `NOT NULL` | Nome completo de exibição do usuário. |
-| `phone` | `TEXT` | **UK** | `NOT NULL`, `UNIQUE` | Telefone celular utilizado no login via OTP. |
+| `phone` | `TEXT` | **UK** | `NOT NULL`, `UNIQUE` | Telefone celular real do usuário. |
 | `telegram_token` | `TEXT` | - | `NULL` | Token ou Chat ID do Telegram para entrega de OTP. |
 | `role` | `user_role` | - | `'user'` | Nível de privilégio de acesso (Enum). |
 | `created_at` | `TIMESTAMPTZ` | - | `CURRENT_TIMESTAMP` | Data e hora de cadastro do usuário. |
@@ -188,6 +186,9 @@ ON profiles FOR SELECT USING (true);
 
 CREATE POLICY "Usuários modificam seu próprio perfil" 
 ON profiles FOR UPDATE USING (true);
+
+CREATE POLICY "Qualquer um pode criar perfis" 
+ON profiles FOR INSERT WITH CHECK (true);
 
 -- Segurança de Colunas do Kanban
 ALTER TABLE kanban_columns ENABLE ROW LEVEL SECURITY;

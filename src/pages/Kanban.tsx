@@ -426,8 +426,9 @@ export const KanbanBoard = () => {
             setAllUsers(profiles);
           }
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to initialize session profile:', err);
+        toast.error(`Erro ao sincronizar perfil com o banco: ${err?.message || JSON.stringify(err)}`);
         // Fallback to local storage
         setColumns(loadFromStorage());
         setLoading(false);
@@ -788,7 +789,7 @@ export const KanbanBoard = () => {
                 >
                   {allUsers.map((user) => (
                     <option key={user.id} value={user.id}>
-                      {user.name || user.email || 'Usuário'} {user.id === dbUserId ? '(Meu)' : ''}
+                      {user.name || user.phone || 'Usuário'} {user.id === dbUserId ? '(Meu)' : ''}
                     </option>
                   ))}
                 </select>

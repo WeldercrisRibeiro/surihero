@@ -19,14 +19,11 @@ export const AdminUsersModal = ({ onClose, onUsersUpdated }: AdminUsersModalProp
   const [targetUser, setTargetUser] = useState<Profile | null>(null);
   const [formName, setFormName] = useState('');
   const [formPhone, setFormPhone] = useState('');
-  const [formEmail, setFormEmail] = useState('');
+  const [formTelegramToken, setFormTelegramToken] = useState('');
   const [formRole, setFormRole] = useState<'user' | 'admin'>('user');
-  const [formPassword, setFormPassword] = useState('');
   
   // Delete Confirm State
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-
-  const isLocalApi = import.meta.env.VITE_USE_LOCAL_API === 'true';
 
   useEffect(() => {
     fetchUsers();
@@ -40,7 +37,7 @@ export const AdminUsersModal = ({ onClose, onUsersUpdated }: AdminUsersModalProp
     } else {
       const mapped = (data || []).map((u: any) => ({
         ...u,
-        token: u.phone
+        token: u.telegram_token || u.phone
       }));
       setUsers(mapped);
     }
@@ -62,37 +59,37 @@ export const AdminUsersModal = ({ onClose, onUsersUpdated }: AdminUsersModalProp
 
   const openEdit = (user: Profile) => {
     setTargetUser(user);
-    setFormEmail(user.email || '');
     setFormName(user.name || '');
-    setFormPhone(user.token || '');
+    setFormPhone(user.phone || '');
+    setFormTelegramToken(user.telegram_token || '');
     setFormRole(user.role);
     setFormMode('edit');
   };
 
   const openCreate = () => {
     setTargetUser(null);
-    setFormEmail('');
     setFormName('');
     setFormPhone('');
+    setFormTelegramToken('');
     setFormRole('user');
-    setFormPassword('');
     setFormMode('create');
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formName.trim() || !formPhone.trim() || !formEmail.trim()) {
-      toast.error('Nome, Token Telegram e Telefone são obrigatórios!');
+    if (!formName.trim() || !formPhone.trim() || !formTelegramToken.trim()) {
+      toast.error('Nome, Telefone e Token Telegram são obrigatórios!');
       return;
     }
 
     const payload: any = {
       name: formName.trim(),
       phone: formPhone.trim(),
-      email: formEmail.trim(),
+      telegram_token: formTelegramToken.trim(),
       role: formRole
     };
 
+    setLoading(true);
     if (formMode === 'edit' && targetUser) {
       const { error } = await supabase
         .from('profiles')
@@ -100,7 +97,7 @@ export const AdminUsersModal = ({ onClose, onUsersUpdated }: AdminUsersModalProp
         .eq('id', targetUser.id);
 
       if (error) {
-        toast.error('Erro ao atualizar usuário');
+        toast.error('Erro ao atualizar usuário: ' + error.message);
       } else {
         toast.success('Usuário atualizado');
         setFormMode(null);
@@ -108,69 +105,27 @@ export const AdminUsersModal = ({ onClose, onUsersUpdated }: AdminUsersModalProp
         onUsersUpdated();
       }
     } else if (formMode === 'create') {
-      if (isLocalApi) {
-        setLoading(true);
-        const { error } = await supabase
-          .from('profiles')
-          .insert([payload]);
+      const newId = generateUUID();
+      const { error } = await supabase
+        .from('profiles')
+        .insert([{ id: newId, ...payload }]);
 
-        if (error) {
-          toast.error('Erro ao criar usuário local: ' + error.message);
-        } else {
-          toast.success('Usuário criado com sucesso!');
-          setFormMode(null);
-          fetchUsers();
-          onUsersUpdated();
-        }
-        setLoading(false);
+      if (error) {
+        toast.error('Erro ao criar usuário: ' + error.message);
       } else {
-        if (!formPassword || formPassword.length < 6) {
-          toast.error('A senha deve ter pelo menos 6 caracteres');
-          return;
-        }
-
-        setLoading(true);
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: payload.email,
-          password: formPassword,
-          options: {
-            data: {
-              name: payload.name,
-              phone: payload.phone
-            }
-          }
-        });
-
-        if (authError) {
-          toast.error('Erro no Auth: ' + authError.message);
-          setLoading(false);
-          return;
-        }
-
-        if (authData.user) {
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update(payload)
-            .eq('id', authData.user.id);
-          
-          if (updateError) {
-            console.error('Error updating profile after sign up:', updateError);
-          }
-          
-          toast.success('Usuário criado com sucesso!');
-          setFormMode(null);
-          fetchUsers();
-          onUsersUpdated();
-        }
-        setLoading(false);
+        toast.success('Usuário criado com sucesso!');
+        setFormMode(null);
+        fetchUsers();
+        onUsersUpdated();
       }
     }
+    setLoading(false);
   };
 
   const filteredUsers = users.filter(u => 
-    (u.email || '').toLowerCase().includes(search.toLowerCase()) || 
     (u.name || '').toLowerCase().includes(search.toLowerCase()) || 
     (u.phone || '').toLowerCase().includes(search.toLowerCase()) || 
+    (u.telegram_token || '').toLowerCase().includes(search.toLowerCase()) || 
     u.id.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -232,8 +187,8 @@ export const AdminUsersModal = ({ onClose, onUsersUpdated }: AdminUsersModalProp
                           <UserAvatar token={user.token} name={user.name} size={36} />
                           <div>
                             <div className="font-semibold text-slate-700 dark:text-slate-200">{user.name || 'Sem Nome'}</div>
-                            {user.email && <div className="text-xs text-slate-500">Telefone: {user.email}</div>}
-                            <div className="text-[10px] text-slate-400 font-mono">Token: {user.token}</div>
+                            {user.phone && <div className="text-xs text-slate-500">Telefone: {user.phone}</div>}
+                            {user.telegram_token && <div className="text-[10px] text-slate-400 font-mono">Token: {user.telegram_token}</div>}
                           </div>
                         </div>
                       </td>
@@ -295,8 +250,8 @@ export const AdminUsersModal = ({ onClose, onUsersUpdated }: AdminUsersModalProp
                   className="kb-input"
                   type="text"
                   required
-                  value={formPhone}
-                  onChange={(e) => setFormPhone(e.target.value.replace(/\D/g, ''))}
+                  value={formTelegramToken}
+                  onChange={(e) => setFormTelegramToken(e.target.value.replace(/\D/g, ''))}
                   placeholder="Ex: 2146671843"
                 />
               </div>
@@ -307,25 +262,11 @@ export const AdminUsersModal = ({ onClose, onUsersUpdated }: AdminUsersModalProp
                   className="kb-input"
                   type="text"
                   required
-                  value={formEmail}
-                  onChange={(e) => setFormEmail(e.target.value)}
+                  value={formPhone}
+                  onChange={(e) => setFormPhone(e.target.value)}
                   placeholder="Ex: (21) 99999-9999"
                 />
               </div>
-              
-              {formMode === 'create' && !isLocalApi && (
-                <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 block">Senha Inicial *</label>
-                  <input 
-                    className="kb-input"
-                    type="password"
-                    required
-                    value={formPassword}
-                    onChange={(e) => setFormPassword(e.target.value)}
-                    placeholder="Mínimo 6 caracteres"
-                  />
-                </div>
-              )}
 
               <div>
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 block">Papel (Role)</label>

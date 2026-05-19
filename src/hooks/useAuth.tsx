@@ -98,7 +98,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const mockLogin = (role: 'user' | 'admin') => {
     const mockUser: Profile = {
       id: role === 'admin' ? '00000000-0000-0000-0000-000000000001' : '00000000-0000-0000-0000-000000000002',
-      email: role === 'admin' ? 'admin@suri.com' : 'user@suri.com',
+      name: role === 'admin' ? 'Admin Suri' : 'Usuário Suri',
+      phone: role === 'admin' ? '11999999999' : '11888888888',
       role: role,
       created_at: new Date().toISOString(),
     };

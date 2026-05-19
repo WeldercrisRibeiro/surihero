@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -53,6 +54,7 @@ export default function Login() {
 
       // Gera um código aleatório de 6 dígitos
       const generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+      console.log("TEST_VERIFICATION_CODE:", generatedCode);
       setExpectedCode(generatedCode);
 
       // Em produção, você faria um SELECT no banco buscando o telegram_token real se o usuário digitasse o celular.
@@ -87,7 +89,7 @@ export default function Login() {
     }
   };
 
-  const handleVerifyCode = (e: React.FormEvent) => {
+  const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (code.length !== 6) {
       toast.error('O código deve ter 6 dígitos.');
@@ -105,11 +107,36 @@ export default function Login() {
       const isUserAdmin = adminIds.includes(phone.trim());
       const role = isUserAdmin ? 'admin' : 'Membro';
 
+      // 1. Busca perfil no banco pelo telegram_token
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('telegram_token', phone.trim())
+        .maybeSingle();
+
+      const finalName = profile?.name || name || 'Usuário';
+      const finalPhone = profile?.phone || `sem-telefone-${phone.trim()}`;
+      const finalRole = profile?.role || (isUserAdmin ? 'admin' : 'user');
+
+      // 2. Se não existir no banco, cria o perfil automaticamente
+      if (!profile) {
+        const { error } = await supabase.from('profiles').insert([{
+          name: finalName,
+          telegram_token: phone.trim(),
+          role: finalRole,
+          phone: finalPhone
+        }]);
+
+        if (error) {
+          console.error('Erro ao registrar perfil:', error);
+        }
+      }
+
       localStorage.setItem('suri_session', JSON.stringify({
         userId: phone,
-        name: name || 'Usuário',
-        phone,
-        role: role,
+        name: finalName,
+        phone: finalPhone, // Telefone real
+        role: finalRole === 'admin' ? 'admin' : 'Membro',
         token: phone,
         expiresAt: expiresAt.toISOString()
       }));
