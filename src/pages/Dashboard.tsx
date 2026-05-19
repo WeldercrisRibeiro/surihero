@@ -24,14 +24,14 @@ const apps = [
     color: 'var(--app-calc)',
     tag: 'Upsell, Downsell',
   },
-  {
-    path: '/kanban',
-    label: 'Kanban',
-    description: 'Quadro de tarefas Kanban.',
-    icon: Workflow,
-    color: 'var(--app-vext)',
-    tag: 'Kanban',
-  },
+  // {
+  //   path: '/kanban',
+  //   label: 'Kanban',
+  //   description: 'Quadro de tarefas Kanban.',
+  //   icon: Workflow,
+  //   color: 'var(--app-vext)',
+  //   tag: 'Kanban',
+  // },
   {
     path: '/workflow',
     label: 'Flows',
