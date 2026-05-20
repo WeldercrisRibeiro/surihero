@@ -16,15 +16,11 @@ import {
   ArrowRight
 } from "lucide-react";
 
-// Lê as variáveis de ambiente com suporte ao prefixo do Vite
-const ENV_EMAIL = import.meta.env.VITE_SURI_API_EMAIL || "";
-const ENV_PASSWORD = import.meta.env.VITE_SURI_API_PASSWORD || "";
-// Em dev, usa proxy do Vite: /api/suri-portal/* → portal.suri.ai/api/v1/*
 const API_URL = "/api/suri-portal/session";
 
 export default function Login() {
   const { theme } = useTheme();
-  
+
   // Logos oficiais
   const logoSrc = theme === "light" ? "/identidadevisual/icons/suri-white.svg" : "/identidadevisual/icons/suri-blue.svg";
 
@@ -40,11 +36,6 @@ export default function Login() {
     const creds = loadCredentials();
     if (creds.token) {
       setAlreadyAuthenticated(true);
-    }
-
-    if (ENV_EMAIL && ENV_PASSWORD) {
-      setEmail(ENV_EMAIL);
-      setPassword(ENV_PASSWORD);
     }
   }, []);
 
@@ -81,12 +72,12 @@ export default function Login() {
 
       if (response.ok) {
         // Captura do Token
-        const token = data.token || (data.data && data.data.token) || data.access_token || "";
-        
+        const token = data.tokenSession || "";
+
         if (token) {
-          saveCredentials({ 
-            baseUrl: "https://portal.suri.ai/api/v1", 
-            token: token 
+          saveCredentials({
+            baseUrl: "https://portal.suri.ai/api/v1",
+            token: token
           });
 
           toast.success("Autenticação realizada com sucesso!");
@@ -101,16 +92,16 @@ export default function Login() {
       }
     } catch (err: any) {
       console.warn("Erro de conexão (provavelmente CORS no ambiente local):", err.message);
-      
+
       // Fallback local: Como chamadas locais direta para o portal.suri.ai falham devido a CORS no navegador,
       // se as credenciais forem válidas (ou corresponderem ao .env/qualquer e-mail válido localmente),
       // nós criamos uma sessão simulada para que o desenvolvedor possa acessar as ferramentas sem ser bloqueado.
       if (email.includes("@") && password.length >= 4) {
         const localMockToken = `suri_jwt_local_session_${Math.random().toString(36).substring(2)}`;
-        
-        saveCredentials({ 
-          baseUrl: "https://portal.suri.ai/api/v1", 
-          token: localMockToken 
+
+        saveCredentials({
+          baseUrl: "https://portal.suri.ai/api/v1",
+          token: localMockToken
         });
 
         toast.success("Conectado com sucesso (Modo Desenvolvedor)!");
@@ -135,22 +126,22 @@ export default function Login() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden bg-slate-950">
-      
+
       {/* Background decorativo com blur premium */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-500/10 blur-[120px] pointer-events-none" />
-      
+
       <div className="w-full max-w-[420px] z-10 animate-in fade-in zoom-in-95 duration-500">
-        
+
         {/* CARD DE LOGIN GLASSMORPHIC */}
         <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-[2rem] p-8 shadow-2xl relative overflow-hidden">
-          
+
           {/* Logo e Título */}
           <div className="flex flex-col items-center text-center mb-8">
             <div className="h-14 flex items-center justify-center mb-4">
               <img src={logoSrc} alt="Suri Logo" className="h-9 w-auto object-contain" />
             </div>
-            
+
             <p className="text-xs text-slate-400 mt-1.5">
               Insira seus dados para acessar todos os módulos
             </p>
@@ -169,15 +160,15 @@ export default function Login() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <Button 
+                <Button
                   onClick={() => { window.location.href = "/"; }}
                   className="w-full rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-xs uppercase tracking-wider h-11 transition-all active:scale-98 gap-2"
                 >
                   Acessar Dashboard
                   <ArrowRight size={14} />
                 </Button>
-                
-                <Button 
+
+                <Button
                   variant="outline"
                   onClick={handleLogout}
                   className="w-full rounded-xl border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 font-bold text-xs uppercase tracking-wider h-11 transition-all gap-2"
@@ -190,7 +181,7 @@ export default function Login() {
           ) : (
             /* FORMULÁRIO DE LOGIN LIMPO: APENAS EMAIL E SENHA */
             <form onSubmit={handleLogin} className="space-y-5">
-              
+
               <div className="space-y-2">
                 <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   E-mail

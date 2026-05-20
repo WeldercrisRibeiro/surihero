@@ -1,0 +1,17 @@
+curl ^"https://portal.suri.ai/api/v1/session^" ^
+  -H ^"accept: application/json, text/javascript, */*; q=0.01^" ^
+  -H ^"accept-language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7^" ^
+  -H ^"content-type: application/json; charset=UTF-8^" ^
+  -b ^"TiPMix=66.10493079309724; x-ms-routing-name=self; _ga=GA1.1.482355960.1779318998; _ga_DN8PT9HMX8=GS2.1.s1779318997^$o1^$g0^$t1779319025^$j32^$l0^$h0^" ^
+  -H ^"origin: https://portal.suri.ai^" ^
+  -H ^"priority: u=1, i^" ^
+  -H ^"referer: https://portal.suri.ai/^" ^
+  -H ^"sec-ch-ua: ^\^"Google Chrome^\^";v=^\^"147^\^", ^\^"Not.A/Brand^\^";v=^\^"8^\^", ^\^"Chromium^\^";v=^\^"147^\^"^" ^
+  -H ^"sec-ch-ua-mobile: ?0^" ^
+  -H ^"sec-ch-ua-platform: ^\^"Windows^\^"^" ^
+  -H ^"sec-fetch-dest: empty^" ^
+  -H ^"sec-fetch-mode: cors^" ^
+  -H ^"sec-fetch-site: same-origin^" ^
+  -H ^"user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36^" ^
+  -H ^"x-requested-with: XMLHttpRequest^" ^
+  --data-raw ^"^{^\^"email^\^":^\^"welder^@chatbotmaker.io^\^",^\^"password^\^":^\^"Cris2507^\^",^\^"device^\^":^{^\^"platform^\^":1,^\^"operationalSystem^\^":1^}^}^"
