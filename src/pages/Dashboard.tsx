@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Cable, Calculator, Workflow, ArrowRight, BookOpen, CircleDollarSign } from 'lucide-react';
+import { Cable, Calculator, Workflow, ArrowRight, BookOpen, CircleDollarSign, ShieldCheck } from 'lucide-react';
 import { useTheme } from '@/hooks/use-theme';
 
 // URLs dos logos
@@ -47,6 +47,14 @@ const apps = [
     icon: BookOpen,
     color: 'var(--app-template)',
     tag: 'Docs',
+  },
+  {
+    path: '/login',
+    label: 'Portal Login',
+    description: 'Sistema de Autenticação da API Suri.ai',
+    icon: ShieldCheck,
+    color: '#6366f1',
+    tag: 'Autenticação',
   },
   // {
   //   path: '/ca',

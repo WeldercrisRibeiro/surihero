@@ -84,6 +84,22 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      "/api/suri-portal": {
+        target: "https://portal.suri.ai",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/suri-portal/, "/api/v1"),
+        secure: true,
+        configure: (proxy, _options) => {
+          proxy.on("proxyReq", (proxyReq, req, _res) => {
+            proxyReq.setHeader("origin", "https://portal.suri.ai");
+            proxyReq.setHeader("referer", "https://portal.suri.ai/");
+          });
+        },
+      },
+    },
+  },
   build: {
     outDir: "dist",
   },
