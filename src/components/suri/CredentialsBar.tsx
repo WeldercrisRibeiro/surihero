@@ -4,17 +4,28 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { clearCredentials, loadCredentials, saveCredentials } from "@/lib/suri/storage";
 import { cn } from "@/lib/utils";
-import { Moon, Sun, Settings, Trash2, Globe, Shield, CheckCircle2, XCircle } from "lucide-react";
+import { Moon, Sun, Settings, Trash2, Globe, Shield, CheckCircle2, XCircle, User } from "lucide-react";
+import { useApiStatus } from "@/hooks/useApiStatus";
 
 export function CredentialsBar() {
   const [baseUrl, setBaseUrl] = useState("");
   const [token, setToken] = useState("");
   const [connected, setConnected] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+
+  const [savedBaseUrl, setSavedBaseUrl] = useState("");
+  const [savedToken, setSavedToken] = useState("");
+
+  // Hook para monitorar status
+  const status = useApiStatus(savedBaseUrl, savedToken);
+  const [userName, setUserName] = useState(loadCredentials().userName || "");
+
   useEffect(() => {
     const c = loadCredentials();
     setBaseUrl(c.baseUrl);
     setToken(c.token);
+    setSavedBaseUrl(c.baseUrl);
+    setSavedToken(c.token);
     setConnected(Boolean(c.baseUrl && c.token));
   }, []);
 
@@ -64,9 +75,9 @@ export function CredentialsBar() {
             )}
             <span className={cn(
               "text-[10px] font-bold uppercase tracking-[0.2em]",
-              connected ? "text-primary/80" : "text-muted-foreground/40"
+              status === "online" ? "text-primary/80" : status === "checking" ? "text-yellow-600" : "text-muted-foreground/40"
             )}>
-              {connected ? "Api Online" : "Api Desconectada"}
+              {status === "online" ? "Api Online" : status === "checking" ? "Verificando..." : "Api Offline"} 
             </span>
           </div>
         </div>
@@ -98,7 +109,18 @@ export function CredentialsBar() {
                 </Badge>
               )}
             </div>
-            
+
+            <div className="space-y-1.5">
+              <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+                <User size={12} />
+                Nome do Usuário
+              </label>
+              <input
+                className="w-full rounded-md border border-border bg-muted/20 px-3 py-2 text-xs font-mono focus:border-primary/50 focus:outline-none transition-colors"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+              />
+            </div>
             <div className="space-y-1.5">
               <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
                 <Globe size={12} />

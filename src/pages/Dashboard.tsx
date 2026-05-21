@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Cable, Calculator, Workflow, ArrowRight, BookOpen, CircleDollarSign, ShieldCheck, LogOut, User } from 'lucide-react';
 import { useTheme } from '@/hooks/use-theme';
 import { clearCredentials } from '@/lib/suri/storage';
+import { loadCredentials } from "@/lib/suri/storage";
 
 // URLs dos logos
 const LOGO_LIGHT = "/identidadevisual/icons/suri-blue.svg";
@@ -62,6 +63,8 @@ const apps = [
 export const HubDashboard = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
+  const creds = loadCredentials();
+  const userName = creds.userName || "Usuário";
   const currentLogo = theme === 'light' ? LOGO_LIGHT : LOGO_DARK;
 
   const visibleApps = apps;
@@ -74,47 +77,65 @@ export const HubDashboard = () => {
           <img src={currentLogo} alt="Logo" className="hub-page__logo" style={{ height: '32px' }} />
           
           <div className="hub-page__user-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div className="hub-page__user-info" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--surface-50)', padding: '0.4rem 1rem 0.4rem 0.4rem', borderRadius: '100px', border: '1px solid var(--border)' }}>
+            <div className="hub-page__user-info" style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.75rem', 
+              padding: '0.4rem 1rem 0.4rem 0.4rem', 
+              borderRadius: '100px', 
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              background: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              boxShadow: '0 4px 24px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+            }}>
               <div style={{ background: 'var(--brand-primary)', color: 'white', borderRadius: '50%', padding: '0.4rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <User size={16} />
               </div>
               <div style={{ textAlign: 'left', lineHeight: '1.2' }}>
-                <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Logado como</span>
-                <strong style={{ fontSize: '0.875rem', color: 'var(--text-primary)', fontWeight: '600' }}>Nome do Usuário</strong>
+                <span style={{ display: 'block', fontSize: '0.7rem', color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Logado como</span>
+                <strong style={{ fontSize: '0.875rem', color: 'white', fontWeight: '600' }}>
+                  {userName || "Usuário"}
+                </strong>
               </div>
             </div>
             
             <button 
-              className="hub-logout-btn" 
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                border: '1px solid var(--border)',
-                background: 'var(--surface-50)',
-                color: 'var(--text-secondary)',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = 'var(--text-primary)';
-                e.currentTarget.style.background = 'var(--surface-100)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = 'var(--text-secondary)';
-                e.currentTarget.style.background = 'var(--surface-50)';
-              }}
-              onClick={() => {
-                clearCredentials();
-                navigate('/login');
-              }}
-              title="Sair da conta"
-            >
-              <LogOut size={18} />
-            </button>
+  className="hub-logout-btn" 
+  style={{
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    border: '1px solid rgba(255, 255, 255, 0.15)',
+    background: 'rgba(239, 68, 68, 0.15)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    boxShadow: '0 4px 24px rgba(239, 68, 68, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+    color: 'rgb(239, 68, 68)',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease'
+  }}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.3)';
+    e.currentTarget.style.boxShadow = '0 4px 24px rgba(239, 68, 68, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
+    e.currentTarget.style.color = 'rgb(255, 100, 100)';
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
+    e.currentTarget.style.boxShadow = '0 4px 24px rgba(239, 68, 68, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
+    e.currentTarget.style.color = 'rgb(239, 68, 68)';
+  }}
+  onClick={() => {
+    clearCredentials();
+    navigate('/login');
+  }}
+  title="Sair da conta"
+>
+  <LogOut size={18} />
+</button>
           </div>
         </div>
         

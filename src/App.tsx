@@ -14,15 +14,35 @@ import SuriCalc from "./pages/Calcs";
 import Docs from "./pages/Docs";
 import Login from "./pages/Login";
 import { loadCredentials } from "@/lib/suri/storage";
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const queryClient = new QueryClient();
 
 // Guardião de Autenticação - Protege todas as páginas caso não exista token
 function RequireAuth({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate();
   const creds = loadCredentials();
-  if (!creds.token) {
-    return <Navigate to="/login" replace />;
-  }
+
+  // Verifica token ao montar
+  useEffect(() => {
+    if (!loadCredentials().token) {
+      navigate('/login', { replace: true });
+    }
+  }, []);
+
+  // Escuta mudanças no localStorage (ex: logout em outra aba)
+  useEffect(() => {
+    const check = () => {
+      if (!loadCredentials().token) {
+        navigate('/login', { replace: true });
+      }
+    };
+    window.addEventListener('storage', check);
+    return () => window.removeEventListener('storage', check);
+  }, []);
+
+  if (!creds.token)  return null;
   return <>{children}</>;
 }
 
